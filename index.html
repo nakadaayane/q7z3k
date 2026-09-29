@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="青空文庫の作品を、一回の文字数と表示時間を決めて自動で流し読みできるリーダー。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2327497A'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='%23F8F9F6' font-family='serif'%3E%E6%B5%81%3C/text%3E%3C/svg%3E">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>青空文庫ながし読み</title>
+<meta name="theme-color" content="#EEF0EC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --bg:#EEF0EC;
+  --paper:#F8F9F6;
+  --ink:#1B2230;
+  --muted:#5D6776;
+  --line:#D5D9DE;
+  --ai:#27497A;
+  --ai-soft:#DDE4EF;
+  --shu:#B4432E;
+  --focus:#27497A;
+  --shadow:rgba(20,30,50,.18);
+  --mincho:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+  --gothic:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+  --fs:64px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10141B; --paper:#171C25; --ink:#E4E7EC; --muted:#98A2B2; --line:#2B3240;
+    --ai:#8FAAD8; --ai-soft:#223149; --shu:#E0806B; --focus:#8FAAD8; --shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10141B; --paper:#171C25; --ink:#E4E7EC; --muted:#98A2B2; --line:#2B3240;
+  --ai:#8FAAD8; --ai-soft:#223149; --shu:#E0806B; --focus:#8FAAD8; --shadow:rgba(0,0,0,.5);
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--gothic);font-size:14px;line-height:1.6;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{touch-action:manipulation}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 320px;grid-template-rows:auto minmax(0,1fr)}
+header.top{grid-column:1 / -1;display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--mincho);font-weight:600;font-size:17px;letter-spacing:.06em;white-space:nowrap}
+.seal{display:inline-grid;place-items:center;width:26px;height:26px;background:var(--ai);color:var(--paper);border-radius:3px;font-size:14px;letter-spacing:0;flex:none}
+.work{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;color:var(--muted);overflow:hidden}
+.work b{color:var(--ink);font-family:var(--mincho);font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.work span{white-space:nowrap;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:6px 14px;border:1px solid var(--line);background:var(--paper);border-radius:8px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--ai)}
+.btn.primary{background:var(--ai);border-color:var(--ai);color:var(--paper)}
+.btn svg{width:18px;height:18px;fill:currentColor}
+
+/* ステージ */
+.reader{display:flex;flex-direction:column;min-height:0;min-width:0}
+.stagewrap{flex:1;min-height:260px;display:flex;flex-direction:column;background:var(--paper);margin:16px 0 0 20px;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6em;padding:32px 24px;overflow:hidden;font-family:var(--mincho);text-align:center;cursor:pointer;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.stage .now{font-size:min(var(--fs),12vw);line-height:1.5;letter-spacing:.04em;max-width:100%;overflow-wrap:anywhere}
+.stage .ctx{font-size:min(calc(var(--fs) * .38),5vw);color:var(--muted);opacity:.55;line-height:1.5;max-width:100%}
+.stage rt{font-size:.42em;letter-spacing:0;color:var(--muted)}
+.stage.vertical{writing-mode:vertical-rl;text-orientation:mixed}
+.stage.vertical .now{max-height:100%;font-size:min(var(--fs),12vh)}
+.now.in{animation:fadein .12s ease-out}
+@keyframes fadein{from{opacity:.15}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.now.in{animation:none}.tick i{transition:none!important}aside.settings{transition:none!important}}
+.tick{height:3px;background:var(--line);flex:none}
+.tick i{display:block;height:100%;width:0;background:var(--ai)}
+.para{position:absolute;top:10px;left:14px;font-size:12px;color:var(--muted);letter-spacing:.08em;pointer-events:none}
+.hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted);pointer-events:none}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--muted);font-size:14px}
+.stagewrap:fullscreen{margin:0;border-radius:0;border:0}
+
+/* 操作バー */
+.transport{display:flex;align-items:center;gap:12px;padding:14px 0 16px 20px}
+.tbtn{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:var(--paper);cursor:pointer}
+.tbtn:hover{border-color:var(--ai)}
+.tbtn.play{width:56px;height:56px;background:var(--ai);border-color:var(--ai);color:var(--paper)}
+.tbtn svg{width:20px;height:20px;fill:currentColor}
+.seek{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.seek input{width:100%;accent-color:var(--ai);margin:0;height:28px}
+.seekmeta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.only-mobile{display:none}
+
+/* 設定 */
+aside.settings{padding:16px 20px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.sheethead{display:none}
+.group{display:flex;flex-direction:column;gap:10px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.group:last-child{border-bottom:0}
+.group h3{margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field .row{display:flex;align-items:center;gap:10px}
+.field label{font-weight:500}
+.field input[type=range]{flex:1;accent-color:var(--ai);min-width:0;height:28px}
+.num{width:70px;padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:var(--paper);text-align:right;font-variant-numeric:tabular-nums;font-size:16px}
+.unit{color:var(--muted);font-size:12px;width:1.5em}
+.speed{display:flex;align-items:baseline;gap:6px;padding:10px 12px;background:var(--ai-soft);border-radius:6px;flex-wrap:wrap}
+.speed strong{font-size:22px;font-variant-numeric:tabular-nums;color:var(--ai);font-weight:700}
+.speed small{color:var(--muted)}
+.check{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.check input{margin-top:5px;accent-color:var(--ai);width:16px;height:16px;flex:none}
+.check small{display:block;color:var(--muted);font-size:12px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;min-height:38px;padding:6px 8px;border:0;background:var(--paper);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ai);color:var(--paper)}
+.keys{font-size:12px;color:var(--muted);line-height:1.9}
+kbd{font-family:var(--gothic);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--paper)}
+.scrim{position:fixed;inset:0;background:rgba(10,15,25,.35);z-index:19}
+
+/* 本棚 */
+.lib{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;overscroll-behavior:contain;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.libin{max-width:780px;margin:0 auto;padding-inline:20px;padding-block:0 40px}
+.libhead{position:sticky;top:0;z-index:2;background:var(--bg);padding-block:14px 12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.libtop{display:flex;align-items:center;gap:12px}
+.libtop h2{margin:0;flex:1;font-family:var(--mincho);font-size:20px;letter-spacing:.06em;display:flex;align-items:center;gap:10px}
+.search{display:flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:0 12px}
+.search:focus-within{border-color:var(--ai)}
+.search svg{width:18px;height:18px;fill:var(--muted);flex:none}
+.search input{flex:1;min-width:0;border:0;background:transparent;padding:10px 0;font-size:16px;outline:none}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:34px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);cursor:pointer;white-space:nowrap;font-size:13px}
+.chip[aria-pressed=true]{background:var(--ai);border-color:var(--ai);color:var(--paper)}
+.chip small{opacity:.7;margin-left:3px;font-variant-numeric:tabular-nums}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filters .seg{flex:1;min-width:220px}
+.filters .seg button{font-size:13px;min-height:34px}
+.sortsel{min-height:34px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:13px}
+.libsec{margin-top:18px}
+.libsec h3{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--muted);display:flex;justify-content:space-between}
+.libsec h3 span{letter-spacing:0;font-weight:500;font-variant-numeric:tabular-nums}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:2.4em minmax(0,1fr) auto;gap:4px 12px;align-items:center;text-align:left;padding:12px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;width:100%}
+.item:hover{background:var(--paper)}
+.item .rk{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;text-align:right}
+.item .tt{font-family:var(--mincho);font-weight:600;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.item .tt small{font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}
+.item .au{color:var(--muted);font-size:13px}
+.item .mt{text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.item .mt b{display:block;color:var(--ink);font-weight:500;font-size:13px}
+.prog{display:inline-block;margin-left:6px;padding:0 6px;border-radius:4px;background:var(--ai-soft);color:var(--ai);font-size:11px;font-weight:700}
+.empty{padding:30px 0;text-align:center;color:var(--muted)}
+details.other{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+details.other summary{padding:14px 16px;cursor:pointer;font-weight:500}
+.otherin{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px}
+.steps{margin:0;padding-left:1.4em;color:var(--muted)}
+.steps a,.credit a{color:var(--ai)}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:22px 16px;text-align:center;cursor:pointer;color:var(--muted)}
+.drop.over,.drop:hover{border-color:var(--ai);color:var(--ink);background:var(--ai-soft)}
+.drop strong{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);resize:vertical;font-family:var(--mincho);font-size:16px}
+.err{color:var(--shu);font-size:13px;margin:0}
+.credit{margin-top:18px;font-size:12px;color:var(--muted)}
+
+@media (max-width: 860px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  header.top{padding:8px 16px;gap:10px}
+  .brand .name{display:none}
+  .work{flex-direction:column;gap:0;line-height:1.35}
+  .work b{font-size:15px;max-width:100%}
+  .work span{font-size:12px}
+  .stagewrap{margin:10px 16px 0;min-height:max(240px,45svh)}
+  .stage{padding:28px 16px}
+  .transport{padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;gap:10px;justify-content:center}
+  .seek{flex:1 1 100%;order:-1}
+  .only-mobile{display:grid}
+  .only-desktop{display:none}
+  aside.settings{position:fixed;left:0;right:0;bottom:0;z-index:20;max-height:80%;background:var(--paper);border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -12px 40px var(--shadow);padding:0 16px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .22s ease;visibility:hidden}
+  aside.settings.open{transform:none;visibility:visible}
+  .sheethead{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--paper);padding-block:12px 8px;z-index:1}
+  .sheethead b{font-size:15px}
+  .libin{padding-inline:16px}
+  .item{grid-template-columns:1.8em minmax(0,1fr) auto;gap:2px 10px}
+  .keysgroup{display:none}
+}
+</style>
+
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><span class="seal">流</span><span class="name">ながし読み</span></div>
+    <div class="work"><b id="wTitle">—</b><span id="wAuthor"></span></div>
+    <button class="btn" id="openBtn" type="button"><svg viewBox="0 0 24 24"><path d="M4 4h4v16H4zm5 0h4v16H9zm5.2.6 3.9-1 4 15.5-3.9 1z"/></svg>本棚</button>
+  </header>
+
+  <section class="reader">
+    <div class="stagewrap" id="stagewrap">
+      <div class="para" id="paraLabel"></div>
+      <div class="stage" id="stage">
+        <div class="ctx" id="ctxPrev"></div>
+        <div class="now" id="now"></div>
+        <div class="ctx" id="ctxNext"></div>
+      </div>
+      <div class="hint" id="hint">タップで再生・停止／左右にスワイプで前後へ</div>
+      <div class="loading" id="loading" hidden>読み込んでいます…</div>
+      <div class="tick"><i id="tick"></i></div>
+    </div>
+    <div class="transport">
+      <div class="seek">
+        <input type="range" id="seek" min="0" max="0" value="0" aria-label="読む位置">
+        <div class="seekmeta"><span id="posLabel">0 / 0</span><span id="remainLabel"></span></div>
+      </div>
+      <button class="tbtn" id="prevBtn" type="button" aria-label="ひとつ戻る"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button class="tbtn play" id="playBtn" type="button" aria-label="再生"><svg viewBox="0 0 24 24" id="playIcon"><path d="M7 4v16l13-8z"/></svg></button>
+      <button class="tbtn" id="nextBtn" type="button" aria-label="ひとつ進む"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <button class="tbtn only-desktop" id="fsBtn" type="button" aria-label="全画面"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z"/></svg></button>
+      <button class="tbtn only-mobile" id="setBtn" type="button" aria-label="設定"><svg viewBox="0 0 24 24"><path d="M3 6h10v2H3zm14 0h4v2h-4zm-3-2h2v6h-2zM3 16h4v2H3zm8 0h10v2H11zm-3-2h2v6H8z"/></svg></button>
+    </div>
+  </section>
+
+  <aside class="settings" id="settings" aria-label="設定">
+    <div class="sheethead"><b>設定</b><button class="btn" type="button" id="setClose">閉じる</button></div>
+    <div class="group">
+      <h3>流し方</h3>
+      <div class="field">
+        <label for="nRange">一回に表示する文字数</label>
+        <div class="row"><input type="range" id="nRange" min="1" max="60" step="1"><input class="num" type="number" inputmode="numeric" id="nNum" min="1" max="200"><span class="unit">字</span></div>
+      </div>
+      <div class="field">
+        <label for="tRange">表示時間</label>
+        <div class="row"><input type="range" id="tRange" min="0.1" max="6" step="0.05"><input class="num" type="number" inputmode="decimal" id="tNum" min="0.05" max="60" step="0.05"><span class="unit">秒</span></div>
+      </div>
+      <div class="speed"><strong id="cpm">0</strong><span>字／分</span><small>（区切りの調整を除く目安）</small></div>
+    </div>
+
+    <div class="group">
+      <h3>区切り方</h3>
+      <label class="check"><input type="checkbox" id="smart"><span>句読点で区切る<small>文字数の範囲内で「、」「。」の後ろで切ります。行頭に「。」や「」」が来ないようにします。</small></span></label>
+      <label class="check"><input type="checkbox" id="prop"><span>短い区切りは短く表示<small>表示時間を文字数に合わせて調整します。</small></span></label>
+      <label class="check"><input type="checkbox" id="pause"><span>文の終わりで少し止める<small>「。」や段落の終わりは長めに、「、」は少し長めに表示します。</small></span></label>
+    </div>
+
+    <div class="group">
+      <h3>見た目</h3>
+      <div class="field">
+        <label>書字方向</label>
+        <div class="seg" role="group" aria-label="書字方向"><button type="button" id="dirH" aria-pressed="true">横書き</button><button type="button" id="dirV" aria-pressed="false">縦書き</button></div>
+      </div>
+      <div class="field">
+        <label for="fsRange">文字の大きさ</label>
+        <div class="row"><input type="range" id="fsRange" min="20" max="140" step="2"><input class="num" type="number" inputmode="numeric" id="fsNum" min="12" max="240"><span class="unit">px</span></div>
+      </div>
+      <label class="check"><input type="checkbox" id="ruby"><span>ルビを表示</span></label>
+      <label class="check"><input type="checkbox" id="ctx"><span>前後の文を薄く表示</span></label>
+    </div>
+
+    <div class="group keysgroup">
+      <h3>キー操作</h3>
+      <div class="keys"><kbd>Space</kbd> 再生／停止　<kbd>←</kbd><kbd>→</kbd> 戻る／進む<br><kbd>↑</kbd><kbd>↓</kbd> 表示時間を短く／長く　<kbd>F</kbd> 全画面</div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+</div>
+
+<div class="lib" id="lib" hidden role="dialog" aria-modal="true" aria-labelledby="libTitle">
+  <div class="libin">
+    <div class="libhead">
+      <div class="libtop">
+        <h2 id="libTitle"><span class="seal">流</span>本棚</h2>
+        <button class="btn" type="button" id="libClose">読書にもどる</button>
+      </div>
+      <label class="search"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l5 5-1.4 1.4-5-5A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><input type="search" id="q" placeholder="作品名・作家名（ひらがな可）" autocomplete="off" enterkeyhint="search"></label>
+      <div class="chips" id="authorChips"></div>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="長さ" id="lenSeg">
+          <button type="button" data-len="all" aria-pressed="true">すべて</button>
+          <button type="button" data-len="s" aria-pressed="false">短編</button>
+          <button type="button" data-len="m" aria-pressed="false">中編</button>
+          <button type="button" data-len="l" aria-pressed="false">長編</button>
+        </div>
+        <select class="sortsel" id="sort" aria-label="並び順">
+          <option value="rank">人気順</option>
+          <option value="short">短い順</option>
+          <option value="long">長い順</option>
+          <option value="yomi">作品名順</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="libsec" id="recentSec" hidden>
+      <h3>続きを読む</h3>
+      <div class="list" id="recentList"></div>
+    </div>
+    <div class="libsec">
+      <h3>作品<span id="libCount"></span></h3>
+      <div class="list" id="libList"></div>
+    </div>
+
+    <details class="other">
+      <summary>本棚にない作品を読む（ファイル・貼り付け）</summary>
+      <div class="otherin">
+        <ol class="steps">
+          <li><a href="https://www.aozora.gr.jp/" target="_blank" rel="noopener">青空文庫</a>で作品の「図書カード」を開きます。</li>
+          <li>「テキストファイル(ルビあり)」の zip を保存して、ここで選びます。</li>
+        </ol>
+        <label class="drop" id="drop" for="file">
+          <strong>zip・txt・html を選ぶ</strong>
+          パソコンならここにドロップもできます
+          <input type="file" id="file" accept=".zip,.txt,.html,.htm,.xhtml" hidden>
+        </label>
+        <textarea id="paste" placeholder="本文をコピーして貼り付け。《ルビ》や［＃注記］は自動で整えます。"></textarea>
+        <p class="err" id="ldErr" hidden></p>
+        <div><button class="btn primary" type="button" id="pasteBtn">貼り付けた文を読む</button></div>
+      </div>
+    </details>
+    <p class="credit">本棚の作品は<a href="https://www.aozora.gr.jp/access_ranking/2022_xhtml.html" target="_blank" rel="noopener">青空文庫アクセスランキング（2022年）</a>の上位から、著作権の切れた作品を収録しています。入力・校正は青空文庫のボランティアの皆さんによるものです。</p>
+  </div>
+</div>
+
+<script>
+/* [id, 作品名, 副題, 著者, 作品名よみ, 著者よみ, 文字数, 束番号, 図書カードURL]（人気順） */
+const CATALOG = [[45630,"〔雨ニモマケズ〕","","宮沢賢治","〔あめニモマケズ〕","みやざわけんじ",344,0,"https://www.aozora.gr.jp/cards/000081/card45630.html"],[1567,"走れメロス","","太宰治","はしれメロス","だざいおさむ",9867,0,"https://www.aozora.gr.jp/cards/000035/card1567.html"],[773,"こころ","","夏目漱石","こころ","なつめそうせき",160234,0,"https://www.aozora.gr.jp/cards/000148/card773.html"],[624,"山月記","","中島敦","さんげつき","なかじまあつし",5780,0,"https://www.aozora.gr.jp/cards/000119/card624.html"],[127,"羅生門","","芥川竜之介","らしょうもん","あくたがわりゅうのすけ",5747,0,"https://www.aozora.gr.jp/cards/000879/card127.html"],[456,"銀河鉄道の夜","","宮沢賢治","ぎんがてつどうのよる","みやざわけんじ",38339,0,"https://www.aozora.gr.jp/cards/000081/card456.html"],[789,"吾輩は猫である","","夏目漱石","わがはいはねこである","なつめそうせき",318397,1,"https://www.aozora.gr.jp/cards/000148/card789.html"],[799,"夢十夜","","夏目漱石","ゆめじゅうや","なつめそうせき",15932,1,"https://www.aozora.gr.jp/cards/000148/card799.html"],[46605,"やまなし","","宮沢賢治","やまなし","みやざわけんじ",2592,1,"https://www.aozora.gr.jp/cards/000081/card46605.html"],[301,"人間失格","","太宰治","にんげんしっかく","だざいおさむ",72495,2,"https://www.aozora.gr.jp/cards/000035/card301.html"],[277,"駈込み訴え","","太宰治","かけこみうったえ","だざいおさむ",13477,2,"https://www.aozora.gr.jp/cards/000035/card277.html"],[43754,"注文の多い料理店","","宮沢賢治","ちゅうもんのおおいりょうりてん","みやざわけんじ",5399,2,"https://www.aozora.gr.jp/cards/000081/card43754.html"],[92,"蜘蛛の糸","","芥川竜之介","くものいと","あくたがわりゅうのすけ",2868,2,"https://www.aozora.gr.jp/cards/000879/card92.html"],[424,"檸檬","","梶井基次郎","れもん","かじいもとじろう",4930,2,"https://www.aozora.gr.jp/cards/000074/card424.html"],[752,"坊っちゃん","","夏目漱石","ぼっちゃん","なつめそうせき",88314,2,"https://www.aozora.gr.jp/cards/000148/card752.html"],[2093,"ドグラ・マグラ","","夢野久作","ドグラ・マグラ","ゆめのきゅうさく",422289,3,"https://www.aozora.gr.jp/cards/000096/card2093.html"],[776,"草枕","","夏目漱石","くさまくら","なつめそうせき",84069,4,"https://www.aozora.gr.jp/cards/000148/card776.html"],[975,"方丈記","","鴨長明","ほうじょうき","かもちょうめい",9370,4,"https://www.aozora.gr.jp/cards/000196/card975.html"],[473,"よだかの星","","宮沢賢治","よだかのほし","みやざわけんじ",5217,4,"https://www.aozora.gr.jp/cards/000081/card473.html"],[1058,"『春と修羅』","","宮沢賢治","『はるとしゅら』","みやざわけんじ",42581,4,"https://www.aozora.gr.jp/cards/000081/card1058.html"],[2078,"舞姫","","森鴎外","まいひめ","もりおうがい",15423,4,"https://www.aozora.gr.jp/cards/000129/card2078.html"],[47061,"学問のすすめ","","福沢諭吉","がくもんのすすめ","ふくざわゆきち",86840,4,"https://www.aozora.gr.jp/cards/000296/card47061.html"],[427,"桜の樹の下には","","梶井基次郎","さくらのきのしたには","かじいもとじろう",1730,4,"https://www.aozora.gr.jp/cards/000074/card427.html"],[637,"手袋を買いに","","新美南吉","てぶくろをかいに","にいみなんきち",3493,4,"https://www.aozora.gr.jp/cards/000121/card637.html"],[462,"風の又三郎","","宮沢賢治","かぜのまたさぶろう","みやざわけんじ",30007,4,"https://www.aozora.gr.jp/cards/000081/card462.html"],[859,"月に吠える","02 月に吠える","萩原朔太郎","つきにほえる","はぎわらさくたろう",27094,4,"https://www.aozora.gr.jp/cards/000067/card859.html"],[691,"高瀬舟","","森鴎外","たかせぶね","もりおうがい",8368,4,"https://www.aozora.gr.jp/cards/000129/card691.html"],[628,"ごん狐","","新美南吉","ごんぎつね","にいみなんきち",4798,4,"https://www.aozora.gr.jp/cards/000121/card628.html"],[46669,"智恵子抄","","高村光太郎","ちえこしょう","たかむらこうたろう",31062,4,"https://www.aozora.gr.jp/cards/001168/card46669.html"],[832,"土佐日記","","紀貫之","とさにっき","きのつらゆき",11793,4,"https://www.aozora.gr.jp/cards/000155/card832.html"],[42,"鼻","","芥川竜之介","はな","あくたがわりゅうのすけ",5800,5,"https://www.aozora.gr.jp/cards/000879/card42.html"],[228,"セメント樽の中の手紙","","葉山嘉樹","セメントだるのなかのてがみ","はやまよしき",2506,5,"https://www.aozora.gr.jp/cards/000031/card228.html"],[1565,"斜陽","","太宰治","しゃよう","だざいおさむ",88859,5,"https://www.aozora.gr.jp/cards/000035/card1565.html"],[275,"女生徒","","太宰治","じょせいと","だざいおさむ",31090,5,"https://www.aozora.gr.jp/cards/000035/card275.html"],[42939,"故郷","","魯迅","こきょう","ろじん",8034,5,"https://www.aozora.gr.jp/cards/001124/card42939.html"],[43737,"銀河鉄道の夜","","宮沢賢治","ぎんがてつどうのよる","みやざわけんじ",42563,5,"https://www.aozora.gr.jp/cards/000081/card43737.html"],[60,"地獄変","","芥川竜之介","じごくへん","あくたがわりゅうのすけ",26267,5,"https://www.aozora.gr.jp/cards/000879/card60.html"],[46268,"星めぐりの歌","","宮沢賢治","ほしめぐりのうた","みやざわけんじ",124,5,"https://www.aozora.gr.jp/cards/000081/card46268.html"],[59449,"予感","","山川方夫","よかん","やまかわまさお",1886,5,"https://www.aozora.gr.jp/cards/001801/card59449.html"],[466,"オツベルと象","","宮沢賢治","オツベルとぞう","みやざわけんじ",5683,5,"https://www.aozora.gr.jp/cards/000081/card466.html"],[2381,"瓶詰地獄","","夢野久作","びんづめじごく","ゆめのきゅうさく",6671,5,"https://www.aozora.gr.jp/cards/000096/card2381.html"],[470,"セロ弾きのゴーシュ","","宮沢賢治","セロひきのゴーシュ","みやざわけんじ",11687,5,"https://www.aozora.gr.jp/cards/000081/card470.html"],[18376,"桃太郎","","楠山正雄","ももたろう","くすやままさお",5358,5,"https://www.aozora.gr.jp/cards/000329/card18376.html"],[43016,"トロッコ","","芥川竜之介","トロッコ","あくたがわりゅうのすけ",4324,5,"https://www.aozora.gr.jp/cards/000879/card43016.html"],[52504,"遠野物語","","柳田国男","とおのものがたり","やなぎたくにお",37543,5,"https://www.aozora.gr.jp/cards/001566/card52504.html"],[56642,"陰翳礼讃","","谷崎潤一郎","いんえいらいさん","たにざきじゅんいちろう",30914,5,"https://www.aozora.gr.jp/cards/001383/card56642.html"],[170,"杜子春","","芥川竜之介","とししゅん","あくたがわりゅうのすけ",9095,5,"https://www.aozora.gr.jp/cards/000879/card170.html"],[43873,"戦争責任者の問題","","伊丹万作","せんそうせきにんしゃのもんだい","いたみまんさく",7010,5,"https://www.aozora.gr.jp/cards/000231/card43873.html"],[100,"桃太郎","","芥川竜之介","ももたろう","あくたがわりゅうのすけ",4453,5,"https://www.aozora.gr.jp/cards/000879/card100.html"],[816,"一握の砂","","石川啄木","いちあくのすな","いしかわたくぼく",14948,5,"https://www.aozora.gr.jp/cards/000153/card816.html"],[56648,"人間椅子","","江戸川乱歩","にんげんいす","えどがわらんぽ",14887,5,"https://www.aozora.gr.jp/cards/001779/card56648.html"],[1465,"蟹工船","","小林多喜二","かにこうせん","こばやしたきじ",61014,6,"https://www.aozora.gr.jp/cards/000156/card1465.html"],[45761,"河童","","芥川竜之介","かっぱ","あくたがわりゅうのすけ",35925,6,"https://www.aozora.gr.jp/cards/000879/card45761.html"],[1317,"黒死館殺人事件","","小栗虫太郎","こくしかんさつじんじけん","おぐりむしたろう",294986,7,"https://www.aozora.gr.jp/cards/000125/card1317.html"],[55797,"測量船","","三好達治","そくりょうせん","みよしたつじ",17414,7,"https://www.aozora.gr.jp/cards/001749/card55797.html"],[1458,"恋愛曲線","","小酒井不木","れんあいきょくせん","こざかいふぼく",13536,7,"https://www.aozora.gr.jp/cards/000262/card1458.html"],[522,"金色夜叉","","尾崎紅葉","こんじきやしゃ","おざきこうよう",250586,8,"https://www.aozora.gr.jp/cards/000091/card522.html"],[1504,"夜明け前","01 第一部上","島崎藤村","よあけまえ","しまざきとうそん",204546,9,"https://www.aozora.gr.jp/cards/000158/card1504.html"],[794,"三四郎","","夏目漱石","さんしろう","なつめそうせき",168973,9,"https://www.aozora.gr.jp/cards/000148/card794.html"],[56866,"春琴抄","","谷崎潤一郎","しゅんきんしょう","たにざきじゅんいちろう",46251,10,"https://www.aozora.gr.jp/cards/001383/card56866.html"],[98,"蜜柑","","芥川竜之介","みかん","あくたがわりゅうのすけ",3153,10,"https://www.aozora.gr.jp/cards/000879/card98.html"],[2288,"葉","","太宰治","は","だざいおさむ",9476,10,"https://www.aozora.gr.jp/cards/000035/card2288.html"],[42773,"ロミオとヂュリエット","03 ロミオとヂュリエット","シェークスピアウィリアム","ロミオとジュリエット","シェークスピアウィリアム",66438,10,"https://www.aozora.gr.jp/cards/000264/card42773.html"],[360,"外科室","","泉鏡花","げかしつ","いずみきょうか",7252,10,"https://www.aozora.gr.jp/cards/000050/card360.html"],[389,"たけくらべ","","樋口一葉","たけくらべ","ひぐちいちよう",28585,10,"https://www.aozora.gr.jp/cards/000064/card389.html"],[270,"富嶽百景","","太宰治","ふがくひゃっけい","だざいおさむ",14962,10,"https://www.aozora.gr.jp/cards/000035/card270.html"],[58093,"痴人の愛","","谷崎潤一郎","ちじんのあい","たにざきじゅんいちろう",179045,11,"https://www.aozora.gr.jp/cards/001383/card58093.html"],[772,"私の個人主義","","夏目漱石","わたしのこじんしゅぎ","なつめそうせき",23436,11,"https://www.aozora.gr.jp/cards/000148/card772.html"],[974,"尾崎放哉選句集","","尾崎放哉","おざきほうさいせんくしゅう","おざきほうさい",7390,11,"https://www.aozora.gr.jp/cards/000195/card974.html"],[59532,"夏の葬列","","山川方夫","なつのそうれつ","やまかわまさお",4733,11,"https://www.aozora.gr.jp/cards/001801/card59532.html"],[56641,"刺青","","谷崎潤一郎","しせい","たにざきじゅんいちろう",5689,11,"https://www.aozora.gr.jp/cards/001383/card56641.html"],[1924,"グスコーブドリの伝記","","宮沢賢治","グスコーブドリのでんき","みやざわけんじ",25166,11,"https://www.aozora.gr.jp/cards/000081/card1924.html"],[894,"山羊の歌","","中原中也","やぎのうた","なかはらちゅうや",14270,11,"https://www.aozora.gr.jp/cards/000026/card894.html"],[1669,"蒲団","","田山花袋","ふとん","たやまかたい",44589,11,"https://www.aozora.gr.jp/cards/000214/card1669.html"],[60669,"現代語訳　方丈記","","鴨長明","げんだいごやく　ほうじょうき","かもちょうめい",21417,11,"https://www.aozora.gr.jp/cards/000196/card60669.html"],[57849,"孤島の鬼","","江戸川乱歩","ことうのおに","えどがわらんぽ",180772,12,"https://www.aozora.gr.jp/cards/001779/card57849.html"],[51034,"野ばら","","小川未明","のばら","おがわみめい",2304,12,"https://www.aozora.gr.jp/cards/001475/card51034.html"],[54372,"赤い蝋燭と人魚","","小川未明","あかいろうそくとにんぎょ","おがわみめい",6585,12,"https://www.aozora.gr.jp/cards/001475/card54372.html"],[42618,"桜の森の満開の下","","坂口安吾","さくらのもりのまんかいのした","さかぐちあんご",16651,12,"https://www.aozora.gr.jp/cards/001095/card42618.html"],[49866,"変身","","カフカフランツ","へんしん","カフカフランツ",56250,12,"https://www.aozora.gr.jp/cards/001235/card49866.html"],[45245,"高瀬舟","","森鴎外","たかせぶね","もりおうがい",8723,12,"https://www.aozora.gr.jp/cards/000129/card45245.html"],[496,"恩讐の彼方に","","菊池寛","おんしゅうのかなたに","きくちかん",22632,12,"https://www.aozora.gr.jp/cards/000083/card496.html"],[1502,"破戒","","島崎藤村","はかい","しまざきとうそん",201296,13,"https://www.aozora.gr.jp/cards/000158/card1502.html"],[24454,"藪の中","","芥川竜之介","やぶのなか","あくたがわりゅうのすけ",8310,13,"https://www.aozora.gr.jp/cards/000879/card24454.html"],[42620,"堕落論","","坂口安吾","だらくろん","さかぐちあんご",7619,13,"https://www.aozora.gr.jp/cards/001095/card42620.html"],[621,"名人伝","","中島敦","めいじんでん","なかじまあつし",5761,13,"https://www.aozora.gr.jp/cards/000119/card621.html"],[158,"侏儒の言葉","","芥川竜之介","しゅじゅのことば","あくたがわりゅうのすけ",34393,13,"https://www.aozora.gr.jp/cards/000879/card158.html"],[43752,"どんぐりと山猫","","宮沢賢治","どんぐりとやまねこ","みやざわけんじ",6269,13,"https://www.aozora.gr.jp/cards/000081/card43752.html"],[42376,"葉桜と魔笛","","太宰治","はざくらとまてき","だざいおさむ",6180,13,"https://www.aozora.gr.jp/cards/000035/card42376.html"],[4306,"形","","菊池寛","かたち","きくちかん",1674,13,"https://www.aozora.gr.jp/cards/000083/card4306.html"],[1279,"金魚撩乱","","岡本かの子","きんぎょりょうらん","おかもとかのこ",33838,13,"https://www.aozora.gr.jp/cards/000076/card1279.html"],[935,"少女地獄","","夢野久作","しょうじょじごく","ゆめのきゅうさく",104369,14,"https://www.aozora.gr.jp/cards/000096/card935.html"],[55,"芋粥","","芥川竜之介","いもがゆ","あくたがわりゅうのすけ",14508,14,"https://www.aozora.gr.jp/cards/000879/card55.html"],[179,"藪の中","","芥川竜之介","やぶのなか","あくたがわりゅうのすけ",8465,14,"https://www.aozora.gr.jp/cards/000879/card179.html"],[1935,"ポラーノの広場","","宮沢賢治","ポラーノのひろば","みやざわけんじ",44721,14,"https://www.aozora.gr.jp/cards/000081/card1935.html"],[40,"歯車","","芥川竜之介","はぐるま","あくたがわりゅうのすけ",25027,14,"https://www.aozora.gr.jp/cards/000879/card40.html"],[2282,"津軽","","太宰治","つがる","だざいおさむ",111148,14,"https://www.aozora.gr.jp/cards/000035/card2282.html"],[2255,"右大臣実朝","","太宰治","うだいじんさねとも","だざいおさむ",114720,15,"https://www.aozora.gr.jp/cards/000035/card2255.html"],[2285,"トカトントン","","太宰治","トカトントン","だざいおさむ",12734,15,"https://www.aozora.gr.jp/cards/000035/card2285.html"],[308,"桜桃","","太宰治","おうとう","だざいおさむ",4810,15,"https://www.aozora.gr.jp/cards/000035/card308.html"],[19,"或阿呆の一生","","芥川竜之介","あるあほうのいっしょう","あくたがわりゅうのすけ",12213,15,"https://www.aozora.gr.jp/cards/000879/card19.html"],[43037,"あたらしい憲法のはなし","","文部省","あたらしいけんぽうのはなし","もんぶしょう",20791,15,"https://www.aozora.gr.jp/cards/001128/card43037.html"],[3391,"花咲かじじい","","楠山正雄","はなさかじじい","くすやままさお",3071,15,"https://www.aozora.gr.jp/cards/000329/card3391.html"],[20,"或旧友へ送る手記","","芥川竜之介","あるきゅうゆうへおくるしゅき","あくたがわりゅうのすけ",3358,15,"https://www.aozora.gr.jp/cards/000879/card20.html"],[472,"やまなし","","宮沢賢治","やまなし","みやざわけんじ",2630,15,"https://www.aozora.gr.jp/cards/000081/card472.html"],[43606,"自殺を買う話","","橋本五郎","じさつをかうはなし","はしもとごろう",7576,15,"https://www.aozora.gr.jp/cards/000900/card43606.html"],[45679,"雪渡り","","宮沢賢治","ゆきわたり","みやざわけんじ",6393,15,"https://www.aozora.gr.jp/cards/000081/card45679.html"],[1607,"川端康成へ","","太宰治","かわばたやすなりへ","だざいおさむ",2069,15,"https://www.aozora.gr.jp/cards/000035/card1607.html"],[52348,"風景","純銀もざいく","山村暮鳥","ふうけい","やまむらぼちょう",284,15,"https://www.aozora.gr.jp/cards/000136/card52348.html"],[43015,"杜子春","","芥川竜之介","とししゅん","あくたがわりゅうのすけ",9078,15,"https://www.aozora.gr.jp/cards/000879/card43015.html"],[18335,"ねずみの嫁入り","","楠山正雄","ねずみのよめいり","くすやままさお",1596,15,"https://www.aozora.gr.jp/cards/000329/card18335.html"],[56650,"Ｄ坂の殺人事件","","江戸川乱歩","ディーざかのさつじんじけん","えどがわらんぽ",22040,15,"https://www.aozora.gr.jp/cards/001779/card56650.html"],[1939,"なめとこ山の熊","","宮沢賢治","なめとこやまのくま","みやざわけんじ",7265,15,"https://www.aozora.gr.jp/cards/000081/card1939.html"],[246,"畜犬談","―伊馬鵜平君に与える―","太宰治","ちくけんだん","だざいおさむ",12148,15,"https://www.aozora.gr.jp/cards/000035/card246.html"],[1927,"注文の多い料理店","","宮沢賢治","ちゅうもんのおおいりょうりてん","みやざわけんじ",5390,15,"https://www.aozora.gr.jp/cards/000081/card1927.html"],[4718,"二ひきの蛙","","新美南吉","にひきのかえる","にいみなんきち",993,15,"https://www.aozora.gr.jp/cards/000121/card4718.html"],[4527,"闇桜","","樋口一葉","やみざくら","ひぐちいちよう",4317,15,"https://www.aozora.gr.jp/cards/000064/card4527.html"],[689,"山椒大夫","","森鴎外","さんしょうだゆう","もりおうがい",21948,15,"https://www.aozora.gr.jp/cards/000129/card689.html"],[211,"一房の葡萄","","有島武郎","ひとふさのぶどう","ありしまたけお",6314,15,"https://www.aozora.gr.jp/cards/000025/card211.html"],[14,"あばばばば","","芥川竜之介","あばばばば","あくたがわりゅうのすけ",6197,15,"https://www.aozora.gr.jp/cards/000879/card14.html"],[57228,"怪人二十面相","","江戸川乱歩","かいじんにじゅうめんそう","えどがわらんぽ",108587,16,"https://www.aozora.gr.jp/cards/001779/card57228.html"],[56698,"細雪","01 上巻","谷崎潤一郎","ささめゆき","たにざきじゅんいちろう",150629,16,"https://www.aozora.gr.jp/cards/001383/card56698.html"],[56656,"罪と罰","","ドストエフスキーフィヨードル・ミハイロヴィチ","つみとばつ","ドストエフスキーフィヨードル・ミハイロヴィチ",650389,17,"https://www.aozora.gr.jp/cards/000363/card56656.html"],[43017,"蜜柑","","芥川竜之介","みかん","あくたがわりゅうのすけ",3151,18,"https://www.aozora.gr.jp/cards/000879/card43017.html"],[622,"文字禍","","中島敦","もじか","なかじまあつし",6473,18,"https://www.aozora.gr.jp/cards/000119/card622.html"],[1869,"浮雲","","二葉亭四迷","うきぐも","ふたばていしめい",112199,18,"https://www.aozora.gr.jp/cards/000006/card1869.html"],[635,"おじいさんのランプ","","新美南吉","おじいさんのランプ","にいみなんきち",11842,18,"https://www.aozora.gr.jp/cards/000121/card635.html"],[42934,"阿Ｑ正伝","","魯迅","あキューせいでん","ろじん",33919,18,"https://www.aozora.gr.jp/cards/001124/card42934.html"],[695,"ヰタ・セクスアリス","","森鴎外","ウィタ・セクスアリス","もりおうがい",57750,18,"https://www.aozora.gr.jp/cards/000129/card695.html"],[521,"高野聖","","泉鏡花","こうやひじり","いずみきょうか",35751,18,"https://www.aozora.gr.jp/cards/000050/card521.html"],[56143,"それから","","夏目漱石","それから","なつめそうせき",172073,19,"https://www.aozora.gr.jp/cards/000148/card56143.html"],[51307,"みだれ髪","","与謝野晶子","みだれがみ","よさのあきこ",10739,19,"https://www.aozora.gr.jp/cards/000885/card51307.html"],[329,"武蔵野","","国木田独歩","むさしの","くにきだどっぽ",15521,19,"https://www.aozora.gr.jp/cards/000038/card329.html"],[51732,"古事記","03 現代語訳　古事記","太安万侶","こじき","おおのやすまろ",95593,19,"https://www.aozora.gr.jp/cards/001518/card51732.html"],[2710,"風流仏","","幸田露伴","ふうりゅうぶつ","こうだろはん",32379,19,"https://www.aozora.gr.jp/cards/000051/card2710.html"],[58848,"人魚の姫","","アンデルセンハンス・クリスチャン","にんぎょのひめ","アンデルセンハンス・クリスチャン",30088,20,"https://www.aozora.gr.jp/cards/000019/card58848.html"],[46694,"きのこ会議","","夢野久作","きのこかいぎ","ゆめのきゅうさく",1499,20,"https://www.aozora.gr.jp/cards/000096/card46694.html"],[2302,"蠅","","横光利一","はえ","よこみつりいち",3502,20,"https://www.aozora.gr.jp/cards/000168/card2302.html"],[530,"黒猫","","ポーエドガー・アラン","くろねこ","ポーエドガー・アラン",9946,20,"https://www.aozora.gr.jp/cards/000094/card530.html"],[1508,"若菜集","","島崎藤村","わかなしゅう","しまざきとうそん",17393,20,"https://www.aozora.gr.jp/cards/000158/card1508.html"],[1746,"それから","","夏目漱石","それから","なつめそうせき",170294,20,"https://www.aozora.gr.jp/cards/000148/card1746.html"],[4803,"風立ちぬ","","堀辰雄","かぜたちぬ","ほりたつお",54470,20,"https://www.aozora.gr.jp/cards/001030/card4803.html"],[57193,"一人二役","","江戸川乱歩","ひとりふたやく","えどがわらんぽ",6775,20,"https://www.aozora.gr.jp/cards/001779/card57193.html"],[42308,"白雪姫","","グリムヴィルヘルム・カール","しらゆきひめ","グリムヴィルヘルム・カール",10652,20,"https://www.aozora.gr.jp/cards/001091/card42308.html"],[16034,"遺書","","芥川竜之介","いしょ","あくたがわりゅうのすけ",1953,20,"https://www.aozora.gr.jp/cards/000879/card16034.html"],[307,"お伽草紙","","太宰治","おとぎぞうし","だざいおさむ",70795,21,"https://www.aozora.gr.jp/cards/000035/card307.html"],[55665,"別れ霜","","樋口一葉","わかれじも","ひぐちいちよう",21777,21,"https://www.aozora.gr.jp/cards/000064/card55665.html"],[2317,"待つ","","太宰治","まつ","だざいおさむ",2062,21,"https://www.aozora.gr.jp/cards/000035/card2317.html"],[56645,"押絵と旅する男","","江戸川乱歩","おしえとたびするおとこ","えどがわらんぽ",17387,21,"https://www.aozora.gr.jp/cards/001779/card56645.html"],[761,"虞美人草","","夏目漱石","ぐびじんそう","なつめそうせき",197466,21,"https://www.aozora.gr.jp/cards/000148/card761.html"],[69,"河童","","芥川竜之介","かっぱ","あくたがわりゅうのすけ",37092,21,"https://www.aozora.gr.jp/cards/000879/card69.html"],[236,"ア、秋","","太宰治","ア、あき","だざいおさむ",1509,21,"https://www.aozora.gr.jp/cards/000035/card236.html"],[1312,"修禅寺物語","","岡本綺堂","しゅぜんじものがたり","おかもときどう",12505,22,"https://www.aozora.gr.jp/cards/000082/card1312.html"],[11,"秋の瞳","","八木重吉","あきのひとみ","やぎじゅうきち",7511,22,"https://www.aozora.gr.jp/cards/000013/card11.html"],[44909,"アイヌ神謡集","","作者不詳","アイヌしんようしゅう","さくしゃふしょう",65489,22,"https://www.aozora.gr.jp/cards/001529/card44909.html"],[50909,"ファウスト","","ゲーテヨハン・ヴォルフガング・フォン","ファウスト","ゲーテヨハン・ヴォルフガング・フォン",245727,22,"https://www.aozora.gr.jp/cards/001025/card50909.html"],[1084,"如是我聞","","太宰治","にょぜがもん","だざいおさむ",22711,23,"https://www.aozora.gr.jp/cards/000035/card1084.html"],[1577,"正義と微笑","","太宰治","せいぎとびしょう","だざいおさむ",107183,23,"https://www.aozora.gr.jp/cards/000035/card1577.html"],[1768,"青猫","","萩原朔太郎","あおねこ","はぎわらさくたろう",42227,23,"https://www.aozora.gr.jp/cards/000067/card1768.html"],[3407,"夜叉ヶ池","","泉鏡花","やしゃがいけ","いずみきょうか",27249,23,"https://www.aozora.gr.jp/cards/000050/card3407.html"],[647,"野菊の墓","","伊藤左千夫","のぎくのはか","いとうさちお",33375,23,"https://www.aozora.gr.jp/cards/000058/card647.html"],[52410,"三国志","02 桃園の巻","吉川英治","さんごくし","よしかわえいじ",151975,24,"https://www.aozora.gr.jp/cards/001562/card52410.html"],[464,"猫の事務所","……ある小さな官衙に関する幻想……","宮沢賢治","ねこのじむしょ","みやざわけんじ",6274,24,"https://www.aozora.gr.jp/cards/000081/card464.html"],[206,"小さき者へ","","有島武郎","ちいさきものへ","ありしまたけお",10111,24,"https://www.aozora.gr.jp/cards/000025/card206.html"],[57190,"日記帳","","江戸川乱歩","にっきちょう","えどがわらんぽ",6892,24,"https://www.aozora.gr.jp/cards/001779/card57190.html"],[42386,"醜い家鴨の子","","アンデルセンハンス・クリスチャン","みにくいあひるのこ","アンデルセンハンス・クリスチャン",10308,24,"https://www.aozora.gr.jp/cards/000019/card42386.html"],[42309,"ラプンツェル","","グリムヴィルヘルム・カール","ラプンツェル","グリムヴィルヘルム・カール",3745,24,"https://www.aozora.gr.jp/cards/001091/card42309.html"],[1737,"李陵","","中島敦","りりょう","なかじまあつし",33848,24,"https://www.aozora.gr.jp/cards/000119/card1737.html"],[471,"疾中","","宮沢賢治","しっちゅう","みやざわけんじ",4543,24,"https://www.aozora.gr.jp/cards/000081/card471.html"],[95,"魔術","","芥川竜之介","まじゅつ","あくたがわりゅうのすけ",7207,24,"https://www.aozora.gr.jp/cards/000879/card95.html"],[682,"舞姫","","森鴎外","まいひめ","もりおうがい",15421,24,"https://www.aozora.gr.jp/cards/000129/card682.html"],[140,"猿蟹合戦","","芥川竜之介","さるかにがっせん","あくたがわりゅうのすけ",2295,24,"https://www.aozora.gr.jp/cards/000879/card140.html"],[459,"双子の星","","宮沢賢治","ふたごのほし","みやざわけんじ",10869,24,"https://www.aozora.gr.jp/cards/000081/card459.html"],[128,"羅生門","","芥川竜之介","らしょうもん","あくたがわりゅうのすけ",5638,24,"https://www.aozora.gr.jp/cards/000879/card128.html"],[2253,"ヴィヨンの妻","","太宰治","ヴィヨンのつま","だざいおさむ",20276,24,"https://www.aozora.gr.jp/cards/000035/card2253.html"],[4723,"飴だま","","新美南吉","あめだま","にいみなんきち",1021,24,"https://www.aozora.gr.jp/cards/000121/card4723.html"],[219,"在りし日の歌","亡き児文也の霊に捧ぐ","中原中也","ありしひのうた","なかはらちゅうや",15065,24,"https://www.aozora.gr.jp/cards/000026/card219.html"],[2386,"農民芸術概論綱要","","宮沢賢治","のうみんげいじゅつがいろんこうよう","みやざわけんじ",2633,24,"https://www.aozora.gr.jp/cards/000081/card2386.html"],[1091,"竜潭譚","","泉鏡花","りゅうたんだん","いずみきょうか",14746,24,"https://www.aozora.gr.jp/cards/000050/card1091.html"],[5016,"源氏物語","01 桐壺","紫式部","げんじものがたり","むらさき しきぶ",15541,24,"https://www.aozora.gr.jp/cards/000052/card5016.html"],[68,"神神の微笑","","芥川竜之介","かみがみのびしょう","あくたがわりゅうのすけ",8823,24,"https://www.aozora.gr.jp/cards/000879/card68.html"],[545,"夫婦善哉","","織田作之助","めおとぜんざい","おださくのすけ",30600,25,"https://www.aozora.gr.jp/cards/000040/card545.html"],[630,"花のき村と盗人たち","","新美南吉","はなのきむらとぬすびとたち","にいみなんきち",9656,25,"https://www.aozora.gr.jp/cards/000121/card630.html"],[3646,"こがね丸","","巌谷小波","こがねまる","いわやさざなみ",30963,25,"https://www.aozora.gr.jp/cards/000981/card3646.html"],[18378,"舌切りすずめ","","楠山正雄","したきりすずめ","くすやままさお",3983,25,"https://www.aozora.gr.jp/cards/000329/card18378.html"],[255,"道化の華","","太宰治","どうけのはな","だざいおさむ",35156,25,"https://www.aozora.gr.jp/cards/000035/card255.html"],[2259,"海潮音","","上田敏","かいちょうおん","うえだびん",24715,25,"https://www.aozora.gr.jp/cards/000235/card2259.html"],[258,"グッド・バイ","","太宰治","グッド・バイ","だざいおさむ",14704,25,"https://www.aozora.gr.jp/cards/000035/card258.html"],[43537,"病牀六尺","","正岡子規","びょうしょうろくしゃく","まさおかしき",87459,25,"https://www.aozora.gr.jp/cards/000305/card43537.html"],[454,"毒もみのすきな署長さん","","宮沢賢治","どくもみのすきなしょちょうさん","みやざわけんじ",3050,25,"https://www.aozora.gr.jp/cards/000081/card454.html"],[16,"秋","","芥川竜之介","あき","あくたがわりゅうのすけ",10998,25,"https://www.aozora.gr.jp/cards/000879/card16.html"],[56655,"箱の中のあなた","","山川方夫","はこのなかのあなた","やまかわまさお",3333,25,"https://www.aozora.gr.jp/cards/001801/card56655.html"],[46349,"檸檬","","梶井基次郎","れもん","かじいもとじろう",4847,25,"https://www.aozora.gr.jp/cards/000074/card46349.html"],[57511,"人でなしの恋","","江戸川乱歩","ひとでなしのこい","えどがわらんぽ",17240,25,"https://www.aozora.gr.jp/cards/001779/card57511.html"],[57181,"赤い部屋","","江戸川乱歩","あかいへや","えどがわらんぽ",18096,25,"https://www.aozora.gr.jp/cards/001779/card57181.html"],[48310,"竹取物語","","和田万吉","たけとりものがたり","わだまんきち",6990,25,"https://www.aozora.gr.jp/cards/001072/card48310.html"],[50326,"雪女","","小泉八雲","ゆきおんな","こいずみやくも",3337,25,"https://www.aozora.gr.jp/cards/000258/card50326.html"],[18334,"猿かに合戦","","楠山正雄","さるかにかっせん","くすやままさお",3265,25,"https://www.aozora.gr.jp/cards/000329/card18334.html"],[4963,"原爆詩集","","峠三吉","げんばくししゅう","とうげさんきち",20007,25,"https://www.aozora.gr.jp/cards/001053/card4963.html"],[759,"現代日本の開化","","夏目漱石","げんだいにほんのかいか","なつめそうせき",18480,25,"https://www.aozora.gr.jp/cards/000148/card759.html"],[1098,"少女病","","田山花袋","しょうじょびょう","たやまかたい",11694,26,"https://www.aozora.gr.jp/cards/000214/card1098.html"],[42387,"雪の女王","七つのお話でできているおとぎ物語","アンデルセンハンス・クリスチャン","ゆきのじょおう","アンデルセンハンス・クリスチャン",39190,26,"https://www.aozora.gr.jp/cards/000019/card42387.html"],[42936,"狂人日記","","魯迅","きょうじんにっき","ろじん",8099,26,"https://www.aozora.gr.jp/cards/001124/card42936.html"],[57689,"泥棒と若殿","","山本周五郎","どろぼうとわかとの","やまもとしゅうごろう",20455,26,"https://www.aozora.gr.jp/cards/001869/card57689.html"],[605,"モルグ街の殺人事件","","ポーエドガー・アラン","モルグがいのさつじんじけん","ポーエドガー・アラン",35540,26,"https://www.aozora.gr.jp/cards/000094/card605.html"],[627,"赤い蝋燭","","新美南吉","あかいろうそく","にいみなんきち",1140,26,"https://www.aozora.gr.jp/cards/000121/card627.html"],[43736,"『注文の多い料理店』序","","宮沢賢治","『ちゅうもんのおおいりょうりてん』じょ","みやざわけんじ",576,26,"https://www.aozora.gr.jp/cards/000081/card43736.html"],[419,"Ｋの昇天","或はＫの溺死","梶井基次郎","ケーのしょうてん","かじいもとじろう",5502,26,"https://www.aozora.gr.jp/cards/000074/card419.html"],[1738,"弟子","","中島敦","でし","なかじまあつし",23689,26,"https://www.aozora.gr.jp/cards/000119/card1738.html"],[59433,"故郷","","魯迅","こきょう","ろじん",9708,26,"https://www.aozora.gr.jp/cards/001124/card59433.html"],[2557,"晶子詩篇全集","","与謝野晶子","あきこしへんぜんしゅう","よさのあきこ",75988,26,"https://www.aozora.gr.jp/cards/000885/card2557.html"],[45224,"雁","","森鴎外","がん","もりおうがい",73563,26,"https://www.aozora.gr.jp/cards/000129/card45224.html"],[641,"猫町","散文詩風な小説","萩原朔太郎","ねこまち","はぎわらさくたろう",10397,26,"https://www.aozora.gr.jp/cards/000067/card641.html"],[1571,"きりぎりす","","太宰治","きりぎりす","だざいおさむ",12630,26,"https://www.aozora.gr.jp/cards/000035/card1571.html"],[1276,"茶の本","04 茶の本","岡倉覚三","ちゃのほん","おかくらかくぞう",44708,27,"https://www.aozora.gr.jp/cards/000238/card1276.html"],[56647,"二銭銅貨","","江戸川乱歩","にせんどうか","えどがわらんぽ",17036,27,"https://www.aozora.gr.jp/cards/001779/card56647.html"],[785,"門","","夏目漱石","もん","なつめそうせき",139242,27,"https://www.aozora.gr.jp/cards/000148/card785.html"],[2380,"死後の恋","","夢野久作","しごのこい","ゆめのきゅうさく",18175,27,"https://www.aozora.gr.jp/cards/000096/card2380.html"],[46322,"銀河鉄道の夜","","宮沢賢治","ぎんがてつどうのよる","みやざわけんじ",43340,27,"https://www.aozora.gr.jp/cards/000081/card46322.html"],[3804,"悪魔","","芥川竜之介","あくま","あくたがわりゅうのすけ",1539,27,"https://www.aozora.gr.jp/cards/000879/card3804.html"],[1706,"小説　不如帰　","","徳冨蘆花","しょうせつ　ほととぎす","とくとみろか",128458,28,"https://www.aozora.gr.jp/cards/000280/card1706.html"],[393,"「いき」の構造","","九鬼周造","「いき」のこうぞう","くきしゅうぞう",49231,28,"https://www.aozora.gr.jp/cards/000065/card393.html"],[2257,"黄金風景","","太宰治","おうごんふうけい","だざいおさむ",2935,28,"https://www.aozora.gr.jp/cards/000035/card2257.html"],[1897,"墨汁一滴","","正岡子規","ぼくじゅういってき","まさおかしき",75544,28,"https://www.aozora.gr.jp/cards/000305/card1897.html"],[42621,"白痴","","坂口安吾","はくち","さかぐちあんご",22936,28,"https://www.aozora.gr.jp/cards/001095/card42621.html"],[623,"山月記","","中島敦","さんげつき","なかじまあつし",5737,28,"https://www.aozora.gr.jp/cards/000119/card623.html"],[47029,"詩ノート","","宮沢賢治","しノート","みやざわけんじ",23330,28,"https://www.aozora.gr.jp/cards/000081/card47029.html"],[882,"アッシャー家の崩壊","","ポーエドガー・アラン","アッシャーけのほうかい","ポーエドガー・アラン",19726,28,"https://www.aozora.gr.jp/cards/000094/card882.html"],[42286,"カラマゾフの兄弟","01 上","ドストエフスキーフィヨードル・ミハイロヴィチ","カラマゾフのきょうだい","ドストエフスキーフィヨードル・ミハイロヴィチ",407727,29,"https://www.aozora.gr.jp/cards/000363/card42286.html"],[56649,"屋根裏の散歩者","","江戸川乱歩","やねうらのさんぽしゃ","えどがわらんぽ",28628,30,"https://www.aozora.gr.jp/cards/001779/card56649.html"],[411,"愛撫","","梶井基次郎","あいぶ","かじいもとじろう",2821,30,"https://www.aozora.gr.jp/cards/000074/card411.html"],[2058,"渋江抽斎","","森鴎外","しぶえちゅうさい","もりおうがい",164482,30,"https://www.aozora.gr.jp/cards/000129/card2058.html"],[2569,"ああ華族様だよ　と私は嘘を吐くのであった","","渡辺温","ああかぞくさまだよ　とわたしはうそをつくのであった","わたなべおん",3030,30,"https://www.aozora.gr.jp/cards/000020/card2569.html"],[1076,"倫敦塔","","夏目漱石","ロンドンとう","なつめそうせき",15998,30,"https://www.aozora.gr.jp/cards/000148/card1076.html"],[33205,"ジーキル博士とハイド氏の怪事件","","スティーブンソンロバート・ルイス","ジーキルはかせとハイドしのかいじけん","スティーブンソンロバート・ルイス",73456,30,"https://www.aozora.gr.jp/cards/000888/card33205.html"],[4673,"ガリバー旅行記","","スウィフトジョナサン","ガリバーりょこうき","スウィフトジョナサン",120127,31,"https://www.aozora.gr.jp/cards/000912/card4673.html"],[4398,"死者の書","","折口信夫","ししゃのしょ","おりくちしのぶ",62230,31,"https://www.aozora.gr.jp/cards/000933/card4398.html"],[638,"牛をつないだ椿の木","","新美南吉","うしをつないだつばきのき","にいみなんきち",8970,31,"https://www.aozora.gr.jp/cards/000121/card638.html"],[56027,"第三者","","サキ","だいさんしゃ","サキ",4288,31,"https://www.aozora.gr.jp/cards/001767/card56027.html"],[42755,"雲","","山村暮鳥","くも","やまむらぼちょう",7791,31,"https://www.aozora.gr.jp/cards/000136/card42755.html"],[49192,"この子を残して","","永井隆","このこをのこして","ながいたかし",100648,31,"https://www.aozora.gr.jp/cards/000924/card49192.html"],[760,"硝子戸の中","","夏目漱石","がらすどのうち","なつめそうせき",52432,31,"https://www.aozora.gr.jp/cards/000148/card760.html"],[42840,"不良少年とキリスト","","坂口安吾","ふりょうしょうねんとキリスト","さかぐちあんご",13938,31,"https://www.aozora.gr.jp/cards/001095/card42840.html"],[43289,"五重塔","","幸田露伴","ごじゅうのとう","こうだろはん",54042,32,"https://www.aozora.gr.jp/cards/000051/card43289.html"],[758,"永日小品","","夏目漱石","えいじつしょうひん","なつめそうせき",49805,32,"https://www.aozora.gr.jp/cards/000148/card758.html"],[57349,"秘密","","谷崎潤一郎","ひみつ","たにざきじゅんいちろう",14457,32,"https://www.aozora.gr.jp/cards/001383/card57349.html"],[53947,"愛の詩集","03 愛の詩集","室生犀星","あいのししゅう","むろうさいせい",34565,32,"https://www.aozora.gr.jp/cards/001579/card53947.html"],[51862,"ワーニャ伯父さん","――田園生活の情景　四幕――","チェーホフアントン","ワーニャおじさん","チェーホフアントン",52106,32,"https://www.aozora.gr.jp/cards/001155/card51862.html"],[749,"草木塔","","種田山頭火","そうもくとう","たねださんとうか",13513,32,"https://www.aozora.gr.jp/cards/000146/card749.html"],[51840,"六百句","","高浜虚子","ろっぴゃくく","たかはまきょし",17375,32,"https://www.aozora.gr.jp/cards/001310/card51840.html"],[52505,"山の人生","","柳田国男","やまのじんせい","やなぎたくにお",115754,33,"https://www.aozora.gr.jp/cards/001566/card52505.html"],[4850,"邪宗門","","北原白秋","じゃしゅうもん","きたはらはくしゅう",34245,33,"https://www.aozora.gr.jp/cards/000106/card4850.html"],[28,"舞踏会","","芥川竜之介","ぶとうかい","あくたがわりゅうのすけ",5079,33,"https://www.aozora.gr.jp/cards/000879/card28.html"],[1942,"貝の火","","宮沢賢治","かいのひ","みやざわけんじ",14354,33,"https://www.aozora.gr.jp/cards/000081/card1942.html"],[52409,"三国志","01 序","吉川英治","さんごくし","よしかわえいじ",1414,33,"https://www.aozora.gr.jp/cards/001562/card52409.html"],[50085,"黄金餅","","三遊亭円朝","こがねもち","さんゆうていえんちょう",4926,33,"https://www.aozora.gr.jp/cards/000989/card50085.html"],[1016,"鮨","","岡本かの子","すし","おかもとかのこ",13187,33,"https://www.aozora.gr.jp/cards/000076/card1016.html"],[626,"南蛮寺門前","","木下杢太郎","なんばんじもんぜん","きのしたもくたろう",15083,33,"https://www.aozora.gr.jp/cards/000120/card626.html"],[53810,"日本の伝説","","柳田国男","にほんのでんせつ","やなぎたくにお",104391,33,"https://www.aozora.gr.jp/cards/001566/card53810.html"],[58054,"雨の玉川心中","02 遺書","太宰治","あめのたまがわしんじゅう","だざいおさむ",1007,33,"https://www.aozora.gr.jp/cards/000035/card58054.html"],[42941,"イワンの馬鹿","","トルストイレオ","イワンのばか","トルストイレオ",27533,33,"https://www.aozora.gr.jp/cards/000361/card42941.html"],[45095,"明日","","新美南吉","あした","にいみなんきち",175,33,"https://www.aozora.gr.jp/cards/000121/card45095.html"],[42378,"赤いくつ","","アンデルセンハンス・クリスチャン","あかいくつ","アンデルセンハンス・クリスチャン",7527,33,"https://www.aozora.gr.jp/cards/000019/card42378.html"],[51156,"いちょうの実","","宮沢賢治","いちょうのみ","みやざわけんじ",2629,34,"https://www.aozora.gr.jp/cards/000081/card51156.html"],[42945,"ダス・ゲマイネ","","太宰治","ダス・ゲマイネ","だざいおさむ",21488,34,"https://www.aozora.gr.jp/cards/000035/card42945.html"],[4680,"夏の花","","原民喜","なつのはな","はらたみき",12716,34,"https://www.aozora.gr.jp/cards/000293/card4680.html"],[1154,"最終戦争論","","石原莞爾","さいしゅうせんそうろん","いしわらかんじ",54059,34,"https://www.aozora.gr.jp/cards/000230/card1154.html"],[60756,"現代語訳　平家物語","01 第一巻","作者不詳","げんだいごやく　へいけものがたり","さくしゃふしょう",24989,34,"https://www.aozora.gr.jp/cards/001529/card60756.html"],[617,"悟浄歎異","―沙門悟浄の手記―","中島敦","ごじょうたんに","なかじまあつし",12409,34,"https://www.aozora.gr.jp/cards/000119/card617.html"],[1864,"福翁自伝","02 福翁自伝","福沢諭吉","ふくおうじでん","ふくざわゆきち",209796,34,"https://www.aozora.gr.jp/cards/000296/card1864.html"],[542,"貧しき信徒","","八木重吉","まずしきしんと","やぎじゅうきち",4706,35,"https://www.aozora.gr.jp/cards/000013/card542.html"],[792,"思い出す事など","","夏目漱石","おもいだすことなど","なつめそうせき",56568,35,"https://www.aozora.gr.jp/cards/000148/card792.html"],[2577,"怪談牡丹灯籠","04 怪談牡丹灯籠","三遊亭円朝","かいだんぼたんどうろう","さんゆうていえんちょう",121378,35,"https://www.aozora.gr.jp/cards/000989/card2577.html"],[56638,"銀の匙","","中勘助","ぎんのさじ","なかかんすけ",93072,35,"https://www.aozora.gr.jp/cards/001799/card56638.html"],[388,"大つごもり","","樋口一葉","おおつごもり","ひぐちいちよう",9622,35,"https://www.aozora.gr.jp/cards/000064/card388.html"],[51005,"赤いろうそくと人魚","","小川未明","あかいろうそくとにんぎょ","おがわみめい",7046,35,"https://www.aozora.gr.jp/cards/001475/card51005.html"],[1743,"光と風と夢","","中島敦","ひかりとかぜとゆめ","なかじまあつし",78390,36,"https://www.aozora.gr.jp/cards/000119/card1743.html"],[2277,"惜別","","太宰治","せきべつ","だざいおさむ",91687,36,"https://www.aozora.gr.jp/cards/000035/card2277.html"],[149,"白","","芥川竜之介","しろ","あくたがわりゅうのすけ",7511,36,"https://www.aozora.gr.jp/cards/000879/card149.html"],[765,"彼岸過迄","","夏目漱石","ひがんすぎまで","なつめそうせき",194600,36,"https://www.aozora.gr.jp/cards/000148/card765.html"],[1760,"ルバイヤート","","ハイヤームオマル","ルバイヤート","ハイヤームオマル",14979,37,"https://www.aozora.gr.jp/cards/000288/card1760.html"],[753,"文鳥","","夏目漱石","ぶんちょう","なつめそうせき",10546,37,"https://www.aozora.gr.jp/cards/000148/card753.html"],[51330,"別離","","中原中也","べつり","なかはらちゅうや",997,37,"https://www.aozora.gr.jp/cards/000026/card51330.html"],[933,"猟奇歌","","夢野久作","りょうきうた","ゆめのきゅうさく",7148,37,"https://www.aozora.gr.jp/cards/000096/card933.html"],[782,"明暗","","夏目漱石","めいあん","なつめそうせき",320486,37,"https://www.aozora.gr.jp/cards/000148/card782.html"],[673,"阿部一族","","森鴎外","あべいちぞく","もりおうがい",27429,38,"https://www.aozora.gr.jp/cards/000129/card673.html"],[897,"夜行巡査","","泉鏡花","やこうじゅんさ","いずみきょうか",10743,38,"https://www.aozora.gr.jp/cards/000050/card897.html"],[2359,"科学者とあたま","","寺田寅彦","かがくしゃとあたま","てらだとらひこ",3811,38,"https://www.aozora.gr.jp/cards/000042/card2359.html"],[1071,"寒山拾得","","森鴎外","かんざんじっとく","もりおうがい",6132,38,"https://www.aozora.gr.jp/cards/000129/card1071.html"],[47027,"春と修羅　第二集","","宮沢賢治","はるとしゅら　だいにしゅう","みやざわけんじ",42617,38,"https://www.aozora.gr.jp/cards/000081/card47027.html"],[1943,"風野又三郎","","宮沢賢治","かぜのまたさぶろう","みやざわけんじ",31434,38,"https://www.aozora.gr.jp/cards/000081/card1943.html"],[57105,"赤いカブトムシ","","江戸川乱歩","あかいカブトムシ","えどがわらんぽ",22959,38,"https://www.aozora.gr.jp/cards/001779/card57105.html"],[42625,"日本文化私観","","坂口安吾","にほんぶんかしかん","さかぐちあんご",21794,38,"https://www.aozora.gr.jp/cards/001095/card42625.html"],[42927,"耳無芳一の話","","小泉八雲","みみなしほういちのはなし","こいずみやくも",7858,38,"https://www.aozora.gr.jp/cards/000258/card42927.html"],[15,"アグニの神","","芥川竜之介","アグニのかみ","あくたがわりゅうのすけ",7940,38,"https://www.aozora.gr.jp/cards/000879/card15.html"],[2656,"ざしき童子のはなし","","宮沢賢治","ざしきぼっこのはなし","みやざわけんじ",1814,38,"https://www.aozora.gr.jp/cards/000081/card2656.html"],[43403,"デンデンムシノ　カナシミ","","新美南吉","デンデンムシノ　カナシミ","にいみなんきち",657,38,"https://www.aozora.gr.jp/cards/000121/card43403.html"],[4410,"虔十公園林","","宮沢賢治","けんじゅうこうえんりん","みやざわけんじ",4845,38,"https://www.aozora.gr.jp/cards/000081/card4410.html"],[2521,"悟浄出世","","中島敦","ごじょうしゅっせ","なかじまあつし",18503,38,"https://www.aozora.gr.jp/cards/000119/card2521.html"],[56646,"心理試験","","江戸川乱歩","しんりしけん","えどがわらんぽ",22674,38,"https://www.aozora.gr.jp/cards/001779/card56646.html"],[1572,"I can speak","","太宰治","アイ　キャン　スピーク","だざいおさむ",1900,38,"https://www.aozora.gr.jp/cards/000035/card1572.html"],[42851,"恋愛論","","坂口安吾","れんあいろん","さかぐちあんご",5547,38,"https://www.aozora.gr.jp/cards/001095/card42851.html"],[3065,"天守物語","","泉鏡花","てんしゅものがたり","いずみきょうか",20284,38,"https://www.aozora.gr.jp/cards/000050/card3065.html"],[42614,"夜長姫と耳男","","坂口安吾","よながひめとみみお","さかぐちあんご",27309,38,"https://www.aozora.gr.jp/cards/001095/card42614.html"],[57343,"鏡地獄","","江戸川乱歩","かがみじごく","えどがわらんぽ",14017,38,"https://www.aozora.gr.jp/cards/001779/card57343.html"],[56041,"たけくらべ","","樋口一葉","たけくらべ","ひぐちいちよう",28618,38,"https://www.aozora.gr.jp/cards/000064/card56041.html"],[44904,"フランケンシュタイン","02 フランケンシュタイン","シェリーメアリー・ウォルストンクラフト","フランケンシュタイン","シェリーメアリー・ウォルストンクラフト",192702,39,"https://www.aozora.gr.jp/cards/001176/card44904.html"],[815,"悲しき玩具","","石川啄木","かなしきがんぐ","いしかわたくぼく",5901,39,"https://www.aozora.gr.jp/cards/000153/card815.html"],[502,"父帰る","","菊池寛","ちちかえる","きくちかん",7362,39,"https://www.aozora.gr.jp/cards/000083/card502.html"],[3390,"浦島太郎","","楠山正雄","うらしまたろう","くすやままさお",5601,39,"https://www.aozora.gr.jp/cards/000329/card3390.html"],[904,"春は馬車に乗って","","横光利一","はるはばしゃにのって","よこみつりいち",9566,39,"https://www.aozora.gr.jp/cards/000168/card904.html"],[57856,"二十四の瞳","","壺井栄","にじゅうしのひとみ","つぼいさかえ",112482,39,"https://www.aozora.gr.jp/cards/001875/card57856.html"],[4618,"神曲","01 地獄","ダンテアリギエリ","しんきょく","ダンテアリギエリ",167743,40,"https://www.aozora.gr.jp/cards/000961/card4618.html"],[42767,"無人島に生きる十六人","","須川邦彦","むじんとうにいきるじゅうろくにん","すがわくにひこ",99591,40,"https://www.aozora.gr.jp/cards/001120/card42767.html"],[49966,"チベット旅行記","","河口慧海","チベットりょこうき","かわぐちえかい",528049,41,"https://www.aozora.gr.jp/cards/001404/card49966.html"],[50328,"相対性理論","","アインシュタインアルベルト","そうたいせいりろん","アインシュタインアルベルト",12530,42,"https://www.aozora.gr.jp/cards/001428/card50328.html"],[519,"後世への最大遺物","","内村鑑三","こうせいへのさいだいいぶつ","うちむらかんぞう",38460,42,"https://www.aozora.gr.jp/cards/000034/card519.html"],[46845,"人生論ノート","","三木清","じんせいろんノート","みききよし",70556,42,"https://www.aozora.gr.jp/cards/000218/card46845.html"],[1704,"みみずのたはこと","","徳冨健次郎","みみずのたわこと","とくとみけんじろう",262437,43,"https://www.aozora.gr.jp/cards/000279/card1704.html"],[1949,"ツェねずみ","","宮沢賢治","ツェねずみ","みやざわけんじ",4851,43,"https://www.aozora.gr.jp/cards/000081/card1949.html"],[57192,"白昼夢","","江戸川乱歩","はくちゅうむ","えどがわらんぽ",3735,43,"https://www.aozora.gr.jp/cards/001779/card57192.html"],[1130,"ピアノ","","芥川竜之介","ピアノ","あくたがわりゅうのすけ",1374,43,"https://www.aozora.gr.jp/cards/000879/card1130.html"],[42316,"星の銀貨","","グリムヴィルヘルム・カール","ほしのぎんか","グリムヴィルヘルム・カール",1036,43,"https://www.aozora.gr.jp/cards/001091/card42316.html"],[1930,"水仙月の四日","","宮沢賢治","すいせんづきのよっか","みやざわけんじ",5644,43,"https://www.aozora.gr.jp/cards/000081/card1930.html"],[2655,"シグナルとシグナレス","","宮沢賢治","シグナルとシグナレス","みやざわけんじ",11170,43,"https://www.aozora.gr.jp/cards/000081/card2655.html"],[889,"萱草に寄す","","立原道造","わすれぐさによす","たちはらみちぞう",2328,43,"https://www.aozora.gr.jp/cards/000011/card889.html"],[58459,"あじさい","","佐藤春夫","あじさい","さとうはるお",1753,43,"https://www.aozora.gr.jp/cards/001763/card58459.html"],[59185,"道程","","高村光太郎","どうてい","たかむらこうたろう",1423,43,"https://www.aozora.gr.jp/cards/001168/card59185.html"],[18377,"かちかち山","","楠山正雄","かちかちやま","くすやままさお",4177,43,"https://www.aozora.gr.jp/cards/000329/card18377.html"],[387,"にごりえ","","樋口一葉","にごりえ","ひぐちいちよう",20009,43,"https://www.aozora.gr.jp/cards/000064/card387.html"],[253,"十二月八日","","太宰治","じゅうにがつようか","だざいおさむ",7583,43,"https://www.aozora.gr.jp/cards/000035/card253.html"],[2106,"人間腸詰","","夢野久作","にんげんソーセージ","ゆめのきゅうさく",21551,44,"https://www.aozora.gr.jp/cards/000096/card2106.html"],[4245,"森の紫陽花","","泉鏡花","もりのあじさい","いずみきょうか",1923,44,"https://www.aozora.gr.jp/cards/000050/card4245.html"],[56643,"少年","","谷崎潤一郎","しょうねん","たにざきじゅんいちろう",23281,44,"https://www.aozora.gr.jp/cards/001383/card56643.html"],[2256,"姥捨","","太宰治","うばすて","だざいおさむ",13803,44,"https://www.aozora.gr.jp/cards/000035/card2256.html"],[49,"奉教人の死","","芥川竜之介","ほうきょうにんのし","あくたがわりゅうのすけ",9595,44,"https://www.aozora.gr.jp/cards/000879/card49.html"],[53241,"抒情小曲集","04 抒情小曲集","室生犀星","じょじょうしょうきょくしゅう","むろうさいせい",14368,44,"https://www.aozora.gr.jp/cards/001579/card53241.html"],[44919,"文学のふるさと","","坂口安吾","ぶんがくのふるさと","さかぐちあんご",5104,44,"https://www.aozora.gr.jp/cards/001095/card44919.html"],[57405,"黒蜥蜴","","江戸川乱歩","くろとかげ","えどがわらんぽ",106702,44,"https://www.aozora.gr.jp/cards/001779/card57405.html"],[43785,"現代訳論語","","下村湖人","げんだいやくろんご","しもむらこじん",124472,44,"https://www.aozora.gr.jp/cards/001097/card43785.html"],[3814,"かちかち山","","芥川竜之介","かちかちやま","あくたがわりゅうのすけ",1002,44,"https://www.aozora.gr.jp/cards/000879/card3814.html"],[4872,"愛読書の印象","","芥川竜之介","あいどくしょのいんしょう","あくたがわりゅうのすけ",965,44,"https://www.aozora.gr.jp/cards/000879/card4872.html"],[1409,"忘れえぬ人々","","国木田独歩","わすれえぬひとびと","くにきだどっぽ",9414,44,"https://www.aozora.gr.jp/cards/000038/card1409.html"],[116,"おぎん","","芥川竜之介","おぎん","あくたがわりゅうのすけ",5267,44,"https://www.aozora.gr.jp/cards/000879/card116.html"],[1566,"パンドラの匣","","太宰治","パンドラのはこ","だざいおさむ",84182,45,"https://www.aozora.gr.jp/cards/000035/card1566.html"],[51215,"上海游記","","芥川竜之介","しゃんはいゆうき","あくたがわりゅうのすけ",34093,45,"https://www.aozora.gr.jp/cards/000879/card51215.html"],[891,"為文学者経","","内田魯庵","いぶんがくしゃきょう","うちだろあん",5234,45,"https://www.aozora.gr.jp/cards/000165/card891.html"],[3586,"草迷宮","","泉鏡花","くさめいきゅう","いずみきょうか",70522,45,"https://www.aozora.gr.jp/cards/000050/card3586.html"],[1788,"純情小曲集","02 純情小曲集","萩原朔太郎","じゅんじょうしょうきょくしゅう","はぎわらさくたろう",8523,45,"https://www.aozora.gr.jp/cards/000067/card1788.html"],[42377,"歯車","","芥川竜之介","はぐるま","あくたがわりゅうのすけ",24971,45,"https://www.aozora.gr.jp/cards/000879/card42377.html"],[47552,"桜の樹の下には","","梶井基次郎","さくらのきのしたには","かじいもとじろう",1720,45,"https://www.aozora.gr.jp/cards/000074/card47552.html"],[1564,"満願","","太宰治","まんがん","だざいおさむ",1562,45,"https://www.aozora.gr.jp/cards/000035/card1564.html"],[57502,"探偵小説の「謎」","","江戸川乱歩","たんていしょうせつのなぞ","えどがわらんぽ",116957,45,"https://www.aozora.gr.jp/cards/001779/card57502.html"],[4328,"クリスマス・カロル","","ディケンズチャールズ","クリスマス・カロル","ディケンズチャールズ",86690,46,"https://www.aozora.gr.jp/cards/000914/card4328.html"],[4739,"三尺角","","泉鏡花","さんじゃくかく","いずみきょうか",10521,46,"https://www.aozora.gr.jp/cards/000050/card4739.html"],[1684,"柿の種","","寺田寅彦","かきのたね","てらだとらひこ",68262,46,"https://www.aozora.gr.jp/cards/000042/card1684.html"],[398,"いのちの初夜","","北条民雄","いのちのしょや","ほうじょうたみお",23244,46,"https://www.aozora.gr.jp/cards/000997/card398.html"],[47057,"共産党宣言","","エンゲルスフリードリッヒ","きょうさんとうせんげん","エンゲルスフリードリッヒ",35467,46,"https://www.aozora.gr.jp/cards/001138/card47057.html"],[5082,"万葉秀歌","","斎藤茂吉","まんようしゅうか","さいとうもきち",207491,47,"https://www.aozora.gr.jp/cards/001059/card5082.html"],[48222,"銀河鉄道の夜","","宮沢賢治","ぎんがてつどうのよる","みやざわけんじ",38513,47,"https://www.aozora.gr.jp/cards/000081/card48222.html"],[4840,"桜さく島","見知らぬ世界","竹久夢二","さくらさくしま","たけひさゆめじ",3396,47,"https://www.aozora.gr.jp/cards/000212/card4840.html"],[357,"外套","","ゴーゴリニコライ","がいとう","ゴーゴリニコライ",36866,47,"https://www.aozora.gr.jp/cards/000207/card357.html"],[56873,"卍","","谷崎潤一郎","まんじ","たにざきじゅんいちろう",133243,48,"https://www.aozora.gr.jp/cards/001383/card56873.html"],[26,"文芸的な、余りに文芸的な","","芥川竜之介","ぶんげいてきな、あまりにぶんげいてきな","あくたがわりゅうのすけ",49571,48,"https://www.aozora.gr.jp/cards/000879/card26.html"],[2843,"詩の原理","","萩原朔太郎","しのげんり","はぎわらさくたろう",152972,48,"https://www.aozora.gr.jp/cards/000067/card2843.html"],[56258,"雨の玉川心中","01 太宰治との愛と死のノート","山崎富栄","あめのたまがわしんじゅう","やまざきとみえ",62144,49,"https://www.aozora.gr.jp/cards/001777/card56258.html"],[45678,"そめちがへ","","森鴎外","そめちがえ","もりおうがい",6557,49,"https://www.aozora.gr.jp/cards/000129/card45678.html"],[267,"皮膚と心","","太宰治","ひふとこころ","だざいおさむ",15825,49,"https://www.aozora.gr.jp/cards/000035/card267.html"],[687,"最後の一句","","森鴎外","さいごのいっく","もりおうがい",8950,49,"https://www.aozora.gr.jp/cards/000129/card687.html"],[234,"二十世紀旗手","","太宰治","にじゅっせいききしゅ","だざいおさむ",13994,49,"https://www.aozora.gr.jp/cards/000035/card234.html"],[775,"行人","","夏目漱石","こうじん","なつめそうせき",222073,49,"https://www.aozora.gr.jp/cards/000148/card775.html"],[1144,"惜みなく愛は奪う","","有島武郎","おしみなくあいはうばう","ありしまたけお",78590,50,"https://www.aozora.gr.jp/cards/000025/card1144.html"],[4253,"赤とんぼ","","新美南吉","あかとんぼ","にいみなんきち",2946,50,"https://www.aozora.gr.jp/cards/000121/card4253.html"],[56651,"パノラマ島綺譚","","江戸川乱歩","パノラマとうきだん","えどがわらんぽ",78630,50,"https://www.aozora.gr.jp/cards/001779/card56651.html"],[201,"或る女","1（前編）","有島武郎","あるおんな","ありしまたけお",149025,50,"https://www.aozora.gr.jp/cards/000025/card201.html"],[57503,"陰獣","","江戸川乱歩","いんじゅう","えどがわらんぽ",66813,50,"https://www.aozora.gr.jp/cards/001779/card57503.html"],[45244,"最後の一句","","森鴎外","さいごのいっく","もりおうがい",9179,50,"https://www.aozora.gr.jp/cards/000129/card45244.html"],[386,"十三夜","","樋口一葉","じゅうさんや","ひぐちいちよう",12509,51,"https://www.aozora.gr.jp/cards/000064/card386.html"],[244,"チャンス","","太宰治","チャンス","だざいおさむ",8343,51,"https://www.aozora.gr.jp/cards/000035/card244.html"],[1388,"志賀直哉氏の作品","","菊池寛","しがなおやしのさくひん","きくちかん",4946,51,"https://www.aozora.gr.jp/cards/000083/card1388.html"],[783,"道草","","夏目漱石","みちくさ","なつめそうせき",144673,51,"https://www.aozora.gr.jp/cards/000148/card783.html"],[58126,"舞姫","","森鴎外","まいひめ","もりおうがい",16130,51,"https://www.aozora.gr.jp/cards/000129/card58126.html"],[52016,"濹東綺譚","","永井荷風","ぼくとうきだん","ながいかふう",56635,51,"https://www.aozora.gr.jp/cards/001341/card52016.html"],[3762,"大正十二年九月一日の大震に際して","","芥川竜之介","たいしょうじゅうにねんくがつついたちのだいしんにさいして","あくたがわりゅうのすけ",8351,51,"https://www.aozora.gr.jp/cards/000879/card3762.html"],[2377,"縊死体","","夢野久作","いしたい","ゆめのきゅうさく",1436,51,"https://www.aozora.gr.jp/cards/000096/card2377.html"],[54189,"森の生活――ウォールデン――","02 森の生活――ウォールデン――","ソローヘンリー・デイビッド","もりのせいかつ","ソローヘンリー・デイビッド",284142,52,"https://www.aozora.gr.jp/cards/001209/card54189.html"],[1061,"雛がたり","","泉鏡花","ひながたり","いずみきょうか",4074,52,"https://www.aozora.gr.jp/cards/000050/card1061.html"],[1111,"生まれいずる悩み","","有島武郎","うまれいずるなやみ","ありしまたけお",50386,52,"https://www.aozora.gr.jp/cards/000025/card1111.html"],[54404,"月夜とめがね","","小川未明","つきよとめがね","おがわみめい",3745,52,"https://www.aozora.gr.jp/cards/001475/card54404.html"],[72,"枯野抄","","芥川竜之介","かれのしょう","あくたがわりゅうのすけ",7761,52,"https://www.aozora.gr.jp/cards/000879/card72.html"],[2510,"日本人の自然観","","寺田寅彦","にほんじんのしぜんかん","てらだとらひこ",22041,52,"https://www.aozora.gr.jp/cards/000042/card2510.html"],[1578,"愛と美について","","太宰治","あいとびについて","だざいおさむ",12705,52,"https://www.aozora.gr.jp/cards/000035/card1578.html"],[4602,"蜘蛛となめくじと狸","","宮沢賢治","くもとなめくじとたぬき","みやざわけんじ",7812,52,"https://www.aozora.gr.jp/cards/000081/card4602.html"],[2423,"お月さまいくつ","","北原白秋","おつきさまいくつ","きたはらはくしゅう",1640,52,"https://www.aozora.gr.jp/cards/000106/card2423.html"],[1563,"魚服記","","太宰治","ぎょふくき","だざいおさむ",5098,52,"https://www.aozora.gr.jp/cards/000035/card1563.html"],[3587,"歌行灯","","泉鏡花","うたあんどん","いずみきょうか",35656,53,"https://www.aozora.gr.jp/cards/000050/card3587.html"],[46996,"イーリアス","03 イーリアス","ホーマー","イーリアス","ホーマー",363739,54,"https://www.aozora.gr.jp/cards/001099/card46996.html"],[58165,"絵のない絵本","01 絵のない絵本","アンデルセンハンス・クリスチャン","えのないえほん","アンデルセンハンス・クリスチャン",42129,55,"https://www.aozora.gr.jp/cards/000019/card58165.html"],[2272,"水仙","","太宰治","すいせん","だざいおさむ",11357,55,"https://www.aozora.gr.jp/cards/000035/card2272.html"],[144,"仙人","","芥川竜之介","せんにん","あくたがわりゅうのすけ",3253,55,"https://www.aozora.gr.jp/cards/000879/card144.html"],[46687,"おせん","","邦枝完二","おせん","くにえだかんじ",73441,55,"https://www.aozora.gr.jp/cards/001261/card46687.html"],[56694,"ぼろぼろな駝鳥","","高村光太郎","ぼろぼろなだちょう","たかむらこうたろう",231,55,"https://www.aozora.gr.jp/cards/001168/card56694.html"],[43466,"高野聖","","泉鏡花","こうやひじり","いずみきょうか",34797,55,"https://www.aozora.gr.jp/cards/000050/card43466.html"],[363,"義血侠血","","泉鏡花","ぎけつきょうけつ","いずみきょうか",32661,55,"https://www.aozora.gr.jp/cards/000050/card363.html"],[791,"野分","","夏目漱石","のわき","なつめそうせき",93189,55,"https://www.aozora.gr.jp/cards/000148/card791.html"],[45941,"多神教","","泉鏡花","たしんきょう","いずみきょうか",17597,56,"https://www.aozora.gr.jp/cards/000050/card45941.html"],[774,"坑夫","","夏目漱石","こうふ","なつめそうせき",141451,56,"https://www.aozora.gr.jp/cards/000148/card774.html"],[58544,"地名の研究","","柳田国男","ちめいのけんきゅう","やなぎたくにお",175164,56,"https://www.aozora.gr.jp/cards/001566/card58544.html"],[50131,"アーサー王物語","","テニソンアルフレッド","アーサーおうものがたり","テニソンアルフレッド",51619,57,"https://www.aozora.gr.jp/cards/000140/card50131.html"],[51018,"港に着いた黒んぼ","","小川未明","みなとについたくろんぼ","おがわみめい",6855,57,"https://www.aozora.gr.jp/cards/001475/card51018.html"],[42311,"赤ずきんちゃん","","グリムヴィルヘルム・カール","あかずきんちゃん","グリムヴィルヘルム・カール",3700,57,"https://www.aozora.gr.jp/cards/001091/card42311.html"],[43756,"月夜のでんしんばしら","","宮沢賢治","つきよのでんしんばしら","みやざわけんじ",4254,57,"https://www.aozora.gr.jp/cards/000081/card43756.html"],[1085,"おきなぐさ","","宮沢賢治","おきなぐさ","みやざわけんじ",3389,57,"https://www.aozora.gr.jp/cards/000081/card1085.html"],[2522,"青年","","森鴎外","せいねん","もりおうがい",122607,57,"https://www.aozora.gr.jp/cards/000129/card2522.html"],[43467,"神鑿","","泉鏡花","しんさく","いずみきょうか",64582,57,"https://www.aozora.gr.jp/cards/000050/card43467.html"],[1579,"猿ヶ島","","太宰治","さるがしま","だざいおさむ",5763,57,"https://www.aozora.gr.jp/cards/000035/card1579.html"],[56857,"桐の花","","北原白秋","きりのはな","きたはらはくしゅう",42711,57,"https://www.aozora.gr.jp/cards/000106/card56857.html"],[42307,"若草物語","","オルコットルイーザ・メイ","わかくさものがたり","オルコットルイーザ・メイ",124326,58,"https://www.aozora.gr.jp/cards/001090/card42307.html"],[4823,"小桜姫物語","03 小桜姫物語","浅野和三郎","こざくらひめものがたり","あさのわさぶろう",135268,58,"https://www.aozora.gr.jp/cards/001034/card4823.html"],[763,"変な音","","夏目漱石","へんなおと","なつめそうせき",3793,58,"https://www.aozora.gr.jp/cards/000148/card763.html"],[1530,"古事記物語","","鈴木三重吉","こじきものがたり","すずきみえきち",95943,59,"https://www.aozora.gr.jp/cards/000107/card1530.html"],[42365,"織田君の死","","太宰治","おだくんのし","だざいおさむ",687,59,"https://www.aozora.gr.jp/cards/000035/card42365.html"],[43676,"麻雀を語る","","南部修太郎","まあじゃんをかたる","なんぶしゅうたろう",7234,59,"https://www.aozora.gr.jp/cards/000048/card43676.html"],[1919,"黄いろのトマト","","宮沢賢治","きいろのトマト","みやざわけんじ",7847,59,"https://www.aozora.gr.jp/cards/000081/card1919.html"],[52380,"お伽草紙","","太宰治","おとぎぞうし","だざいおさむ",70850,59,"https://www.aozora.gr.jp/cards/000035/card52380.html"],[204,"カインの末裔","","有島武郎","カインのまつえい","ありしまたけお",31969,59,"https://www.aozora.gr.jp/cards/000025/card204.html"],[3315,"貝の穴に河童の居る事","","泉鏡花","かいのあなにかっぱのいること","いずみきょうか",16168,59,"https://www.aozora.gr.jp/cards/000050/card3315.html"],[59477,"水車のある教会","","オー・ヘンリー","すいしゃのあるきょうかい","オー・ヘンリー",11798,59,"https://www.aozora.gr.jp/cards/000097/card59477.html"],[54331,"海上の道","","柳田国男","かいじょうのみち","やなぎたくにお",181622,60,"https://www.aozora.gr.jp/cards/001566/card54331.html"],[163,"煙草と悪魔","","芥川竜之介","たばことあくま","あくたがわりゅうのすけ",6163,60,"https://www.aozora.gr.jp/cards/000879/card163.html"],[1503,"千曲川のスケッチ","","島崎藤村","ちくまがわのスケッチ","しまざきとうそん",80665,60,"https://www.aozora.gr.jp/cards/000158/card1503.html"],[694,"うたかたの記","","森鴎外","うたかたのき","もりおうがい",15362,60,"https://www.aozora.gr.jp/cards/000129/card694.html"],[1562,"朝","","太宰治","あさ","だざいおさむ",2977,60,"https://www.aozora.gr.jp/cards/000035/card1562.html"],[49549,"拷問の話","","岡本綺堂","ごうもんのはなし","おかもときどう",8151,60,"https://www.aozora.gr.jp/cards/000082/card49549.html"],[51731,"古事記","02 校註　古事記","太安万侶","こじき","おおのやすまろ",109151,61,"https://www.aozora.gr.jp/cards/001518/card51731.html"],[4601,"フランドン農学校の豚","","宮沢賢治","フランドンのうがっこうのぶた","みやざわけんじ",11536,61,"https://www.aozora.gr.jp/cards/000081/card4601.html"],[241,"美男子と煙草","","太宰治","びだんしとたばこ","だざいおさむ",4539,61,"https://www.aozora.gr.jp/cards/000035/card241.html"],[2589,"ビジテリアン大祭","","宮沢賢治","ビジテリアンたいさい","みやざわけんじ",31964,61,"https://www.aozora.gr.jp/cards/000081/card2589.html"],[2415,"思ひ出","抒情小曲集","北原白秋","おもいで","きたはらはくしゅう",50878,61,"https://www.aozora.gr.jp/cards/000106/card2415.html"],[877,"千年後の世界","","海野十三","せんねんごのせかい","うんのじゅうざ",7425,61,"https://www.aozora.gr.jp/cards/000160/card877.html"],[546,"まざあ・ぐうす","","作者不詳","まざあ・ぐうす","さくしゃふしょう",24167,61,"https://www.aozora.gr.jp/cards/001529/card546.html"],[42928,"貉","","小泉八雲","むじな","こいずみやくも",1516,61,"https://www.aozora.gr.jp/cards/000258/card42928.html"],[1925,"どんぐりと山猫","","宮沢賢治","どんぐりとやまねこ","みやざわけんじ",6259,61,"https://www.aozora.gr.jp/cards/000081/card1925.html"],[38,"戯作三昧","","芥川竜之介","げさくざんまい","あくたがわりゅうのすけ",20604,61,"https://www.aozora.gr.jp/cards/000879/card38.html"],[31,"偸盗","","芥川竜之介","ちゅうとう","あくたがわりゅうのすけ",48682,61,"https://www.aozora.gr.jp/cards/000879/card31.html"],[18352,"藤村詩抄","島崎藤村自選","島崎藤村","とうそんししょう","しまざきとうそん",34442,62,"https://www.aozora.gr.jp/cards/000158/card18352.html"],[271,"HUMAN LOST","","太宰治","ヒューマン　ロスト","だざいおさむ",11574,62,"https://www.aozora.gr.jp/cards/000035/card271.html"],[53194,"はつ恋","","ツルゲーネフイワン","はつこい","ツルゲーネフイワン",74090,62,"https://www.aozora.gr.jp/cards/000005/card53194.html"],[50659,"長崎の鐘","","永井隆","ながさきのかね","ながいたかし",64906,62,"https://www.aozora.gr.jp/cards/000924/card50659.html"],[57393,"地下生活者の手記","","ドストエフスキーフィヨードル・ミハイロヴィチ","ちかせいかつしゃのしゅき","ドストエフスキーフィヨードル・ミハイロヴィチ",137792,62,"https://www.aozora.gr.jp/cards/000363/card57393.html"],[57185,"黒手組","","江戸川乱歩","くろてぐみ","えどがわらんぽ",17975,62,"https://www.aozora.gr.jp/cards/001779/card57185.html"],[1576,"新ハムレット","","太宰治","しんハムレット","だざいおさむ",94216,63,"https://www.aozora.gr.jp/cards/000035/card1576.html"],[494,"屋上の狂人","","菊池寛","おくじょうのきょうじん","きくちかん",7458,63,"https://www.aozora.gr.jp/cards/000083/card494.html"],[632,"狐","","新美南吉","きつね","にいみなんきち",6228,63,"https://www.aozora.gr.jp/cards/000121/card632.html"],[1029,"藍色の蟇","","大手拓次","あいいろのひき","おおてたくじ",25939,63,"https://www.aozora.gr.jp/cards/000190/card1029.html"],[50011,"料理メモ","","北大路魯山人","りょうりメモ","きたおおじろさんじん",3010,63,"https://www.aozora.gr.jp/cards/001403/card50011.html"],[2533,"歌よみに与ふる書","","正岡子規","うたよみにあたうるしょ","まさおかしき",17043,63,"https://www.aozora.gr.jp/cards/000305/card2533.html"],[52082,"紙風船（一幕）","","岸田国士","かみふうせん（ひとまく）","きしだくにお",6979,63,"https://www.aozora.gr.jp/cards/001154/card52082.html"],[54972,"すき焼きと鴨料理――洋食雑感――","","北大路魯山人","すきやきとかもりょうり――ようしょくざっかん――","きたおおじろさんじん",2476,63,"https://www.aozora.gr.jp/cards/001403/card54972.html"],[58465,"指","","江戸川乱歩","ゆび","えどがわらんぽ",1281,63,"https://www.aozora.gr.jp/cards/001779/card58465.html"],[51507,"海が呼んだ話","","小川未明","うみがよんだはなし","おがわみめい",3745,63,"https://www.aozora.gr.jp/cards/001475/card51507.html"],[51860,"かもめ","――喜劇　四幕――","チェーホフアントン","かもめ","チェーホフアントン",52656,63,"https://www.aozora.gr.jp/cards/001155/card51860.html"],[751,"二百十日","","夏目漱石","にひゃくとおか","なつめそうせき",29403,63,"https://www.aozora.gr.jp/cards/000148/card751.html"],[42626,"不連続殺人事件","","坂口安吾","ふれんぞくさつじんじけん","さかぐちあんご",161025,64,"https://www.aozora.gr.jp/cards/001095/card42626.html"],[13203,"久坂葉子の誕生と死亡","","久坂葉子","くさかようこのたんじょうとしぼう","くさかようこ",7570,64,"https://www.aozora.gr.jp/cards/001052/card13203.html"],[50351,"五重塔","","幸田露伴","ごじゅうのとう","こうだろはん",56120,64,"https://www.aozora.gr.jp/cards/000051/card50351.html"],[262,"恥","","太宰治","はじ","だざいおさむ",7593,64,"https://www.aozora.gr.jp/cards/000035/card262.html"],[42900,"戦争と一人の女","","坂口安吾","せんそうとひとりのおんな","さかぐちあんご",9148,64,"https://www.aozora.gr.jp/cards/001095/card42900.html"],[1087,"婦系図","","泉鏡花","おんなけいず","いずみきょうか",170079,65,"https://www.aozora.gr.jp/cards/000050/card1087.html"],[42302,"世界怪談名作集","06 信号手","ディケンズチャールズ","せかいかいだんめいさくしゅう","ディケンズチャールズ",12781,65,"https://www.aozora.gr.jp/cards/000914/card42302.html"],[46376,"智恵子の半生","","高村光太郎","ちえこのはんしょう","たかむらこうたろう",12680,65,"https://www.aozora.gr.jp/cards/001168/card46376.html"],[56669,"少年探偵団","","江戸川乱歩","しょうねんたんていだん","えどがわらんぽ",101560,65,"https://www.aozora.gr.jp/cards/001779/card56669.html"],[458,"ひかりの素足","","宮沢賢治","ひかりのすあし","みやざわけんじ",17058,65,"https://www.aozora.gr.jp/cards/000081/card458.html"],[54975,"納豆の茶漬け","","北大路魯山人","なっとうのちゃづけ","きたおおじろさんじん",1209,65,"https://www.aozora.gr.jp/cards/001403/card54975.html"],[2267,"秋風記","","太宰治","しゅうふうき","だざいおさむ",7969,65,"https://www.aozora.gr.jp/cards/000035/card2267.html"],[46607,"土神ときつね","","宮沢賢治","つちがみときつね","みやざわけんじ",9332,65,"https://www.aozora.gr.jp/cards/000081/card46607.html"],[50220,"六号室","","チェーホフアントン","ろくごうしつ","チェーホフアントン",46298,66,"https://www.aozora.gr.jp/cards/001155/card50220.html"],[43,"手巾","","芥川竜之介","ハンケチ","あくたがわりゅうのすけ",7303,66,"https://www.aozora.gr.jp/cards/000879/card43.html"],[55789,"牧野富太郎自叙伝","01 第一部　牧野富太郎自叙伝","牧野富太郎","まきのとみたろうじじょでん","まきのとみたろう",54985,66,"https://www.aozora.gr.jp/cards/001266/card55789.html"],[4436,"土神と狐","","宮沢賢治","つちがみときつね","みやざわけんじ",9317,66,"https://www.aozora.gr.jp/cards/000081/card4436.html"],[678,"かのように","","森鴎外","かのように","もりおうがい",22487,66,"https://www.aozora.gr.jp/cards/000129/card678.html"],[1574,"思ひ出","","太宰治","おもいで","だざいおさむ",30572,66,"https://www.aozora.gr.jp/cards/000035/card1574.html"],[46823,"懐中時計","","土原耕作","かいちゅうどけい","つちはらこうさく",185,66,"https://www.aozora.gr.jp/cards/000096/card46823.html"],[55053,"山之口貘詩集","","山之口貘","やまのくちばくししゅう","やまのくちばく",18617,66,"https://www.aozora.gr.jp/cards/001693/card55053.html"],[526,"十二支考","01　虎に関する史話と伝説民俗","南方熊楠","じゅうにしこう","みなかたくまぐす",54805,66,"https://www.aozora.gr.jp/cards/000093/card526.html"],[55667,"うらむらさき","","樋口一葉","うらむらさき","ひぐちいちよう",2574,66,"https://www.aozora.gr.jp/cards/000064/card55667.html"],[59145,"巌頭の感","","藤村操","がんとうのかん","ふじむらみさお",153,66,"https://www.aozora.gr.jp/cards/002003/card59145.html"],[45225,"文づかひ","","森鴎外","ふみづかい","もりおうがい",13178,66,"https://www.aozora.gr.jp/cards/000129/card45225.html"],[105,"南京の基督","","芥川竜之介","なんきんのキリスト","あくたがわりゅうのすけ",9840,66,"https://www.aozora.gr.jp/cards/000879/card105.html"]];
+
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('aozoraflow:'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('aozoraflow:'+k, JSON.stringify(v)); }catch(e){} }
+};
+const S = Object.assign({ n:10, t:1.2, smart:true, prop:false, pause:true, vertical:false, fs:64, ruby:true, ctx:false }, store.get('settings', {}));
+const $ = id => document.getElementById(id);
+const nf = new Intl.NumberFormat('ja-JP');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const isMobile = () => matchMedia('(max-width: 860px)').matches;
+
+/* ---------- 青空文庫テキストの解析 ---------- */
+const KANJI = '[\\u3005-\\u3007\\u30F5\\u30F6\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\u{20000}-\\u{2FFFF}]';
+const RUBY_RE = new RegExp('｜([^｜《》\\n]+)《([^》\\n]+)》|(' + KANJI + '+)《([^》\\n]+)》', 'gu');
+
+function parseAozora(raw, fallbackTitle){
+  const lines = raw.replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n');
+  let title = '', author = '', start = 0;
+  const dashes = [];
+  lines.forEach((l, i) => { if (/^-{20,}\s*$/.test(l.trim()) && dashes.length < 2 && i < 80) dashes.push(i); });
+  if (dashes.length === 2 && /テキスト中に現れる記号/.test(lines.slice(dashes[0], dashes[1]).join(''))) {
+    const head = lines.slice(0, dashes[0]).map(s => s.trim()).filter(Boolean);
+    title = head[0] || ''; author = head.slice(1).join(' ');
+    start = dashes[1] + 1;
+  } else if (fallbackTitle === null) {
+    const head = []; let i = 0;
+    while (i < lines.length && head.length < 2) { if (lines[i].trim()) head.push(lines[i].trim()); else if (head.length) break; i++; }
+    title = head[0] || ''; author = head[1] || ''; start = i;
+  }
+  let end = lines.length;
+  for (let i = lines.length - 1; i >= start; i--) { if (/^底本[：:]/.test(lines[i].trim())) { end = i; break; } }
+
+  const paras = [];
+  for (let line of lines.slice(start, end)) {
+    line = line.replace(/※［＃[^］]*］/g, '〓').replace(/［＃[^］]*］/g, '').replace(/^[　\s]+/, '').replace(/\s+$/, '');
+    if (!line) continue;
+    const units = [];
+    let last = 0, m; RUBY_RE.lastIndex = 0;
+    const pushPlain = s => { for (const ch of Array.from(s.replace(/[｜《》]/g, ''))) units.push({ t: ch, len: 1 }); };
+    while ((m = RUBY_RE.exec(line))) {
+      pushPlain(line.slice(last, m.index));
+      const base = m[1] || m[3];
+      units.push({ t: base, r: m[2] || m[4], len: Array.from(base).length });
+      last = RUBY_RE.lastIndex;
+    }
+    pushPlain(line.slice(last));
+    if (units.length) paras.push(units);
+  }
+  return { title: title || fallbackTitle || '無題', author, paras };
+}
+
+function parseHTML(html){
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const main = doc.querySelector('.main_text') || doc.body;
+  main.querySelectorAll('ruby').forEach(rb => {
+    const rt = Array.from(rb.querySelectorAll('rt')).map(x => x.textContent).join('');
+    rb.querySelectorAll('rt,rp').forEach(x => x.remove());
+    rb.replaceWith('｜' + rb.textContent + (rt ? '《' + rt + '》' : ''));
+  });
+  main.querySelectorAll('br').forEach(b => b.replaceWith('\n'));
+  main.querySelectorAll('img.gaiji').forEach(g => g.replaceWith('〓'));
+  main.querySelectorAll('div,p').forEach(d => d.append('\n'));
+  const title = (doc.querySelector('.title')?.textContent || doc.title || '').trim();
+  const author = (doc.querySelector('.author')?.textContent || '').trim();
+  const w = parseAozora(main.textContent, title || 'HTMLファイル');
+  w.title = title || w.title; w.author = author || w.author;
+  return w;
+}
+function decode(buf){
+  const bytes = new Uint8Array(buf);
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+  catch (e) { return new TextDecoder('shift_jis').decode(bytes); }
+}
+
+/* ---------- 区切り ---------- */
+const BREAK_AFTER = new Set(Array.from('、。，．！？!?」』）)】〕〉'));
+const STOP = new Set(Array.from('。！？!?」』'));
+const NO_START = new Set(Array.from('、。，．！？!?」』）)】〕〉ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶー…‥ゝゞヽヾ々'));
+const NO_END = new Set(Array.from('「『（(【〔〈'));
+
+let work = null, chunks = [], factorSuffix = [], idx = 0;
+
+function buildChunks(){
+  const N = Math.max(1, S.n | 0);
+  const out = [];
+  let offset = 0;
+  work.paras.forEach((units, p) => {
+    const len = units.length;
+    const cum = [0]; for (const u of units) cum.push(cum[cum.length - 1] + u.len);
+    let i = 0;
+    while (i < len) {
+      let end = i + 1;
+      while (end < len && cum[end + 1] - cum[i] <= N) end++;
+      if (S.smart && end < len) {
+        const minLen = Math.ceil(N * 0.5);
+        for (let k = end; k > i; k--) {
+          if (cum[k] - cum[i] < minLen) break;
+          if (BREAK_AFTER.has(units[k - 1].t)) { end = k; break; }
+        }
+      }
+      if (S.smart) {
+        let extra = 0;
+        while (end < len && NO_START.has(units[end].t) && extra < 3) { end++; extra++; }
+        while (end - i > 1 && NO_END.has(units[end - 1].t)) end--;
+      }
+      const lastCh = units[end - 1].t.slice(-1);
+      out.push({ p, s: i, e: end, off: offset + i, chars: cum[end] - cum[i], stop: end === len ? 2 : STOP.has(lastCh) ? 2 : lastCh === '、' ? 1 : 0 });
+      i = end;
+    }
+    offset += len;
+  });
+  work.total = offset;
+  chunks = out;
+  computeFactors();
+}
+function factor(c){
+  let f = S.prop ? Math.max(0.35, c.chars / Math.max(1, S.n)) : 1;
+  if (S.pause) f += c.stop === 2 ? 0.6 : c.stop === 1 ? 0.25 : 0;
+  return f;
+}
+function computeFactors(){
+  factorSuffix = new Float64Array(chunks.length + 1);
+  for (let i = chunks.length - 1; i >= 0; i--) factorSuffix[i] = factorSuffix[i + 1] + factor(chunks[i]);
+}
+const dur = i => S.t * factor(chunks[i]) * 1000;
+
+/* ---------- 表示 ---------- */
+function chunkHTML(c){
+  if (!c) return '';
+  return work.paras[c.p].slice(c.s, c.e).map(u => u.r && S.ruby ? '<ruby>' + esc(u.t) + '<rt>' + esc(u.r) + '</rt></ruby>' : esc(u.t)).join('');
+}
+function fmtTime(sec){
+  sec = Math.round(sec);
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return h ? `${h}時間${m}分` : m ? `${m}分${String(s).padStart(2,'0')}秒` : `${s}秒`;
+}
+function render(animate){
+  if (!work) return;
+  const c = chunks[idx];
+  const now = $('now');
+  now.innerHTML = chunkHTML(c);
+  if (animate) { now.classList.remove('in'); void now.offsetWidth; now.classList.add('in'); }
+  $('ctxPrev').innerHTML = S.ctx ? chunkHTML(chunks[idx - 1]) : '';
+  $('ctxNext').innerHTML = S.ctx ? chunkHTML(chunks[idx + 1]) : '';
+  $('seek').max = Math.max(0, chunks.length - 1);
+  $('seek').value = idx;
+  const pct = chunks.length ? Math.floor((idx + 1) / chunks.length * 100) : 0;
+  $('posLabel').textContent = `${nf.format(idx + 1)} / ${nf.format(chunks.length)}（${pct}%）`;
+  $('remainLabel').textContent = chunks.length ? 'のこり ' + fmtTime(S.t * factorSuffix[idx]) : '';
+  $('paraLabel').textContent = c ? `第${nf.format(c.p + 1)}段落` : '';
+  $('hint').hidden = playing || !isMobile();
+  if (c) savePos(c.off, pct);
+}
+let posTimer = null;
+function savePos(off, pct){
+  clearTimeout(posTimer);
+  posTimer = setTimeout(() => store.set('pos:' + work.key, { off, pct }), 300);
+}
+
+/* ---------- 再生 ---------- */
+let timer = null, playing = false, wakeLock = null;
+function runTick(){
+  const bar = $('tick');
+  bar.style.transition = 'none'; bar.style.width = '0';
+  void bar.offsetWidth;
+  const d = dur(idx);
+  bar.style.transition = `width ${d}ms linear`; bar.style.width = '100%';
+  timer = setTimeout(() => {
+    if (idx < chunks.length - 1) { idx++; render(true); runTick(); }
+    else pause();
+  }, d);
+}
+function play(){
+  if (!chunks.length) return;
+  if (idx >= chunks.length - 1) idx = 0;
+  playing = true; render(true); runTick(); setPlayIcon();
+  try { navigator.wakeLock?.request('screen').then(l => wakeLock = l).catch(() => {}); } catch (e) {}
+}
+function pause(){
+  playing = false; clearTimeout(timer);
+  const bar = $('tick'); bar.style.transition = 'none'; bar.style.width = '0';
+  setPlayIcon(); $('hint').hidden = !isMobile() || !work;
+  try { wakeLock?.release(); } catch (e) {} wakeLock = null;
+}
+const toggle = () => playing ? pause() : play();
+function restartIfPlaying(){ if (playing) { clearTimeout(timer); runTick(); } }
+function setPlayIcon(){
+  $('playIcon').innerHTML = playing ? '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>' : '<path d="M7 4v16l13-8z"/>';
+  $('playBtn').setAttribute('aria-label', playing ? '一時停止' : '再生');
+}
+function step(d){
+  if (!chunks.length) return;
+  idx = Math.min(Math.max(0, idx + d), chunks.length - 1);
+  render(true); restartIfPlaying();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && playing) navigator.wakeLock?.request('screen').then(l => wakeLock = l).catch(() => {});
+});
+
+/* ---------- 作品の読み込み ---------- */
+function showWork(w){
+  pause();
+  work = w;
+  $('wTitle').textContent = w.title;
+  $('wAuthor').textContent = w.author;
+  buildChunks();
+  const saved = store.get('pos:' + w.key, null);
+  idx = findByOffset(saved?.off ?? 0);
+  render(false);
+}
+function findByOffset(off){
+  let lo = 0, hi = chunks.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (chunks[mid].off <= off) lo = mid; else hi = mid - 1; }
+  return Math.max(0, lo);
+}
+
+const byId = new Map(CATALOG.map(e => [e[0], e]));
+const bundleCache = new Map();
+async function gunzipText(buf){
+  const u8 = new Uint8Array(buf);
+  if (u8[0] !== 0x1f || u8[1] !== 0x8b) return new TextDecoder().decode(u8); // 配信側で展開済み
+  if (!('DecompressionStream' in window)) throw new Error('このブラウザは古いため本棚を開けません。ブラウザを更新してください。');
+  const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).text();
+}
+function getBundle(b){
+  if (!bundleCache.has(b)) {
+    const p = fetch(`lib/b${String(b).padStart(2, '0')}.txt`)
+      .then(r => { if (!r.ok) throw new Error('作品データを取得できませんでした（' + r.status + '）。'); return r.text(); })
+      .then(b64 => { const bin = atob(b64.trim()); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return gunzipText(u8.buffer); })
+      .then(JSON.parse);
+    p.catch(() => bundleCache.delete(b));
+    bundleCache.set(b, p);
+  }
+  return bundleCache.get(b);
+}
+async function openLibWork(id){
+  const e = byId.get(id); if (!e) return;
+  $('loading').hidden = false; $('loading').textContent = `『${e[1]}』を読み込んでいます…`;
+  closeLib();
+  try {
+    const bundle = await getBundle(e[7]);
+    const w = parseAozora(bundle[String(id)], null);
+    w.title = e[1] + (e[2] ? ' ' + e[2] : ''); w.author = e[3]; w.key = 'lib:' + id;
+    showWork(w);
+    store.set('current', { src: 'lib', id });
+    const recent = store.get('recent', []).filter(x => x !== id); recent.unshift(id); store.set('recent', recent.slice(0, 6));
+  } catch (err) {
+    $('now').textContent = '';
+    openLib(); $('libCount').textContent = err.message || '読み込めませんでした。';
+  } finally { $('loading').hidden = true; }
+}
+async function handleFile(file){
+  const err = $('ldErr'); err.hidden = true;
+  try {
+    let name = file.name, buf = await file.arrayBuffer();
+    if (/\.zip$/i.test(name)) {
+      if (!window.JSZip) throw new Error('zip を開く部品を読み込めませんでした。中の txt を取り出して選んでください。');
+      const zip = await JSZip.loadAsync(buf);
+      const files = Object.values(zip.files).filter(f => !f.dir);
+      const entry = files.find(f => /\.txt$/i.test(f.name)) || files.find(f => /\.x?html?$/i.test(f.name));
+      if (!entry) throw new Error('zip の中に txt ファイルがありません。');
+      name = entry.name; buf = await entry.async('arraybuffer');
+    }
+    const text = decode(buf);
+    const isHTML = /\.x?html?$/i.test(name) || /^\s*<(\?xml|!DOCTYPE|html)/i.test(text);
+    const w = isHTML ? parseHTML(text) : parseAozora(text, null);
+    if (!w.paras.length) throw new Error('本文が見つかりませんでした。');
+    w.key = 'file:' + w.title;
+    showWork(w);
+    store.set('current', { src: 'file', kind: isHTML ? 'html' : 'aozora', raw: text });
+    closeLib();
+  } catch (e) { err.textContent = e.message || '読み込めませんでした。'; err.hidden = false; }
+}
+
+/* ---------- 設定 ---------- */
+function bindPair(rangeId, numId, key, onChange){
+  const r = $(rangeId), n = $(numId);
+  const set = v => {
+    v = parseFloat(v); if (!isFinite(v)) return;
+    v = Math.min(parseFloat(n.max), Math.max(parseFloat(n.min), v));
+    S[key] = key === 't' ? Math.round(v * 100) / 100 : Math.round(v);
+    r.value = S[key]; n.value = S[key]; saveSettings(); onChange();
+  };
+  r.value = S[key]; n.value = S[key];
+  r.addEventListener('input', () => set(r.value));
+  n.addEventListener('change', () => set(n.value));
+  return set;
+}
+function saveSettings(){ store.set('settings', S); $('cpm').textContent = nf.format(Math.round(S.n / S.t * 60)); }
+function rechunk(){
+  if (!work) return;
+  const off = chunks[idx]?.off ?? 0;
+  buildChunks(); idx = findByOffset(off); render(false); restartIfPlaying();
+}
+bindPair('nRange', 'nNum', 'n', rechunk);
+const setT = bindPair('tRange', 'tNum', 't', () => { render(false); restartIfPlaying(); if (!$('lib').hidden) renderLib(); });
+bindPair('fsRange', 'fsNum', 'fs', applyLook);
+[['smart', rechunk], ['prop', () => { computeFactors(); render(false); }], ['pause', () => { computeFactors(); render(false); }], ['ruby', () => render(false)], ['ctx', () => render(false)]]
+  .forEach(([k, fn]) => { const el = $(k); el.checked = !!S[k]; el.addEventListener('change', () => { S[k] = el.checked; saveSettings(); if (work) fn(); }); });
+function applyLook(){
+  document.documentElement.style.setProperty('--fs', S.fs + 'px');
+  $('stage').classList.toggle('vertical', S.vertical);
+  $('dirH').setAttribute('aria-pressed', !S.vertical);
+  $('dirV').setAttribute('aria-pressed', S.vertical);
+}
+$('dirH').onclick = () => { S.vertical = false; saveSettings(); applyLook(); };
+$('dirV').onclick = () => { S.vertical = true; saveSettings(); applyLook(); };
+
+function openSheet(){ $('settings').classList.add('open'); $('scrim').hidden = false; }
+function closeSheet(){ $('settings').classList.remove('open'); $('scrim').hidden = true; }
+$('setBtn').onclick = openSheet;
+$('setClose').onclick = closeSheet;
+$('scrim').onclick = closeSheet;
+
+/* ---------- 操作 ---------- */
+$('playBtn').onclick = toggle;
+$('prevBtn').onclick = () => step(-1);
+$('nextBtn').onclick = () => step(1);
+$('seek').addEventListener('input', e => { idx = +e.target.value; render(false); restartIfPlaying(); });
+function toggleFS(){
+  try { document.fullscreenElement ? document.exitFullscreen() : $('stagewrap').requestFullscreen?.().catch(() => {}); } catch (e) {}
+}
+$('fsBtn').onclick = toggleFS;
+
+// ステージ：タップで再生・停止、左右スワイプで前後
+let px = 0, py = 0, pdown = false;
+const stage = $('stage');
+stage.addEventListener('pointerdown', e => { pdown = true; px = e.clientX; py = e.clientY; });
+stage.addEventListener('pointercancel', () => { pdown = false; });
+stage.addEventListener('pointerup', e => {
+  if (!pdown) return; pdown = false;
+  const dx = e.clientX - px, dy = e.clientY - py;
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) step((S.vertical ? dx > 0 : dx < 0) ? 1 : -1);
+  else if (Math.abs(dx) < 12 && Math.abs(dy) < 12) toggle();
+});
+
+document.addEventListener('keydown', e => {
+  if (!$('lib').hidden) { if (e.key === 'Escape' && work) closeLib(); return; }
+  const tag = e.target.tagName;
+  if (tag === 'TEXTAREA' || tag === 'SELECT' || (tag === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox')) return;
+  if (e.key === ' ') { e.preventDefault(); toggle(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); setT(S.t - 0.1); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); setT(S.t + 0.1); }
+  else if (e.key === 'f' || e.key === 'F') toggleFS();
+  else if (e.key === 'Escape') closeSheet();
+});
+
+/* ---------- 本棚 ---------- */
+const L = { q: '', author: '', len: 'all', sort: 'rank' };
+const kana = s => s.normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/[\s・　]/g, '');
+const SEARCH = CATALOG.map(e => kana(e[1] + e[2] + e[3] + e[4] + e[5]));
+const RANK = new Map(CATALOG.map((e, i) => [e[0], i]));
+const LEN = { s: c => c < 10000, m: c => c >= 10000 && c < 60000, l: c => c >= 60000 };
+
+function fmtChars(c){ return c < 10000 ? `約${nf.format(Math.round(c / 100) * 100)}字` : `約${(c / 10000).toFixed(c < 100000 ? 1 : 0)}万字`; }
+function fmtRead(c){
+  const min = c / (S.n / S.t * 60) * (S.pause ? 1.35 : 1);
+  return min < 60 ? `${Math.max(1, Math.round(min))}分` : `${Math.floor(min / 60)}時間${Math.round(min % 60)}分`;
+}
+function itemHTML(e, rank){
+  const p = store.get('pos:lib:' + e[0], null);
+  const badge = p && p.pct > 0 ? `<span class="prog">${p.pct >= 100 ? '読了' : p.pct + '%'}</span>` : '';
+  return `<button class="item" type="button" data-id="${e[0]}"><span class="rk">${rank}</span>` +
+    `<span><span class="tt">${esc(e[1])}${e[2] ? `<small>${esc(e[2])}</small>` : ''}</span><br><span class="au">${esc(e[3])}</span>${badge}</span>` +
+    `<span class="mt"><b>${fmtRead(e[6])}</b>${fmtChars(e[6])}</span></button>`;
+}
+function renderChips(){
+  const count = new Map();
+  CATALOG.forEach(e => count.set(e[3], (count.get(e[3]) || 0) + 1));
+  const top = [...count].sort((a, b) => b[1] - a[1]).slice(0, 16);
+  $('authorChips').innerHTML = `<button class="chip" type="button" data-a="" aria-pressed="true">すべての作家</button>` +
+    top.map(([a, n]) => `<button class="chip" type="button" data-a="${esc(a)}" aria-pressed="false">${esc(a)}<small>${n}</small></button>`).join('');
+}
+function renderLib(){
+  const q = kana(L.q.trim());
+  let list = CATALOG.map((e, i) => i).filter(i => {
+    const e = CATALOG[i];
+    if (L.author && e[3] !== L.author) return false;
+    if (L.len !== 'all' && !LEN[L.len](e[6])) return false;
+    return !q || SEARCH[i].includes(q);
+  });
+  if (L.sort === 'short') list.sort((a, b) => CATALOG[a][6] - CATALOG[b][6]);
+  else if (L.sort === 'long') list.sort((a, b) => CATALOG[b][6] - CATALOG[a][6]);
+  else if (L.sort === 'yomi') list.sort((a, b) => CATALOG[a][4].localeCompare(CATALOG[b][4], 'ja'));
+  $('libCount').textContent = `${nf.format(list.length)}作品`;
+  $('libList').innerHTML = list.length ? list.map(i => itemHTML(CATALOG[i], i + 1)).join('') : '<div class="empty">見つかりませんでした。「本棚にない作品を読む」からファイルで開けます。</div>';
+  const recent = store.get('recent', []).map(id => byId.get(id)).filter(Boolean);
+  $('recentSec').hidden = !recent.length || !!q || !!L.author || L.len !== 'all';
+  $('recentList').innerHTML = recent.map(e => itemHTML(e, RANK.get(e[0]) + 1)).join('');
+  document.querySelectorAll('#authorChips .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.a === L.author));
+  document.querySelectorAll('#lenSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.len === L.len));
+}
+function openLib(){ pause(); closeSheet(); renderLib(); $('lib').hidden = false; $('libClose').hidden = !work; }
+function closeLib(){ $('lib').hidden = true; }
+$('openBtn').onclick = openLib;
+$('libClose').onclick = closeLib;
+$('q').addEventListener('input', e => { L.q = e.target.value; renderLib(); });
+$('authorChips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) { L.author = c.dataset.a; renderLib(); } });
+$('lenSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { L.len = b.dataset.len; renderLib(); } });
+$('sort').addEventListener('change', e => { L.sort = e.target.value; renderLib(); });
+['libList', 'recentList'].forEach(id => $(id).addEventListener('click', e => { const it = e.target.closest('.item'); if (it) openLibWork(+it.dataset.id); }));
+
+$('file').addEventListener('change', e => { const f = e.target.files[0]; if (f) handleFile(f); e.target.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer?.files[0]; if (f) handleFile(f); });
+$('pasteBtn').onclick = () => {
+  const raw = $('paste').value;
+  const w = parseAozora(raw, '貼り付けた文章');
+  if (!w.paras.length) { $('ldErr').textContent = '本文が空です。'; $('ldErr').hidden = false; return; }
+  w.key = 'paste'; showWork(w); store.set('current', { src: 'file', kind: 'paste', raw }); closeLib();
+};
+
+/* ---------- 起動 ---------- */
+applyLook(); saveSettings(); setPlayIcon(); renderChips();
+(function boot(){
+  const cur = store.get('current', null);
+  if (cur && cur.src === 'file' && cur.raw) {
+    try {
+      const w = cur.kind === 'html' ? parseHTML(cur.raw) : parseAozora(cur.raw, cur.kind === 'paste' ? '貼り付けた文章' : null);
+      w.key = cur.kind === 'paste' ? 'paste' : 'file:' + w.title;
+      if (w.paras.length) { showWork(w); return; }
+    } catch (e) {}
+  }
+  openLibWork(cur && cur.src === 'lib' && byId.has(cur.id) ? cur.id : 1567);
+})();
+</script>
+
+</body>
+</html>
