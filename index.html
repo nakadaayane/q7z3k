@@ -100,7 +100,7 @@ header.top{grid-column:1 / -1;display:flex;align-items:center;gap:16px;padding:1
 .stagewrap{flex:1;min-height:260px;display:flex;flex-direction:column;background:var(--paper);margin:46px 0 0 22px;border:2.5px solid var(--edge);border-radius:26px;overflow:visible;position:relative;box-shadow:6px 6px 0 var(--sky)}
 .stage{border-radius:24px 24px 0 0}
 /* 読む画面：上からのぞく猫と、うっすら足あと */
-.peek{position:absolute;top:-50px;right:42px;width:88px;z-index:3;pointer-events:none;animation:peek 9s var(--pop) infinite}
+.peek{position:absolute;top:-56px;right:42px;width:84px;z-index:3;pointer-events:none;animation:peek 9s var(--pop) infinite}
 .peek svg{width:100%;height:auto;display:block}
 @keyframes peek{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
 .stagewrap:fullscreen .peek,.stagewrap:fullscreen .stage-paws{display:none}
@@ -380,7 +380,7 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
   .work b{font-size:15.5px;max-width:100%}
   .work span{font-size:12px}
   .stagewrap{margin:40px 16px 0;min-height:max(240px,45svh);border-radius:22px;box-shadow:5px 5px 0 var(--sky)}
-  .peek{width:76px;top:-44px;right:26px}
+  .peek{width:72px;top:-48px;right:26px}
   .stage{padding:32px 16px}
   .transport{padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;gap:12px;justify-content:center}
   .seek{flex:1 1 100%;order:-1}
@@ -433,25 +433,28 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
 
   <section class="reader">
     <div class="stagewrap" id="stagewrap">
-      <div class="peek"><svg viewBox="40 14 160 110" aria-hidden="true" focusable="false">
-  <clipPath id="peekClip"><rect x="0" y="0" width="240" height="104"/></clipPath>
-  <g clip-path="url(#peekClip)">
-  <path d="M60 72 L 60 20 L 100 46 Z" fill="#1B1A17" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M180 72 L 180 20 L 140 46 Z" fill="#1B1A17" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M67 60 L 67 34 L 88 48 Z" fill="#F4A8C4"/>
-  <path d="M173 60 L 173 34 L 152 48 Z" fill="#F4A8C4"/>
-  <clipPath id="catHeadD"><path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z"/></clipPath>
-  <path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z" fill="#fff"/>
-  <path clip-path="url(#catHeadD)" d="M30 16 H210 V76 C 186 80, 164 72, 142 72 L 120 46 L 98 72 C 76 72, 54 80, 30 76 Z" fill="#1B1A17"/>
-  <path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z" fill="none" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <ellipse cx="94" cy="90" rx="7" ry="9" fill="#1B1A17"/><ellipse cx="146" cy="90" rx="7" ry="9" fill="#1B1A17"/><circle cx="96.5" cy="86.5" r="2.6" fill="#fff"/><circle cx="148.5" cy="86.5" r="2.6" fill="#fff"/>
-  <ellipse cx="78" cy="106" rx="10" ry="5.5" fill="#F7B7A3"/><ellipse cx="162" cy="106" rx="10" ry="5.5" fill="#F7B7A3"/>
-  <path d="M113 101 L 127 101 L 120 108 Z" fill="#F4A8C4" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M120 108 Q 120 116, 111 116 M120 108 Q 120 116, 129 116" fill="none" stroke-width="3.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M68 100 L 42 95 M68 109 L 42 111 M70 117 L 48 126 M172 100 L 198 95 M172 109 L 198 111 M170 117 L 192 126" fill="none" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/></g>
-  <ellipse cx="86" cy="106" rx="16" ry="11" fill="#fff" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <ellipse cx="154" cy="106" rx="16" ry="11" fill="#fff" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M81 99 v7 M90 99 v7 M149 99 v7 M158 99 v7" stroke-width="2.8" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
+      <div class="peek"><svg viewBox="12 6 96 90" aria-hidden="true" focusable="false">
+  <clipPath id="peekClip2"><rect x="0" y="0" width="120" height="84"/></clipPath>
+  <g clip-path="url(#peekClip2)">
+  <path d="M27 48 C 22 34, 20 22, 22 12 C 32 16, 42 23, 49 31 Z" fill="#1B1A17" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M93 48 C 98 34, 100 22, 98 12 C 88 16, 78 23, 71 31 Z" fill="#1B1A17" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M28.5 38 C 26.5 31, 26 25, 27 20.5 C 32.5 23, 37 27, 40 31 Z" fill="#F4A8C4"/>
+  <path d="M91.5 38 C 93.5 31, 94 25, 93 20.5 C 87.5 23, 83 27, 80 31 Z" fill="#F4A8C4"/>
+  <clipPath id="hD"><path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z"/></clipPath>
+  <path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z" fill="#fff"/>
+  <g clip-path="url(#hD)" fill="#1B1A17">
+    <path d="M8 16 H 58.4 C 57 30, 52.5 42, 43 49.5 C 34 56, 20 56.5, 8 52 Z"/>
+    <path d="M112 16 H 61.6 C 63 30, 67.5 42, 77 49.5 C 86 56, 100 56.5, 112 52 Z"/>
+  </g>
+  <path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z" fill="none" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="46" cy="65" r="3.7" fill="#1B1A17"/><circle cx="74" cy="65" r="3.7" fill="#1B1A17"/>
+  <ellipse cx="35.5" cy="75" rx="5.8" ry="3.2" fill="#F7B7A3" opacity=".75"/><ellipse cx="84.5" cy="75" rx="5.8" ry="3.2" fill="#F7B7A3" opacity=".75"/>
+  <path d="M57.8 71.5 L 62.2 71.5 L 60 74.2 Z" fill="#F4A8C4" stroke="#1B1A17" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M60 74.2 Q 60 77.8 56.4 77.8 M60 74.2 Q 60 77.8 63.6 77.8" fill="none" stroke="#1B1A17" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M28 70 L 16 68 M28 75 L 17 77 M92 70 L 104 68 M92 75 L 103 77" fill="none" stroke="#1B1A17" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></g>
+  <ellipse cx="38" cy="84" rx="10.5" ry="7.5" fill="#fff" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <ellipse cx="82" cy="84" rx="10.5" ry="7.5" fill="#fff" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M34.5 79 v5 M41.5 79 v5 M78.5 79 v5 M85.5 79 v5" stroke="#1B1A17" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
 </svg></div>
       <div class="stage-paws" aria-hidden="true"><svg style="left:2px;top:70px;transform:rotate(40deg)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg><svg style="left:22px;top:56px;transform:rotate(60deg)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg><svg style="left:30px;top:32px;transform:rotate(40deg)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg><svg style="left:52px;top:20px;transform:rotate(60deg)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg><svg style="left:60px;top:-4px;transform:rotate(40deg)" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></div>
       <div class="para" id="paraLabel"></div>
@@ -563,33 +566,37 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
       <div class="hero-art" aria-hidden="true">
         <svg class="plane float drift" viewBox="0 0 80 50"><path d="M4 26 L74 4 L40 46 L34 30 Z" fill="#fff" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round"/><path d="M34 30 L74 4" stroke="#1B1A17" stroke-width="2.4"/><path d="M12 30 h6 M16 30 v6" stroke="#E4532F" stroke-width="1.6" opacity=".7"/></svg>
         <svg class="seat" viewBox="0 0 300 110"><path d="M40 104 Q10 104 10 80 Q10 58 36 58 Q40 30 76 30 Q94 8 126 20 Q150 6 176 22 Q210 12 224 42 Q260 40 268 66 Q292 70 290 88 Q288 104 266 104 Z" fill="#fff" stroke="#1B1A17" stroke-width="3.5" stroke-linejoin="round"/><path d="M60 84 q10 -8 22 -2 M190 78 q12 -8 24 0" stroke="#1B1A17" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".5"/></svg>
-        <div class="cat float slow"><svg viewBox="30 10 200 250" aria-hidden="true" focusable="false">
-  <path d="M168 226 C 214 228, 226 192, 204 174 C 194 166, 184 174, 192 184" fill="none" stroke="#1B1A17" stroke-width="17" stroke-linecap="round"/>
-  <path d="M78 126 C 58 150, 52 196, 58 234 L 182 234 C 188 196, 182 150, 162 126 Z" fill="#fff" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M84 234 C 84 218, 112 218, 112 234 M128 234 C 128 218, 156 218, 156 234" fill="#fff" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M86 128 C 102 140, 138 140, 154 128" fill="none" stroke="#E4532F" stroke-width="10" stroke-linecap="round"/>
-  
-  <path d="M60 72 L 60 20 L 100 46 Z" fill="#1B1A17" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M180 72 L 180 20 L 140 46 Z" fill="#1B1A17" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M67 60 L 67 34 L 88 48 Z" fill="#F4A8C4"/>
-  <path d="M173 60 L 173 34 L 152 48 Z" fill="#F4A8C4"/>
-  <clipPath id="catHeadA"><path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z"/></clipPath>
-  <path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z" fill="#fff"/>
-  <path clip-path="url(#catHeadA)" d="M30 16 H210 V76 C 186 80, 164 72, 142 72 L 120 46 L 98 72 C 76 72, 54 80, 30 76 Z" fill="#1B1A17"/>
-  <path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z" fill="none" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M84 94 Q 94 88, 104 94 M136 94 Q 146 88, 156 94" fill="none" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/><path d="M86 96 Q 94 99, 102 96 M138 96 Q 146 99, 154 96" fill="none" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <ellipse cx="78" cy="106" rx="10" ry="5.5" fill="#F7B7A3"/><ellipse cx="162" cy="106" rx="10" ry="5.5" fill="#F7B7A3"/>
-  <path d="M113 101 L 127 101 L 120 108 Z" fill="#F4A8C4" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M120 108 Q 120 116, 111 116 M120 108 Q 120 116, 129 116" fill="none" stroke-width="3.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M68 100 L 42 95 M68 109 L 42 111 M70 117 L 48 126 M172 100 L 198 95 M172 109 L 198 111 M170 117 L 192 126" fill="none" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <circle cx="120" cy="142" r="7.5" fill="#F6E85E" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/><path d="M120 144 v4" stroke-width="2.4" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M54 172 L 54 214 C 84 206, 106 208, 120 218 C 134 208, 156 206, 186 214 L 186 172" fill="#8FD0EE" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M60 166 C 84 158, 106 160, 120 170 L 120 212 C 106 202, 84 200, 60 208 Z" fill="#fff" stroke-width="4.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M180 166 C 156 158, 134 160, 120 170 L 120 212 C 134 202, 156 200, 180 208 Z" fill="#fff" stroke-width="4.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M70 178 Q 88 172, 108 178 M70 188 Q 88 182, 108 188 M132 178 Q 152 172, 170 178 M132 188 Q 152 182, 170 188" fill="none" stroke-width="2.4" opacity=".45" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <ellipse cx="74" cy="166" rx="15" ry="11.5" fill="#fff" stroke-width="4.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <ellipse cx="166" cy="166" rx="15" ry="11.5" fill="#fff" stroke-width="4.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M69 159 v6 M77 159 v6 M161 159 v6 M169 159 v6" stroke-width="2.6" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
+        <div class="cat float slow"><svg viewBox="30 0 200 260" aria-hidden="true" focusable="false">
+  <path d="M170 226 C 212 228, 224 194, 204 176 C 195 168, 186 175, 193 184" fill="none" stroke="#1B1A17" stroke-width="15" stroke-linecap="round"/>
+  <path d="M80 128 C 60 152, 54 196, 60 234 L 180 234 C 186 196, 180 152, 160 128 Z" fill="#fff" stroke="#1B1A17" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M152 136 C 168 150, 176 176, 178 200 L 160 176 Z" fill="#1B1A17"/>
+  <path d="M86 234 C 86 220, 112 220, 112 234 M128 234 C 128 220, 154 220, 154 234" fill="#fff" stroke="#1B1A17" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M90 130 C 104 140, 136 140, 150 130" fill="none" stroke="#E4532F" stroke-width="9" stroke-linecap="round"/>
+  <g transform="translate(30 -15) scale(1.5)">
+  <path d="M27 48 C 22 34, 20 22, 22 12 C 32 16, 42 23, 49 31 Z" fill="#1B1A17" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M93 48 C 98 34, 100 22, 98 12 C 88 16, 78 23, 71 31 Z" fill="#1B1A17" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M28.5 38 C 26.5 31, 26 25, 27 20.5 C 32.5 23, 37 27, 40 31 Z" fill="#F4A8C4"/>
+  <path d="M91.5 38 C 93.5 31, 94 25, 93 20.5 C 87.5 23, 83 27, 80 31 Z" fill="#F4A8C4"/>
+  <clipPath id="hA"><path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z"/></clipPath>
+  <path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z" fill="#fff"/>
+  <g clip-path="url(#hA)" fill="#1B1A17">
+    <path d="M8 16 H 58.4 C 57 30, 52.5 42, 43 49.5 C 34 56, 20 56.5, 8 52 Z"/>
+    <path d="M112 16 H 61.6 C 63 30, 67.5 42, 77 49.5 C 86 56, 100 56.5, 112 52 Z"/>
+  </g>
+  <path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z" fill="none" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <ellipse cx="46.5" cy="68" rx="3.6" ry="3.2" fill="#1B1A17"/><ellipse cx="73.5" cy="68" rx="3.6" ry="3.2" fill="#1B1A17"/>
+  <ellipse cx="35.5" cy="75" rx="5.8" ry="3.2" fill="#F7B7A3" opacity=".75"/><ellipse cx="84.5" cy="75" rx="5.8" ry="3.2" fill="#F7B7A3" opacity=".75"/>
+  <path d="M57.8 71.5 L 62.2 71.5 L 60 74.2 Z" fill="#F4A8C4" stroke="#1B1A17" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M60 74.2 Q 60 77.8 56.4 77.8 M60 74.2 Q 60 77.8 63.6 77.8" fill="none" stroke="#1B1A17" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M28 70 L 16 68 M28 75 L 17 77 M92 70 L 104 68 M92 75 L 103 77" fill="none" stroke="#1B1A17" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></g>
+  <circle cx="120" cy="143" r="7" fill="#F6E85E" stroke="#1B1A17" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M120 145 v3.6" stroke="#1B1A17" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M56 172 L 56 213 C 84 206, 106 208, 120 217 C 134 208, 156 206, 184 213 L 184 172" fill="#8FD0EE" stroke="#1B1A17" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M62 167 C 85 159, 106 161, 120 171 L 120 211 C 106 202, 85 200, 62 207 Z" fill="#fff" stroke="#1B1A17" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M178 167 C 155 159, 134 161, 120 171 L 120 211 C 134 202, 155 200, 178 207 Z" fill="#fff" stroke="#1B1A17" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M72 179 Q 89 173, 108 179 M72 189 Q 89 183, 108 189 M132 179 Q 151 173, 168 179 M132 189 Q 151 183, 168 189" fill="none" stroke="#1B1A17" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" opacity=".4"/>
+  <ellipse cx="75" cy="167" rx="14" ry="10.5" fill="#fff" stroke="#1B1A17" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <ellipse cx="165" cy="167" rx="14" ry="10.5" fill="#fff" stroke="#1B1A17" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M70.5 160.5 v5 M78.5 160.5 v5 M160.5 160.5 v5 M168.5 160.5 v5" stroke="#1B1A17" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
 </svg><span class="moji">あ</span><span class="moji">文</span><span class="moji">流</span></div>
       </div>
     </div>
@@ -622,27 +629,30 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
         <div class="acts"><button class="btn primary" type="button" id="todayRead">この作品を読む</button><button class="btn" type="button" id="todayMore">くわしく</button></div>
       </div>
       <div class="cat"><svg viewBox="0 0 260 230" aria-hidden="true" focusable="false">
-  <rect x="34" y="176" width="196" height="30" rx="5" fill="#A6D98F" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <rect x="48" y="148" width="170" height="30" rx="5" fill="#F7B7A3" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M60 176 H 206 M60 162 H 200 M50 192 H 214" stroke-width="2.4" opacity=".4" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M150 150 C 200 150, 222 136, 214 116 C 208 102, 194 108, 200 118" fill="none" stroke="#1B1A17" stroke-width="15" stroke-linecap="round"/>
-  <path d="M70 150 C 62 110, 96 92, 138 94 C 184 96, 206 120, 196 150 Z" fill="#fff" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M120 96 C 150 94, 178 104, 190 122 C 176 116, 150 116, 128 122 Z" fill="#1B1A17"/>
-  <g transform="translate(20 36) scale(.62)">
-  <path d="M60 72 L 60 20 L 100 46 Z" fill="#1B1A17" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M180 72 L 180 20 L 140 46 Z" fill="#1B1A17" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M67 60 L 67 34 L 88 48 Z" fill="#F4A8C4"/>
-  <path d="M173 60 L 173 34 L 152 48 Z" fill="#F4A8C4"/>
-  <clipPath id="catHeadB"><path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z"/></clipPath>
-  <path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z" fill="#fff"/>
-  <path clip-path="url(#catHeadB)" d="M30 16 H210 V76 C 186 80, 164 72, 142 72 L 120 46 L 98 72 C 76 72, 54 80, 30 76 Z" fill="#1B1A17"/>
-  <path d="M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z" fill="none" stroke-width="5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M84 92 Q 94 99, 104 92 M136 92 Q 146 99, 156 92" fill="none" stroke-width="4.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <ellipse cx="78" cy="106" rx="10" ry="5.5" fill="#F7B7A3"/><ellipse cx="162" cy="106" rx="10" ry="5.5" fill="#F7B7A3"/>
-  <path d="M113 101 L 127 101 L 120 108 Z" fill="#F4A8C4" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M120 108 Q 120 116, 111 116 M120 108 Q 120 116, 129 116" fill="none" stroke-width="3.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M68 100 L 42 95 M68 109 L 42 111 M70 117 L 48 126 M172 100 L 198 95 M172 109 L 198 111 M170 117 L 192 126" fill="none" stroke-width="3" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/></g>
-  <path d="M84 150 C 84 140, 104 140, 104 150 M112 150 C 112 140, 132 140, 132 150" fill="#fff" stroke-width="4.5" stroke="#1B1A17" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="34" y="176" width="196" height="30" rx="6" fill="#A6D98F" stroke="#1B1A17" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="48" y="148" width="170" height="30" rx="6" fill="#F7B7A3" stroke="#1B1A17" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M62 162 H 200 M52 192 H 214" stroke="#1B1A17" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" opacity=".35"/>
+  <path d="M150 150 C 200 150, 222 136, 214 116 C 208 103, 195 108, 200 118" fill="none" stroke="#1B1A17" stroke-width="13" stroke-linecap="round"/>
+  <path d="M72 150 C 64 112, 96 94, 138 96 C 182 98, 204 120, 196 150 Z" fill="#fff" stroke="#1B1A17" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M124 98 C 152 96, 178 106, 190 124 C 176 118, 150 118, 130 124 Z" fill="#1B1A17"/>
+  <g transform="translate(18 44) scale(0.98)">
+  <path d="M27 48 C 22 34, 20 22, 22 12 C 32 16, 42 23, 49 31 Z" fill="#1B1A17" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M93 48 C 98 34, 100 22, 98 12 C 88 16, 78 23, 71 31 Z" fill="#1B1A17" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M28.5 38 C 26.5 31, 26 25, 27 20.5 C 32.5 23, 37 27, 40 31 Z" fill="#F4A8C4"/>
+  <path d="M91.5 38 C 93.5 31, 94 25, 93 20.5 C 87.5 23, 83 27, 80 31 Z" fill="#F4A8C4"/>
+  <clipPath id="hB"><path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z"/></clipPath>
+  <path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z" fill="#fff"/>
+  <g clip-path="url(#hB)" fill="#1B1A17">
+    <path d="M8 16 H 58.4 C 57 30, 52.5 42, 43 49.5 C 34 56, 20 56.5, 8 52 Z"/>
+    <path d="M112 16 H 61.6 C 63 30, 67.5 42, 77 49.5 C 86 56, 100 56.5, 112 52 Z"/>
+  </g>
+  <path d="M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z" fill="none" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M41 66 Q 46 70.5 51 66 M69 66 Q 74 70.5 79 66" fill="none" stroke="#1B1A17" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+  <ellipse cx="35.5" cy="75" rx="5.8" ry="3.2" fill="#F7B7A3" opacity=".75"/><ellipse cx="84.5" cy="75" rx="5.8" ry="3.2" fill="#F7B7A3" opacity=".75"/>
+  <path d="M57.8 71.5 L 62.2 71.5 L 60 74.2 Z" fill="#F4A8C4" stroke="#1B1A17" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M60 74.2 Q 60 77.8 56.4 77.8 M60 74.2 Q 60 77.8 63.6 77.8" fill="none" stroke="#1B1A17" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M28 70 L 16 68 M28 75 L 17 77 M92 70 L 104 68 M92 75 L 103 77" fill="none" stroke="#1B1A17" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></g>
+  <path d="M86 150 C 86 141, 104 141, 104 150 M112 150 C 112 141, 130 141, 130 150" fill="#fff" stroke="#1B1A17" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
 </svg><span class="zz">Z</span><span class="zz">z</span></div>
     </section>
 
@@ -1571,7 +1581,7 @@ const MOTIFS = {
 };
 return MOTIFS;
 })();
-const CAT_HUH = "<svg viewBox=\"20 0 230 150\" aria-hidden=\"true\" focusable=\"false\">\n  <g transform=\"rotate(-10 120 90)\">\n  <path d=\"M60 72 L 60 20 L 100 46 Z\" fill=\"#1B1A17\" stroke-width=\"5\" stroke=\"#1B1A17\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M180 72 L 180 20 L 140 46 Z\" fill=\"#1B1A17\" stroke-width=\"5\" stroke=\"#1B1A17\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M67 60 L 67 34 L 88 48 Z\" fill=\"#F4A8C4\"/>\n  <path d=\"M173 60 L 173 34 L 152 48 Z\" fill=\"#F4A8C4\"/>\n  <clipPath id=\"catHeadC\"><path d=\"M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z\"/></clipPath>\n  <path d=\"M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z\" fill=\"#fff\"/>\n  <path clip-path=\"url(#catHeadC)\" d=\"M30 16 H210 V76 C 186 80, 164 72, 142 72 L 120 46 L 98 72 C 76 72, 54 80, 30 76 Z\" fill=\"#1B1A17\"/>\n  <path d=\"M52 92 C 48 62, 70 40, 120 40 C 170 40, 192 62, 188 92 C 186 118, 158 132, 120 132 C 82 132, 54 118, 52 92 Z\" fill=\"none\" stroke-width=\"5\" stroke=\"#1B1A17\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <ellipse cx=\"94\" cy=\"90\" rx=\"7\" ry=\"9\" fill=\"#1B1A17\"/><ellipse cx=\"146\" cy=\"90\" rx=\"7\" ry=\"9\" fill=\"#1B1A17\"/><circle cx=\"96.5\" cy=\"86.5\" r=\"2.6\" fill=\"#fff\"/><circle cx=\"148.5\" cy=\"86.5\" r=\"2.6\" fill=\"#fff\"/>\n  <ellipse cx=\"78\" cy=\"106\" rx=\"10\" ry=\"5.5\" fill=\"#F7B7A3\"/><ellipse cx=\"162\" cy=\"106\" rx=\"10\" ry=\"5.5\" fill=\"#F7B7A3\"/>\n  <path d=\"M113 101 L 127 101 L 120 108 Z\" fill=\"#F4A8C4\" stroke-width=\"3\" stroke=\"#1B1A17\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M120 108 Q 120 116, 111 116 M120 108 Q 120 116, 129 116\" fill=\"none\" stroke-width=\"3.5\" stroke=\"#1B1A17\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M68 100 L 42 95 M68 109 L 42 111 M70 117 L 48 126 M172 100 L 198 95 M172 109 L 198 111 M170 117 L 192 126\" fill=\"none\" stroke-width=\"3\" stroke=\"#1B1A17\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></g>\n  <path d=\"M206 30 C 206 14, 232 14, 232 30 C 232 42, 218 42, 218 54 M218 64 v2\" fill=\"none\" stroke-width=\"6\" stroke=\"#1B1A17\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n</svg>";
+const CAT_HUH = "<svg viewBox=\"6 2 138 116\" aria-hidden=\"true\" focusable=\"false\">\n  <g transform=\"translate(0 0) rotate(-10 60 66) scale(1)\">\n  <path d=\"M27 48 C 22 34, 20 22, 22 12 C 32 16, 42 23, 49 31 Z\" fill=\"#1B1A17\" stroke=\"#1B1A17\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M93 48 C 98 34, 100 22, 98 12 C 88 16, 78 23, 71 31 Z\" fill=\"#1B1A17\" stroke=\"#1B1A17\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M28.5 38 C 26.5 31, 26 25, 27 20.5 C 32.5 23, 37 27, 40 31 Z\" fill=\"#F4A8C4\"/>\n  <path d=\"M91.5 38 C 93.5 31, 94 25, 93 20.5 C 87.5 23, 83 27, 80 31 Z\" fill=\"#F4A8C4\"/>\n  <clipPath id=\"hC\"><path d=\"M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z\"/></clipPath>\n  <path d=\"M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z\" fill=\"#fff\"/>\n  <g clip-path=\"url(#hC)\" fill=\"#1B1A17\">\n    <path d=\"M8 16 H 58.4 C 57 30, 52.5 42, 43 49.5 C 34 56, 20 56.5, 8 52 Z\"/>\n    <path d=\"M112 16 H 61.6 C 63 30, 67.5 42, 77 49.5 C 86 56, 100 56.5, 112 52 Z\"/>\n  </g>\n  <path d=\"M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <circle cx=\"46\" cy=\"64\" r=\"4.2\" fill=\"#1B1A17\"/><circle cx=\"74\" cy=\"64\" r=\"4.2\" fill=\"#1B1A17\"/><circle cx=\"47.3\" cy=\"62.6\" r=\"1.3\" fill=\"#fff\"/><circle cx=\"75.3\" cy=\"62.6\" r=\"1.3\" fill=\"#fff\"/>\n  <ellipse cx=\"35.5\" cy=\"75\" rx=\"5.8\" ry=\"3.2\" fill=\"#F7B7A3\" opacity=\".75\"/><ellipse cx=\"84.5\" cy=\"75\" rx=\"5.8\" ry=\"3.2\" fill=\"#F7B7A3\" opacity=\".75\"/>\n  <path d=\"M57.8 71.5 L 62.2 71.5 L 60 74.2 Z\" fill=\"#F4A8C4\" stroke=\"#1B1A17\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M60 74.2 Q 60 77.8 56.4 77.8 M60 74.2 Q 60 77.8 63.6 77.8\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M28 70 L 16 68 M28 75 L 17 77 M92 70 L 104 68 M92 75 L 103 77\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"1.8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></g>\n  <path d=\"M114 28 C 114 18, 132 18, 132 29 C 132 37, 122 37, 122 45 M122 52 v1.5\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n</svg>";
 const PAW = "<svg viewBox=\"0 0 32 32\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z\"/><ellipse cx=\"6.6\" cy=\"13.6\" rx=\"3.3\" ry=\"4.2\" transform=\"rotate(-24 6.6 13.6)\"/><ellipse cx=\"12.4\" cy=\"8.6\" rx=\"3.4\" ry=\"4.4\" transform=\"rotate(-8 12.4 8.6)\"/><ellipse cx=\"19.6\" cy=\"8.6\" rx=\"3.4\" ry=\"4.4\" transform=\"rotate(8 19.6 8.6)\"/><ellipse cx=\"25.4\" cy=\"13.6\" rx=\"3.3\" ry=\"4.2\" transform=\"rotate(24 25.4 13.6)\"/></svg>";
 const AUTH = new Map(AUTHORS.map(a => [a[0], a]));
 const L = { q: '', author: '', len: 'all', sort: 'rank', limit: 90 };
