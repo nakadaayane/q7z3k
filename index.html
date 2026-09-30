@@ -5,192 +5,391 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="description" content="青空文庫の作品を、一回の文字数と表示時間を決めて自動で流し読みできるリーダー。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2327497A'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='%23F8F9F6' font-family='serif'%3E%E6%B5%81%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23E4532F'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='%23F8F9F6' font-family='serif'%3E%E6%B5%81%3C/text%3E%3C/svg%3E">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>青空文庫ながし読み</title>
-<meta name="theme-color" content="#EEF0EC">
+<meta name="theme-color" content="#8FD0EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1437" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Shippori+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@600&family=Shippori+Mincho:wght@400;600&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
+/* ===== 色と文字（昼＝青空、夜＝星空） ===== */
 :root{
-  --bg:#EEF0EC;
-  --paper:#F8F9F6;
-  --ink:#1B2230;
-  --muted:#5D6776;
-  --line:#D5D9DE;
-  --ai:#27497A;
-  --ai-soft:#DDE4EF;
-  --shu:#B4432E;
-  --focus:#27497A;
-  --shadow:rgba(20,30,50,.18);
+  --bg:#F2F8FC;
+  --paper:#FFFFFF;
+  --ink:#1B1A17;
+  --muted:#58626D;
+  --hair:#D3E2EB;
+  --edge:#1B1A17;
+  --sky:#8FD0EE;
+  --sky-2:#D4EEF9;
+  --sky-deep:#1B6AA6;
+  --sun:#F6E85E;
+  --shu:#E4532F;
+  --leaf:#A6D98F;
+  --cloud:#FFFFFF;
+  --focus:#1B6AA6;
+  --shadow:rgba(27,26,23,.22);
+  --round:"Zen Maru Gothic","Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;
+  --hand:"Klee One","Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;
   --mincho:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
   --udgothic:"BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
   --read:var(--udgothic);
-  --gothic:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;
+  --gothic:var(--round);
   --fs:64px;
+  --pop:cubic-bezier(.62,.06,.36,1.12);
+  --spring:cubic-bezier(.2,.9,.3,1.25);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --bg:#10141B; --paper:#171C25; --ink:#E4E7EC; --muted:#98A2B2; --line:#2B3240;
-    --ai:#8FAAD8; --ai-soft:#223149; --shu:#E0806B; --focus:#8FAAD8; --shadow:rgba(0,0,0,.5);
+    --bg:#0E1437; --paper:#18204A; --ink:#F3F0E4; --muted:#AEB7DB; --hair:#2A3566; --edge:#F3F0E4;
+    --sky:#243A83; --sky-2:#1A2862; --sky-deep:#9CCBFF; --sun:#F4E36A; --shu:#FF8566; --leaf:#8FCB7B;
+    --cloud:#2E3F86; --focus:#9CCBFF; --shadow:rgba(0,0,0,.55);
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#10141B; --paper:#171C25; --ink:#E4E7EC; --muted:#98A2B2; --line:#2B3240;
-  --ai:#8FAAD8; --ai-soft:#223149; --shu:#E0806B; --focus:#8FAAD8; --shadow:rgba(0,0,0,.5);
+  --bg:#0E1437; --paper:#18204A; --ink:#F3F0E4; --muted:#AEB7DB; --hair:#2A3566; --edge:#F3F0E4;
+  --sky:#243A83; --sky-2:#1A2862; --sky-deep:#9CCBFF; --sun:#F4E36A; --shu:#FF8566; --leaf:#8FCB7B;
+  --cloud:#2E3F86; --focus:#9CCBFF; --shadow:rgba(0,0,0,.55);
 }
 html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--gothic);font-size:14px;line-height:1.6;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:var(--round);font-weight:500;font-size:15px;line-height:1.7;-webkit-tap-highlight-color:transparent}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 button,input,select,textarea{font:inherit;color:inherit}
 button{touch-action:manipulation}
-:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:8px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 320px;grid-template-rows:auto minmax(0,1fr)}
-header.top{grid-column:1 / -1;display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:10px;font-family:var(--mincho);font-weight:600;font-size:17px;letter-spacing:.06em;white-space:nowrap}
-.seal{display:inline-grid;place-items:center;width:26px;height:26px;background:var(--ai);color:var(--paper);border-radius:3px;font-size:14px;letter-spacing:0;flex:none}
-.work{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;color:var(--muted);overflow:hidden}
-.work b{color:var(--ink);font-family:var(--mincho);font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.work span{white-space:nowrap;flex:none}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:6px 14px;border:1px solid var(--line);background:var(--paper);border-radius:8px;cursor:pointer;font-weight:500;white-space:nowrap}
-.btn:hover{border-color:var(--ai)}
-.btn.primary{background:var(--ai);border-color:var(--ai);color:var(--paper)}
+/* ===== ふわふわ・きらきら（WP UPs の動きを参考に） ===== */
+@keyframes fuwa{0%,100%{transform:translateY(0)}50%{transform:translateY(.55rem)}}
+@keyframes fuwa2{0%,100%{transform:translate(0,0) rotate(-2deg)}50%{transform:translate(.4rem,-.45rem) rotate(2deg)}}
+@keyframes kira{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+@keyframes nagare{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes rise{0%{opacity:0;transform:translate(0,6px) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx,6px),-46px) scale(1.05)}}
+@keyframes popin{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+.float{animation:fuwa 7s var(--pop) infinite}
+.float.slow{animation-duration:9s}
+.float.drift{animation-name:fuwa2;animation-duration:8s}
+
+/* ===== 共通のボタン（太い線＋ずらした影＝シール風） ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:6px 16px;border:2.5px solid var(--edge);background:var(--paper);color:var(--ink);border-radius:999px;cursor:pointer;font-family:var(--round);font-weight:700;white-space:nowrap;box-shadow:3px 3px 0 var(--edge);transition:transform .15s var(--spring),box-shadow .15s ease}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--edge)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}
+.btn.primary{background:var(--sun);color:#1B1A17}
 .btn svg{width:18px;height:18px;fill:currentColor}
+.btn.big{min-height:52px;padding-inline:26px;font-size:17px}
 
-/* ステージ */
+/* ===== ロゴ（赤い丸のはんこ「流」） ===== */
+.stamp{display:inline-grid;place-items:center;width:34px;height:34px;flex:none;border-radius:50%;background:var(--shu);color:#fff;font-family:var(--round);font-weight:900;font-size:18px;line-height:1;transform:rotate(-8deg);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand .name{display:flex;flex-direction:column;line-height:1.1;font-weight:900;font-size:18px;letter-spacing:.04em}
+.brand .name small{font-size:10px;font-weight:700;letter-spacing:.18em;color:var(--muted)}
+
+/* ===== 読む画面 ===== */
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 330px;grid-template-rows:auto minmax(0,1fr)}
+header.top{grid-column:1 / -1;display:flex;align-items:center;gap:16px;padding:12px 22px}
+.work{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;color:var(--muted);overflow:hidden;padding-left:14px;border-left:2px dashed var(--hair)}
+.work b{color:var(--ink);font-family:var(--read);font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.work span{white-space:nowrap;flex:none;font-size:13px}
 .reader{display:flex;flex-direction:column;min-height:0;min-width:0}
-.stagewrap{flex:1;min-height:260px;display:flex;flex-direction:column;background:var(--paper);margin:16px 0 0 20px;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
-.stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6em;padding:32px 24px;overflow:hidden;font-family:var(--read);text-align:center;cursor:pointer;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.stagewrap{flex:1;min-height:260px;display:flex;flex-direction:column;background:var(--paper);margin:8px 0 0 22px;border:2.5px solid var(--edge);border-radius:26px;overflow:hidden;position:relative;box-shadow:6px 6px 0 var(--sky)}
+.stage-cloud .sc{fill:var(--sky-2);stroke:var(--edge)}
+.stage-cloud{position:absolute;top:14px;right:16px;width:64px;height:auto;pointer-events:none;opacity:.9}
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6em;padding:36px 24px;overflow:hidden;font-family:var(--read);text-align:center;cursor:pointer;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .stage .now{font-size:min(var(--fs),12vw);line-height:1.5;letter-spacing:.04em;max-width:100%;overflow-wrap:anywhere}
-.stage .ctx{font-size:min(calc(var(--fs) * .38),5vw);color:var(--muted);opacity:.55;line-height:1.5;max-width:100%}
+.stage .ctx{font-size:min(calc(var(--fs) * .38),5vw);color:var(--muted);opacity:.6;line-height:1.5;max-width:100%}
 .stage rt{font-size:.42em;letter-spacing:0;color:var(--muted)}
 .stage.vertical{writing-mode:vertical-rl;text-orientation:mixed}
 .stage.vertical .now{max-height:100%;font-size:min(var(--fs),12vh)}
-.now.in{animation:fadein .12s ease-out}
-@keyframes fadein{from{opacity:.15}to{opacity:1}}
-@media (prefers-reduced-motion: reduce){.now.in{animation:none}.tick i{transition:none!important}aside.settings{transition:none!important}}
-.tick{height:3px;background:var(--line);flex:none}
-.tick i{display:block;height:100%;width:0;background:var(--ai)}
-.para{position:absolute;top:10px;left:14px;font-size:12px;color:var(--muted);letter-spacing:.08em;pointer-events:none}
-.hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted);pointer-events:none}
-.toast{position:absolute;left:12px;right:12px;bottom:12px;padding:8px 12px;border-radius:8px;background:var(--ink);color:var(--paper);font-size:13px;text-align:center;pointer-events:none;z-index:2}
-.tbtn[aria-pressed=true]{background:var(--ai-soft);border-color:var(--ai);color:var(--ai)}
-.field.off{opacity:.45}
-.note{margin:0;font-size:12px;color:var(--muted)}
-.note.warn{color:var(--shu)}
-.vsel{width:100%;min-height:38px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:14px}
-.loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--muted);font-size:14px}
-.stagewrap:fullscreen{margin:0;border-radius:0;border:0}
-
-/* 操作バー */
-.transport{display:flex;align-items:center;gap:12px;padding:14px 0 16px 20px}
-.tbtn{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:var(--paper);cursor:pointer}
-.tbtn:hover{border-color:var(--ai)}
-.tbtn.play{width:56px;height:56px;background:var(--ai);border-color:var(--ai);color:var(--paper)}
-.tbtn svg{width:20px;height:20px;fill:currentColor}
+.now.in{animation:fadein .14s ease-out}
+@keyframes fadein{from{opacity:.15;transform:translateY(3px)}to{opacity:1;transform:none}}
+.tick{height:6px;background:var(--sky-2);flex:none;border-top:2px solid var(--edge)}
+.tick i{display:block;height:100%;width:0;background:var(--sun)}
+.para{position:absolute;top:14px;left:18px;font-size:12px;color:var(--muted);letter-spacing:.08em;pointer-events:none;font-weight:700}
+.hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted);pointer-events:none}
+.toast{position:absolute;left:14px;right:14px;bottom:16px;padding:9px 14px;border-radius:14px;background:var(--ink);color:var(--bg);font-size:13px;text-align:center;pointer-events:none;z-index:2;animation:popin .35s var(--spring)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--muted);font-size:14px;font-weight:700}
+.stagewrap:fullscreen{margin:0;border-radius:0;border:0;box-shadow:none}
+.transport{display:flex;align-items:center;gap:12px;padding:16px 0 18px 22px}
+.tbtn{width:48px;height:48px;flex:none;display:grid;place-items:center;border-radius:50%;border:2.5px solid var(--edge);background:var(--paper);color:var(--ink);cursor:pointer;box-shadow:3px 3px 0 var(--edge);transition:transform .15s var(--spring),box-shadow .15s ease,background .2s}
+.tbtn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--edge)}
+.tbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}
+.tbtn.play{width:64px;height:64px;background:var(--sun);color:#1B1A17}
+.tbtn svg{width:21px;height:21px;fill:currentColor}
+.tbtn[aria-pressed=true]{background:var(--sky);color:#1B1A17}
 .seek{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.seek input{width:100%;accent-color:var(--ai);margin:0;height:28px}
-.seekmeta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.seek input{width:100%;accent-color:var(--sky-deep);margin:0;height:28px}
+.seekmeta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
 .only-mobile{display:none}
 
-/* 設定 */
-aside.settings{padding:16px 20px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+/* ===== 設定 ===== */
+aside.settings{padding:10px 22px 20px;overflow:auto;display:flex;flex-direction:column;gap:14px}
 .sheethead{display:none}
-.group{display:flex;flex-direction:column;gap:10px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-.group:last-child{border-bottom:0}
-.group h3{margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--muted)}
+.group{display:flex;flex-direction:column;gap:10px;padding:14px 16px 16px;border:2px solid var(--edge);border-radius:20px;background:var(--paper)}
+.group h3{margin:0;font-size:13px;font-weight:900;letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.group h3::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--dot,var(--sky));border:2px solid var(--edge)}
+.group:nth-child(3) h3{--dot:var(--sun)} .group:nth-child(4) h3{--dot:var(--leaf)} .group:nth-child(5) h3{--dot:var(--shu)}
 .field{display:flex;flex-direction:column;gap:4px}
 .field .row{display:flex;align-items:center;gap:10px}
-.field label{font-weight:500}
-.field input[type=range]{flex:1;accent-color:var(--ai);min-width:0;height:28px}
-.num{width:70px;padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:var(--paper);text-align:right;font-variant-numeric:tabular-nums;font-size:16px}
+.field label{font-weight:700}
+.field input[type=range]{flex:1;accent-color:var(--sky-deep);min-width:0;height:28px}
+.field.off{opacity:.45}
+.num{width:72px;padding:5px 8px;border:2px solid var(--edge);border-radius:12px;background:var(--paper);text-align:right;font-variant-numeric:tabular-nums;font-size:16px}
 .unit{color:var(--muted);font-size:12px;width:1.5em}
-.speed{display:flex;align-items:baseline;gap:6px;padding:10px 12px;background:var(--ai-soft);border-radius:6px;flex-wrap:wrap}
-.speed strong{font-size:22px;font-variant-numeric:tabular-nums;color:var(--ai);font-weight:700}
+.speed{display:flex;align-items:baseline;gap:6px;padding:10px 14px;background:var(--sky-2);border-radius:14px;flex-wrap:wrap}
+.speed strong{font-size:24px;font-variant-numeric:tabular-nums;color:var(--ink);font-weight:900}
 .speed small{color:var(--muted)}
-.check{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
-.check input{margin-top:5px;accent-color:var(--ai);width:16px;height:16px;flex:none}
-.check small{display:block;color:var(--muted);font-size:12px}
-.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{flex:1;min-height:38px;padding:6px 8px;border:0;background:var(--paper);cursor:pointer}
-.seg button[aria-pressed=true]{background:var(--ai);color:var(--paper)}
-.keys{font-size:12px;color:var(--muted);line-height:1.9}
-kbd{font-family:var(--gothic);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--paper)}
-.scrim{position:fixed;inset:0;background:rgba(10,15,25,.35);z-index:19}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-weight:700}
+.check input{margin-top:5px;accent-color:var(--sky-deep);width:18px;height:18px;flex:none}
+.check small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.seg{display:flex;border:2px solid var(--edge);border-radius:999px;overflow:hidden;background:var(--paper)}
+.seg button{flex:1;min-height:40px;padding:6px 8px;border:0;background:transparent;cursor:pointer;font-weight:700}
+.seg button[aria-pressed=true]{background:var(--sun);color:#1B1A17}
+.note{margin:0;font-size:12px;color:var(--muted)}
+.note.warn{color:var(--shu)}
+.vsel{width:100%;min-height:42px;padding:6px 12px;border:2px solid var(--edge);border-radius:14px;background:var(--paper);font-size:14px}
+.keys{font-size:12px;color:var(--muted);line-height:2}
+kbd{font-family:var(--round);font-size:11px;border:1.5px solid var(--edge);border-bottom-width:3px;border-radius:6px;padding:0 6px;background:var(--paper);color:var(--ink)}
+.scrim{position:fixed;inset:0;background:rgba(10,15,40,.4);z-index:19}
 
-/* 本棚 */
-.lib{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;overscroll-behavior:contain;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.libin{max-width:780px;margin:0 auto;padding-inline:20px;padding-block:0 40px}
-.libhead{position:sticky;top:0;z-index:2;background:var(--bg);padding-block:14px 12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
-.libtop{display:flex;align-items:center;gap:12px}
-.libtop h2{margin:0;flex:1;font-family:var(--mincho);font-size:20px;letter-spacing:.06em;display:flex;align-items:center;gap:10px}
-.search{display:flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:0 12px}
-.search:focus-within{border-color:var(--ai)}
-.search svg{width:18px;height:18px;fill:var(--muted);flex:none}
-.search input{flex:1;min-width:0;border:0;background:transparent;padding:10px 0;font-size:16px;outline:none}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:none;min-height:34px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);cursor:pointer;white-space:nowrap;font-size:13px}
-.chip[aria-pressed=true]{background:var(--ai);border-color:var(--ai);color:var(--paper)}
-.chip small{opacity:.7;margin-left:3px;font-variant-numeric:tabular-nums}
-.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.filters .seg{flex:1;min-width:220px}
-.filters .seg button{font-size:13px;min-height:34px}
-.sortsel{min-height:34px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:13px}
-.libsec{margin-top:18px}
-.libsec h3{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--muted);display:flex;justify-content:space-between}
-.libsec h3 span{letter-spacing:0;font-weight:500;font-variant-numeric:tabular-nums}
-.list{display:flex;flex-direction:column}
-.item{display:grid;grid-template-columns:2.4em minmax(0,1fr) auto;gap:4px 12px;align-items:center;text-align:left;padding:12px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;width:100%}
-.item:hover{background:var(--paper)}
-.item .rk{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;text-align:right}
-.item .tt{font-family:var(--read);font-weight:600;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
-.item .tt small{font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}
-.item .au{color:var(--muted);font-size:13px}
-.item .mt{text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.item .mt b{display:block;color:var(--ink);font-weight:500;font-size:13px}
-.prog{display:inline-block;margin-left:6px;padding:0 6px;border-radius:4px;background:var(--ai-soft);color:var(--ai);font-size:11px;font-weight:700}
-.prog.new{background:transparent;border:1px solid var(--shu);color:var(--shu);font-weight:500}
-.btn.more{margin:16px auto 0;display:flex}
-.empty{padding:30px 0;text-align:center;color:var(--muted)}
-details.other{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
-details.other summary{padding:14px 16px;cursor:pointer;font-weight:500}
-.otherin{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px}
+/* ===== 本棚 ===== */
+.lib{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom,0px)}
+.libbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 18px 10px;background:color-mix(in srgb,var(--sky) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.libbar .brand{flex:1;min-width:0}
+.libbar .brand .name small{color:#1B1A17;opacity:.7}
+.libbar .brand .name{color:#1B1A17}
+:root:not([data-theme="light"]) .libbar .brand .name{color:inherit}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .libbar .brand .name small{color:var(--muted);opacity:1} }
+
+.hero{position:relative;background:var(--sky);overflow:hidden;color:#1B1A17}
+.hero .sky{position:relative;max-width:1080px;margin:0 auto;min-height:360px;padding:22px 20px 100px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center;gap:8px}
+.hero-copy{position:relative;z-index:2}
+.kicker{color:#1B1A17;margin:0 0 8px;display:inline-flex;align-items:center;gap:8px;padding:5px 14px 5px 6px;background:#fff;border:2.5px solid #1B1A17;border-radius:999px;font-size:13px;font-weight:700;box-shadow:3px 3px 0 #1B1A17;animation:popin .6s var(--spring) both}
+.kicker .stamp{width:26px;height:26px;font-size:14px}
+.hero h2{margin:6px 0 0;font-size:clamp(40px,9vw,76px);line-height:1.05;font-weight:900;letter-spacing:.02em;text-wrap:balance}
+.hero h2 .s{display:inline-block;color:#1B1A17;background:var(--sun);padding:0 .12em;border-radius:.2em;box-shadow:0 .12em 0 #1B1A17;transform:rotate(-2deg)}
+.hero .count{margin:14px 0 0;font-size:15px;font-weight:700}
+.hero .count b{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums;margin-right:2px}
+.hero-art{position:relative;height:320px;z-index:1}
+.hero-art .seat{position:absolute;right:2%;bottom:-6px;width:min(100%,340px);height:auto}
+.hero-art .peep{position:absolute;right:16%;bottom:46px;width:min(46%,176px);height:auto;color:#1B1A17}
+.hero-art .book{position:absolute;right:52%;bottom:52px;width:74px;height:auto}
+.hero-art .moji{position:absolute;right:57%;bottom:98px;font-family:var(--mincho);font-weight:600;font-size:20px;color:#1B1A17;animation:rise 4.5s ease-in infinite;opacity:0}
+.hero-art .moji:nth-child(5){--dx:-14px;animation-delay:1.5s;right:60%}
+.hero-art .moji:nth-child(6){--dx:10px;animation-delay:3s;right:54%}
+.hero .cloud{position:absolute;height:auto;color:var(--cloud)}
+.hero .cloud.c1{top:26px;left:52%;width:120px}
+.hero .cloud.c2{top:120px;left:-30px;width:150px;opacity:.9}
+.hero .cloud.c3{top:14px;right:-40px;width:170px}
+.hero .plane{position:absolute;top:66px;right:34%;width:70px;height:auto}
+.stars{position:absolute;inset:0;pointer-events:none;display:none}
+.stars i{position:absolute;width:6px;height:6px;border-radius:50%;background:#FFF6B8;box-shadow:0 0 8px #FFF6B8;animation:kira 3s ease-in-out infinite}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .stars{display:block} :root:not([data-theme="light"]) .hero{color:var(--ink)} }
+:root[data-theme="dark"] .stars{display:block}
+.ribbon{position:absolute;left:-2%;right:-2%;bottom:46px;z-index:3;transform:rotate(-2deg);background:var(--sun);border-block:2.5px solid #1B1A17;overflow:hidden;color:#1B1A17}
+.ribbon-track{display:flex;width:max-content;animation:nagare 70s linear infinite}
+.ribbon:hover .ribbon-track,.ribbon:focus-within .ribbon-track{animation-play-state:paused}
+.ribbon button{flex:none;border:0;background:none;padding:9px 18px;font-family:var(--read);font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap;color:inherit}
+.ribbon button::after{content:"✦";margin-left:36px;color:#1B1A17;opacity:.55}
+.ribbon button:hover{text-decoration:underline wavy;text-underline-offset:5px}
+.hero .wave{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:56px;display:block}
+.hero .wave path{fill:var(--bg)}
+
+.libin{max-width:1080px;margin:0 auto;padding-inline:18px;padding-block:0 60px;display:flex;flex-direction:column;gap:34px}
+.search{position:relative;z-index:4;margin-top:-26px;display:flex;align-items:center;gap:10px;background:var(--paper);border:2.5px solid var(--edge);border-radius:999px;padding:0 10px 0 18px;box-shadow:4px 4px 0 var(--edge);transition:box-shadow .2s,transform .2s var(--spring)}
+.search:focus-within{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--edge)}
+.search svg{width:22px;height:22px;fill:var(--ink);flex:none}
+.search input{flex:1;min-width:0;border:0;background:transparent;padding:14px 0;font-size:16px;font-weight:700;outline:none}
+.search input::placeholder{color:var(--muted);font-weight:500}
+.sec{margin:0 0 14px;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:900;letter-spacing:.04em}
+.sec .sq{display:inline-block;width:auto;padding:0 .2em;background:linear-gradient(transparent 58%,var(--sun) 58%)}
+.sec .seclink{margin-left:auto;min-height:36px;padding:3px 14px;font-size:13px;gap:4px}
+.sec .seclink small{color:var(--muted);font-weight:700}
+.sec small{font-size:13px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+
+/* 続きから読む */
+.shelf{display:flex;gap:16px;overflow-x:auto;padding:4px 4px 14px;scroll-snap-type:x proximity;scrollbar-width:thin}
+.shelf .wcard{width:118px;flex:none;scroll-snap-align:start}
+.bar{display:block;height:8px;margin-top:8px;border:2px solid var(--edge);border-radius:999px;background:var(--paper);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sky-deep)}
+
+/* 作家からさがす */
+.astrip{display:flex;gap:14px;overflow-x:auto;padding:6px 4px 16px;scroll-snap-type:x proximity;scrollbar-width:thin}
+.atile{flex:none;width:88px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;padding:0;cursor:pointer;scroll-snap-align:start;text-align:center}
+.astamp{position:relative;display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:var(--c,var(--sky));border:2.5px solid var(--edge);box-shadow:3px 3px 0 var(--edge);transition:transform .25s var(--spring),box-shadow .2s}
+.astamp svg{width:46px;height:46px;overflow:visible}
+.astamp b{font-family:var(--mincho);font-weight:600;font-size:30px;color:#1B1A17;transform:rotate(-6deg)}
+.astamp.sm{width:44px;height:44px;box-shadow:2px 2px 0 var(--edge)}
+.astamp.sm svg{width:28px;height:28px}
+.astamp.sm b{font-size:19px}
+.atile:hover .astamp{transform:translateY(-4px) rotate(-4deg)}
+.atile:active .astamp{transform:scale(.94)}
+.atile[aria-pressed=true] .astamp{box-shadow:0 0 0 5px var(--sun),3px 3px 0 5px var(--edge);animation:popin .45s var(--spring)}
+.aname{font-size:12.5px;font-weight:700;line-height:1.3;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.acount{font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:-4px}
+.atile.all .astamp{background:var(--paper)}
+
+/* きょうの一冊 */
+.today{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"cv tx";gap:18px;align-items:start;padding:22px 22px 20px;background:var(--sky-2);border:2.5px solid var(--edge);border-radius:28px;box-shadow:6px 6px 0 var(--edge)}
+.today .cover{width:120px}
+#todayCover{grid-area:cv}
+.today .tx{grid-area:tx;min-width:0}
+.today .label{display:inline-block;font-family:var(--hand);font-weight:600;font-size:17px;padding:0 12px;background:var(--paper);border:2px solid var(--edge);border-radius:999px;transform:rotate(-3deg);margin-bottom:8px}
+.today h4{margin:4px 0 0;font-family:var(--read);font-size:22px;line-height:1.35;font-weight:700}
+.today .au{margin:2px 0 8px;color:var(--muted);font-weight:700;font-size:14px}
+.today p.syn{margin:0 0 14px;font-size:15px;line-height:1.85;max-width:38em}
+.today .acts{display:flex;gap:10px;flex-wrap:wrap}
+.today .peep{position:absolute;right:18px;bottom:0;width:128px;height:auto;color:#1B1A17;pointer-events:none}
+.today.has-peep{padding-right:160px}
+.spark{position:absolute;width:18px;height:18px;animation:kira 2.6s ease-in-out infinite}
+.spark.s1{top:-10px;left:130px}.spark.s2{top:20px;right:150px;animation-delay:.9s}.spark.s3{bottom:26px;left:10px;animation-delay:1.7s}
+
+/* 絞り込み */
+.filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pills{position:relative;display:flex;padding:4px;border:2.5px solid var(--edge);border-radius:999px;background:var(--paper);box-shadow:3px 3px 0 var(--edge);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.pills::-webkit-scrollbar{display:none}
+.pill-bg{position:absolute;top:4px;bottom:4px;left:0;width:0;transform:translateX(var(--x,0));width:var(--w,0);border-radius:999px;background:var(--sun);border:2px solid var(--edge);transition:transform .5s var(--pop),width .5s var(--pop);z-index:0}
+.pills button{position:relative;z-index:1;flex:none;min-height:38px;padding:4px 16px;border:0;background:none;border-radius:999px;cursor:pointer;font-weight:700;font-size:14px;color:var(--ink);transition:color .3s}
+.pills button[aria-pressed=true],.pills button[aria-selected=true]{color:#1B1A17}
+.sortsel{min-height:44px;padding:4px 14px;border:2.5px solid var(--edge);border-radius:999px;background:var(--paper);font-weight:700;font-size:14px;box-shadow:3px 3px 0 var(--edge)}
+.active-filter{display:flex;align-items:center;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+.fchip{display:inline-flex;align-items:center;gap:8px;padding:4px 6px 4px 4px;border:2.5px solid var(--edge);border-radius:999px;background:var(--paper);font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--edge)}
+.fchip .x{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:14px;line-height:1}
+
+/* 作品の本（表紙は和本：右に綴じ糸、左上に題簽） */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 14px}
+.wcard{display:flex;flex-direction:column;gap:8px;border:0;background:none;padding:0;text-align:left;cursor:pointer;min-width:0}
+.cover{position:relative;display:block;width:100%;aspect-ratio:3/4;border:2px solid #1B1A17;border-radius:3px 9px 9px 3px;background-color:var(--c,#8FD0EE);background-size:24px auto;box-shadow:3px 3px 0 var(--edge);overflow:hidden;container-type:inline-size;transition:transform .3s var(--spring),box-shadow .3s}
+.cover::before{content:"";position:absolute;inset:0 auto 0 0;width:7%;background:rgba(27,26,23,.10)}
+.cover .bind{position:absolute;top:0;bottom:0;right:0;width:11%;border-left:1.5px solid rgba(27,26,23,.55);background:radial-gradient(circle at 50% 50%,#1B1A17 0 1.7px,transparent 2.2px) 50% 12% / 100% 25% repeat-y}
+.cover .daisen{position:absolute;top:8%;left:12%;width:30%;max-height:78%;padding:8% 0;background:#FFFDF4;border:1.5px solid #1B1A17;writing-mode:vertical-rl;font-family:var(--mincho);font-weight:600;color:#1B1A17;line-height:1.15;letter-spacing:.04em;display:flex;align-items:center;overflow:hidden;word-break:break-all}
+.cover .daisen.l{font-size:14.5cqw}.cover .daisen.m{font-size:10.5cqw}.cover .daisen.s{font-size:8cqw;width:34%}.cover .daisen.xs{font-size:6.6cqw;width:38%}
+.cover .badge{position:absolute;z-index:2;font-family:var(--round);font-weight:900;writing-mode:horizontal-tb}
+.cover .done{top:6%;right:14%;display:grid;place-items:center;width:34cqw;height:34cqw;border-radius:50%;background:var(--shu);color:#fff;font-size:9cqw;transform:rotate(12deg);border:2px solid #1B1A17}
+.cover .pct{bottom:6%;left:10%;padding:1px 7px;border-radius:999px;background:#fff;border:1.5px solid #1B1A17;color:#1B1A17;font-size:9cqw}
+.cover .new{bottom:6%;right:14%;padding:1px 7px;border-radius:5px;background:var(--sun);border:1.5px solid #1B1A17;color:#1B1A17;font-size:8.5cqw;transform:rotate(-4deg)}
+.wcard:hover .cover{transform:translate(-2px,-5px) rotate(-1.5deg);box-shadow:5px 7px 0 var(--edge)}
+.wcard:active .cover{transform:scale(.96)}
+.wt{font-family:var(--read);font-weight:700;font-size:14.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.wa{font-size:12px;color:var(--muted);font-weight:700;margin-top:-4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:-6px}
+.btn.more{margin:24px auto 0;display:flex}
+.empty{padding:26px 0;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px;font-weight:700}
+.empty svg{width:120px;height:auto;color:#1B1A17}
+
+/* スクロールでふわっと出る */
+.rv{transition:opacity .75s ease,translate .7s var(--spring);transition-delay:var(--d,0ms)}
+.rv-on .rv:not(.in){opacity:0;translate:0 18px}
+
+details.other{border:2.5px solid var(--edge);border-radius:22px;background:var(--paper);box-shadow:4px 4px 0 var(--edge)}
+details.other summary{padding:16px 20px;cursor:pointer;font-weight:700}
+.otherin{padding:0 20px 20px;display:flex;flex-direction:column;gap:12px}
 .steps{margin:0;padding-left:1.4em;color:var(--muted)}
-.steps a,.credit a{color:var(--ai)}
-.drop{border:1.5px dashed var(--line);border-radius:10px;padding:22px 16px;text-align:center;cursor:pointer;color:var(--muted)}
-.drop.over,.drop:hover{border-color:var(--ai);color:var(--ink);background:var(--ai-soft)}
+.steps a,.credit a{color:var(--sky-deep);font-weight:700}
+.drop{border:2.5px dashed var(--edge);border-radius:18px;padding:22px 16px;text-align:center;cursor:pointer;color:var(--muted)}
+.drop.over,.drop:hover{background:var(--sky-2);color:var(--ink)}
 .drop strong{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
-textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);resize:vertical;font-family:var(--mincho);font-size:16px}
+textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);border-radius:14px;background:var(--bg);resize:vertical;font-family:var(--read);font-size:16px}
 .err{color:var(--shu);font-size:13px;margin:0}
-.credit{margin-top:18px;font-size:12px;color:var(--muted)}
+.credit{margin:0;font-size:12px;color:var(--muted);line-height:1.9}
 
+/* ===== 下から出るシート（作品のくわしく・作家いちらん） ===== */
+.sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,15,40,.45);padding:0}
+.sheet-card{position:relative;width:100%;max-width:640px;max-height:88%;overflow:auto;background:var(--paper);border:2.5px solid var(--edge);border-bottom:0;border-radius:28px 28px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));animation:sheetup .5s var(--pop)}
+@keyframes sheetup{from{transform:translateY(40%);opacity:0}to{transform:none;opacity:1}}
+.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sheet-head b{flex:1;font-size:19px;font-weight:900}
+.xbtn{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:2.5px solid var(--edge);background:var(--paper);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;box-shadow:2px 2px 0 var(--edge)}
+.ws-top{display:grid;grid-template-columns:118px minmax(0,1fr);gap:18px;align-items:start;padding-right:36px}
+.ws-top h3{margin:2px 0 6px;font-family:var(--read);font-size:22px;line-height:1.35;font-weight:700;text-wrap:balance}
+.ws-top h3 small{display:block;font-size:14px;color:var(--muted);font-weight:500}
+.alink{display:inline-flex;align-items:center;gap:8px;border:0;background:none;padding:0;cursor:pointer;font-weight:700;color:var(--ink);text-align:left}
+.alink:hover span{text-decoration:underline}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tag{display:inline-block;padding:1px 10px;border:2px solid var(--edge);border-radius:999px;font-size:12px;font-weight:700;background:var(--paper)}
+.tag.sun{background:var(--sun);color:#1B1A17}.tag.sky{background:var(--sky);color:#1B1A17}.tag.shu{background:var(--shu);color:#fff}
+.ws-block{margin-top:20px}
+.ws-block h4{margin:0 0 6px;display:inline-block;font-family:var(--hand);font-weight:600;font-size:16px;padding:0 12px;border:2px solid var(--edge);border-radius:999px;background:var(--sky-2)}
+.ws-block p{margin:0;line-height:1.9;font-size:15.5px}
+.ws-block small{display:block;margin-top:6px;color:var(--muted);font-size:11.5px}
+.ws-block blockquote{position:relative;margin:4px 0 0;padding:14px 18px 14px 34px;border-radius:18px;background:var(--bg);font-family:var(--read);font-size:16px;line-height:1.9;white-space:pre-line}
+.ws-block blockquote::before{content:"「";position:absolute;left:10px;top:6px;font-size:28px;color:var(--sky-deep);font-weight:700}
+.ws-meta{margin-top:18px;display:flex;gap:10px 18px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-weight:700}
+.ws-meta b{color:var(--ink);font-size:15px}
+.ws-acts{margin-top:22px;display:flex;flex-direction:column;align-items:stretch;gap:12px}
+.ws-acts a{align-self:center;font-size:13px;color:var(--sky-deep);font-weight:700}
+.skel{display:block;height:1em;border-radius:6px;background:linear-gradient(90deg,var(--hair),var(--bg),var(--hair));background-size:200% 100%;animation:skel 1.2s linear infinite}
+@keyframes skel{to{background-position:-200% 0}}
+
+.kana{position:sticky;top:-22px;z-index:2;margin:0 -20px 14px;padding:6px 20px 10px;background:var(--paper)}
+.kana .pills{box-shadow:none;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));padding:4px}
+.kana .pills button{padding:4px 0;min-width:0;font-size:15px}
+.agrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.arow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2px solid var(--edge);border-radius:16px;background:var(--paper);cursor:pointer;text-align:left;transition:transform .2s var(--spring),background .2s;min-width:0}
+.arow:hover{transform:translateY(-2px);background:var(--sky-2)}
+.arow[aria-pressed=true]{background:var(--sun);color:#1B1A17}
+.arow .nm{flex:1;min-width:0;font-weight:700;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.arow .ct{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.arow[aria-pressed=true] .ct{color:#1B1A17}
+
+@media (min-width: 700px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:26px 20px}
+  .astrip{flex-wrap:wrap;overflow:visible}
+  .sheet{align-items:center;padding:24px}
+  .sheet-card{border-bottom:2.5px solid var(--edge);border-radius:30px;box-shadow:8px 8px 0 var(--edge);animation:sheetpop .45s var(--spring)}
+  @keyframes sheetpop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+  .agrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ws-top{grid-template-columns:150px minmax(0,1fr)}
+}
 @media (max-width: 860px){
   .app{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
-  header.top{padding:8px 16px;gap:10px}
+  header.top{padding:10px 16px;gap:12px}
   .brand .name{display:none}
-  .work{flex-direction:column;gap:0;line-height:1.35}
-  .work b{font-size:15px;max-width:100%}
+  .work{flex-direction:column;gap:0;line-height:1.35;padding-left:12px}
+  .work b{font-size:15.5px;max-width:100%}
   .work span{font-size:12px}
-  .stagewrap{margin:10px 16px 0;min-height:max(240px,45svh)}
-  .stage{padding:28px 16px}
-  .transport{padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;gap:10px;justify-content:center}
+  .stagewrap{margin:6px 16px 0;min-height:max(240px,45svh);border-radius:22px;box-shadow:5px 5px 0 var(--sky)}
+  .stage{padding:32px 16px}
+  .transport{padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;gap:12px;justify-content:center}
   .seek{flex:1 1 100%;order:-1}
   .only-mobile{display:grid}
   .only-desktop{display:none}
-  aside.settings{position:fixed;left:0;right:0;bottom:0;z-index:20;max-height:80%;background:var(--paper);border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -12px 40px var(--shadow);padding:0 16px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .22s ease;visibility:hidden}
+  aside.settings{position:fixed;left:0;right:0;bottom:0;z-index:20;max-height:82%;background:var(--bg);border:2.5px solid var(--edge);border-bottom:0;border-radius:26px 26px 0 0;padding:0 14px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .35s var(--pop);visibility:hidden}
   aside.settings.open{transform:none;visibility:visible}
-  .sheethead{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--paper);padding-block:12px 8px;z-index:1}
-  .sheethead b{font-size:15px}
-  .libin{padding-inline:16px}
-  .item{grid-template-columns:1.8em minmax(0,1fr) auto;gap:2px 10px}
+  .sheethead{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);padding-block:14px 8px;z-index:1}
+  .sheethead b{font-size:17px;font-weight:900}
   .keysgroup{display:none}
+  .hero .sky{grid-template-columns:1fr;min-height:0;padding:14px 18px 110px}
+  .hero-art{position:absolute;right:-6px;bottom:48px;width:62%;height:250px}
+  .hero-art .peep{right:14%;bottom:40px;width:min(58%,150px)}
+  .hero-art .seat{width:min(100%,250px);right:-8%}
+  .hero-art .book{right:56%;width:58px;bottom:44px}
+  .hero-copy{max-width:64%}
+  .hero h2{font-size:clamp(38px,11vw,56px)}
+  .hero .cloud.c1{left:40%;width:90px}
+  .hero .plane{right:auto;left:58%;top:34px;width:52px}
+  .today{grid-template-columns:84px minmax(0,1fr);padding:18px 16px 16px;gap:10px 14px}
+  .today .cover{width:84px}
+  .today .tx{display:contents}
+  .today .label{grid-column:2;align-self:start;justify-self:start}
+  .today h4{grid-column:2;margin:0}
+  .today .au{grid-column:2;margin:0}
+  .today p.syn,.today .acts{grid-column:1 / -1}
+  #todayCover{grid-row:1 / span 3}
+  .today.has-peep{padding-right:16px}
+  .today .peep{display:none}
+  .today h4{font-size:19px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rv-on .rv:not(.in){opacity:1;translate:none}
+  .ribbon{overflow-x:auto}
+  .hero-art .moji{display:none}
 }
 </style>
 
@@ -198,13 +397,14 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
 <body>
 <div class="app" id="app">
   <header class="top">
-    <div class="brand"><span class="seal">流</span><span class="name">ながし読み</span></div>
+    <div class="brand"><span class="stamp">流</span><span class="name"><small>青空文庫</small>ながし読み</span></div>
     <div class="work"><b id="wTitle">—</b><span id="wAuthor"></span></div>
     <button class="btn" id="openBtn" type="button"><svg viewBox="0 0 24 24"><path d="M4 4h4v16H4zm5 0h4v16H9zm5.2.6 3.9-1 4 15.5-3.9 1z"/></svg>本棚</button>
   </header>
 
   <section class="reader">
     <div class="stagewrap" id="stagewrap">
+      <svg class="stage-cloud float slow" viewBox="0 0 120 64" aria-hidden="true"><path class="sc" d="M20 58 Q6 58 6 46 Q6 34 20 34 Q22 16 42 16 Q54 4 72 12 Q92 6 98 26 Q114 26 114 42 Q114 58 98 58 Z" stroke-width="3" stroke-linejoin="round"/></svg>
       <div class="para" id="paraLabel"></div>
       <div class="stage" id="stage">
         <div class="ctx" id="ctxPrev"></div>
@@ -295,20 +495,70 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
 </div>
 
 <div class="lib" id="lib" hidden role="dialog" aria-modal="true" aria-labelledby="libTitle">
-  <div class="libin">
-    <div class="libhead">
-      <div class="libtop">
-        <h2 id="libTitle"><span class="seal">流</span>本棚</h2>
-        <button class="btn" type="button" id="libClose">読書にもどる</button>
+  <div class="libbar">
+    <div class="brand"><span class="stamp">流</span><span class="name"><small>青空文庫</small>ながし読み</span></div>
+    <button class="btn" type="button" id="libClose">読書にもどる</button>
+  </div>
+  <section class="hero">
+    <div class="stars" aria-hidden="true"><i style="top:18%;left:8%"></i><i style="top:30%;left:34%;animation-delay:.7s"></i><i style="top:12%;left:62%;animation-delay:1.4s"></i><i style="top:44%;left:48%;animation-delay:2.1s"></i><i style="top:22%;left:88%;animation-delay:.3s"></i><i style="top:58%;left:18%;animation-delay:1.1s"></i><i style="top:8%;left:44%;animation-delay:2.5s"></i><i style="top:52%;left:78%;animation-delay:1.8s"></i></div>
+    <svg class="cloud c1 float" viewBox="0 0 120 64" aria-hidden="true"><path d="M20 58 Q6 58 6 46 Q6 34 20 34 Q22 16 42 16 Q54 4 72 12 Q92 6 98 26 Q114 26 114 42 Q114 58 98 58 Z" fill="currentColor"/></svg>
+    <svg class="cloud c2 float slow" viewBox="0 0 120 64" aria-hidden="true"><path d="M20 58 Q6 58 6 46 Q6 34 20 34 Q22 16 42 16 Q54 4 72 12 Q92 6 98 26 Q114 26 114 42 Q114 58 98 58 Z" fill="currentColor"/></svg>
+    <svg class="cloud c3 float drift" viewBox="0 0 120 64" aria-hidden="true"><path d="M20 58 Q6 58 6 46 Q6 34 20 34 Q22 16 42 16 Q54 4 72 12 Q92 6 98 26 Q114 26 114 42 Q114 58 98 58 Z" fill="currentColor"/></svg>
+    <div class="sky">
+      <div class="hero-copy">
+        <p class="kicker"><span class="stamp">流</span>名作を、ひとまとまりずつ</p>
+        <h2 id="libTitle">青空の<br><span class="s">本棚</span></h2>
+        <p class="count"><b id="heroCount">2,131</b>作品が読めます</p>
       </div>
-      <label class="search"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l5 5-1.4 1.4-5-5A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><input type="search" id="q" placeholder="作品名・作家名（ひらがな可）" autocomplete="off" enterkeyhint="search"></label>
-      <div class="chips" id="authorChips"></div>
-      <div class="filters">
-        <div class="seg" role="group" aria-label="長さ" id="lenSeg">
+      <div class="hero-art" aria-hidden="true">
+        <svg class="plane float drift" viewBox="0 0 80 50"><path d="M4 26 L74 4 L40 46 L34 30 Z" fill="#fff" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round"/><path d="M34 30 L74 4" stroke="#1B1A17" stroke-width="2.4"/><path d="M12 30 h6 M16 30 v6" stroke="#E4532F" stroke-width="1.6" opacity=".7"/></svg>
+        <svg class="seat" viewBox="0 0 300 110"><path d="M40 104 Q10 104 10 80 Q10 58 36 58 Q40 30 76 30 Q94 8 126 20 Q150 6 176 22 Q210 12 224 42 Q260 40 268 66 Q292 70 290 88 Q288 104 266 104 Z" fill="#fff" stroke="#1B1A17" stroke-width="3.5" stroke-linejoin="round"/><path d="M60 84 q10 -8 22 -2 M190 78 q12 -8 24 0" stroke="#1B1A17" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".5"/></svg>
+        <svg class="book" viewBox="0 0 90 56"><path d="M45 14 Q28 4 6 8 V48 Q28 44 45 52 Q62 44 84 48 V8 Q62 4 45 14 Z" fill="#fff" stroke="#1B1A17" stroke-width="3" stroke-linejoin="round"/><path d="M45 14 V52" stroke="#1B1A17" stroke-width="2.4"/><path d="M14 18 q12 -2 24 2 M14 26 q12 -2 24 2 M14 34 q12 -2 24 2 M52 20 q12 -4 24 -2 M52 28 q12 -4 24 -2" stroke="#1B1A17" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".55"/></svg>
+        <span class="moji">あ</span><span class="moji">文</span><span class="moji">流</span>
+        <div class="peep float slow"><svg aria-hidden="true" focusable="false" view-box="0 0 850 1200" viewBox="-85 34 1329 1959"><g><g transform="translate(-172 456)"><path d="M667.8 1592.1C684.9 1595.7 702.5 1597.5 720 1597.5C748.4 1597.5 776.2 1592.8 802.7 1583.6L802.9 1583.5L803.2 1583.4C818.4 1579.6 836.3 1570.2 842.1 1557.8C844.7 1552 844.5 1546.1 841.2 1539.8L840.1 1537.6L840.9 1535.2C853 1499.7 782.8 1459.3 736.3 1432.5C722.1 1424.3 709.9 1417.3 701.7 1411.4L689.4 1402.7L704.4 1400.8C707.3 1400.4 708.6 1397.6 708.5 1395.7C708.3 1392.8 705 1392.2 702.2 1392.2C699 1392.2 693.4 1393.1 684.6 1397.1L681.5 1398.5L678.7 1396.7C674.4 1393.7 669.8 1390.6 664.8 1387L652.5 1378.1L667.7 1376.3C728.9 1369.3 849 1353 965.1 1323C1091.3 1290.4 1179.9 1250.7 1228.5 1204.8L1228.6 1204.7C1267 1170.7 1292.3 1117.9 1293 1070.1C1293.4 1036.3 1281.6 1007 1258.6 985.4C1225.7 961.6 1181 950 1122.2 950C1080.1 950 1036.5 955.6 994.4 961C966.7 964.6 940.5 968 916.3 969.5L910.7 969.9L909.9 964.5C899.6 896.5 896.6 826.9 893.8 759.7C891.1 695.9 888.3 630 879.2 565.8C863.1 442.8 844.9 303.5 800.6 174.1C792.3 151.6 781.4 136.7 766.2 127.5C752 119 733.6 115 708.3 115C707.6 115 706.2 115 706.2 115L706 115C695.6 114.6 684.8 113.6 674.4 112.7C660.5 111.6 646.2 110.3 632.8 110.3C631.2 110.3 629.6 110.4 627.9 110.4C622.1 110.5 617.6 111.3 614 112.9L608.5 115.4L606 109.9C603.7 104.6 601.6 98.8 599.7 92.9L599.5 92L599.5 89.9L599.5 89.9C599.5 82.4 599.5 74.6 598.9 67.1C596.9 42 588.5 24.6 573.5 13.8C560.5 4.4 542.7 0.1 517.6 0L514.7 0C495.1 0 474.7 1 461.3 12.4C454.3 18.5 450 28.2 449.7 39C449.5 43.3 449.9 47.7 450.3 51.1L450.5 52.3L450.1 53.5C438.8 90.1 421.7 114.9 397.6 129.4L396.2 130.2L393.5 130.2C265.2 130.2 162.7 189.7 104.9 297.6L104.7 297.9L104.5 298.3C93.2 313.9 82.4 330.6 72.3 348.1C70.9 350.9 69.2 353.8 67.3 356.8C59.4 369.7 57.6 375.1 63.1 379.6L66.3 382.3L64.8 386.2C54.2 414.6 44.2 443.7 34.6 471.9C30.3 484.5 25.8 497.5 21.4 510.3C20.1 514.8 18.3 519.3 16.6 523.6L16.6 523.6C12.8 533.1 9.3 542.1 10.4 550.7L10.5 551.6L10.3 552.6C8.3 561.7 9.1 570.5 12.4 576.8L12.6 577.4L12.8 578C14.9 585.4 22.8 609.9 39 616.6L40 617L40.8 617.7C52.1 628 67.2 636.5 86.9 643.6L92.6 645.7L90.5 651.3C44.7 770.9 26.7 897 9.5 1037.7C2 1091.9 -4.5 1155.6 4 1215.9C13.3 1282.2 38.8 1332 82.1 1368.3L83.9 1369.9L84.1 1372.3C85.7 1391.7 97 1420.7 121.9 1420.9L124.3 1420.9L126 1422.6C132.2 1428.7 138.9 1431.5 147.1 1431.5C158.4 1431.5 170.8 1426.1 182.8 1420.9L183.5 1420.6L183.7 1420.6C216.8 1408.3 253.8 1400 296.6 1395.3L299.1 1395.1L301 1396.6C301.6 1397.1 302.6 1397.4 303.6 1397.4C305 1397.4 306.3 1396.9 307.1 1396.1L308.4 1394.8L310.1 1394.4C313.1 1393.7 316.2 1393.4 319.7 1393.4C327.6 1393.4 335.8 1395.2 343.1 1396.8C348.9 1398 354.5 1399.2 358.6 1399.2C363.3 1399.2 364 1397.8 364.5 1395.6L365.5 1391.5L369.8 1391C385.2 1389.5 400.8 1387.3 415.9 1385.2C429.5 1383.2 443.5 1381.2 457.5 1379.7L471.3 1378.3L462.9 1389.2C452.9 1402.2 452.2 1423 461.3 1439.9L462.7 1442.6L461.3 1445.3C452.6 1462.5 455 1477.5 468.8 1492.6C481.5 1506.4 501.6 1517.7 517.8 1526.7C520 1528 522.2 1529.2 524.3 1530.3C565.7 1554.3 614.3 1580.8 667.8 1592.1ZM701.9 970.8C712.8 952 717.4 929.7 715.2 906.3C706.9 861.2 705.2 811.7 710 750.5C711.3 726.3 712.6 702.1 714 677.9C717 622.9 720.1 566 723.3 510.1L735.2 509.6C739.4 539.9 743.7 570.6 747.8 600.3C763.6 713.2 779.9 830 792.8 945.2C793 947.4 793.2 949.6 793.4 951.6C794.1 959.5 794.7 966.8 798.2 972.9L802.5 980.5L793.7 981.6C780.1 983.5 763.2 985.7 746.9 985.7C731.1 985.7 717.4 983.6 705.1 979.3L698.4 977L701.9 970.8Z" transform="translate(107 -77)" fill="#fff" fill-rule="evenodd" stroke="none"></path><path d="M999.6 931.9C1092.6 919.9 1198 906.3 1268.4 957.6C1335.9 1020.7 1300.3 1131.1 1238.6 1185.7C1126.2 1291.9 829.6 1341 674.4 1358.8C678.9 1362.1 683.4 1365.3 688.1 1368.4C726.5 1350.8 725.9 1381.4 711.2 1383.3C719.1 1389 731.4 1396 745.3 1404C794.7 1432.5 866.2 1473.7 852.6 1513.7C866.3 1540.7 833.9 1559.9 810.6 1565.8C766.4 1581.2 718.4 1584.1 672.6 1574.4C620.4 1563.5 572.8 1538.4 527.2 1512C525.2 1510.9 523 1509.7 520.8 1508.5C487 1489.5 439.7 1463.1 461.9 1419.2C452.6 1401.9 451.7 1378.3 464.1 1362.2C434.8 1365.3 405.7 1370.7 376.4 1373.5C373.7 1384.8 361.8 1382.2 347.8 1379.2C337.8 1377 326.9 1374.6 317.4 1376.8C313.8 1380.5 307.3 1381 303.2 1377.8C265.7 1382 227.8 1389.4 191.8 1402.7L191.2 1403C170 1412.1 146.8 1422.1 127.8 1403.4C100.1 1403.2 86 1373.1 84.1 1349.4C-14.3 1266.8 -6.2 1127.8 9.5 1013.5C25.5 882.9 43.6 749.6 90.9 625.9C73.1 619.5 56.1 611.1 42.7 598.8C26.8 592.3 17.3 571.6 13 556.3C8.5 547.7 8.4 537.1 10.4 528.1C9.1 518.1 13.1 508 17 498.2C18.7 493.9 20.4 489.5 21.6 485.3C36.1 443.8 49.8 402.1 65.2 360.9C54.8 352.3 61.9 340.7 68.2 330.6C70 327.6 71.7 324.8 72.9 322.2C82.9 304.9 93.8 288 105.6 271.6C165.8 159.2 272.3 100.9 400.5 101.1C435.6 80 449.8 37.8 457.5 0C470.1 48.6 440.2 112.4 387 127.4C394.6 138.4 400.5 150.5 407.4 161.9C443.1 218.9 528.3 243.4 590 216.5C625.2 197.8 633.1 154.8 631.9 118.8C615.8 136 601.9 92.1 599.6 81C596.3 65.4 597 49.2 602.9 34.3C603.3 33.3 604.7 33.5 604.8 34.6C606.7 51.6 610.5 68.6 617.5 84.4C622.5 82.1 628.3 81.4 633.8 81.3C648.9 81 664.9 82.3 680.9 83.7C691.4 84.6 701.9 85.5 712.2 85.9C763.3 85.5 794.3 100 812.2 149C855.6 275.6 873.9 409.6 891.1 541.8C909.9 674 901.7 808.3 921.8 940.3C945.9 938.8 972.2 935.4 999.6 931.9ZM623.6 96.1C622.4 94 621.2 91.8 620 89.6C623.9 89.7 627.7 89.9 631.5 90.5C631.4 94.5 631.5 98.5 631.6 102.6C631.6 104.7 631.7 106.8 631.7 109C629.8 104.5 626.1 100.3 623.6 96.1ZM23.6 531.1C21.7 549.1 31.4 566 43.7 579.3C64 600 92.8 608.9 120.1 616.5C188.6 635.1 257 653.8 325.3 672.8C351.1 680.1 377.2 686.3 402.7 694.6C414.1 698.2 428.6 699.1 434.6 710.9C434.6 710.7 434.7 710.4 434.9 709.9C436.6 705.1 443.4 685.7 445.2 693.8C437.9 713.6 439.7 735.8 442.8 756.3C445.7 774.8 448.9 793.4 449.9 812.1C449.3 831.6 447.6 851.1 445.9 870.5C442.6 908.8 439.3 947.2 444.7 985.7C465.4 970.9 463.3 940.6 469.1 918.2C471.7 904.9 474.6 891.8 477.6 878.6C479.5 870.5 493 872.2 492.4 880.6C490.9 901.2 490.6 921.9 490.1 942.6C490.4 945.9 490.1 951.2 489.7 957.1C488.9 970.2 487.9 986.3 493.4 990.1C503.5 994.8 507 974.9 509.2 961.9C509.9 958 510.5 954.7 511.1 952.9C515.5 932.5 519.5 912 523.3 891.5C524.6 884.3 536.4 886.1 536.1 893.2C535.3 915.6 534.3 937.9 533.4 960.2C533.3 962.4 533.1 964.7 533 967.2C532 980.3 530.9 996.6 540.5 1005.5C548.6 997.8 549.1 986.2 549.5 975C549.7 970.6 549.9 966.2 550.5 962.1C552.4 940.3 554.3 918.5 556.2 896.7C557 888.6 569.6 888.4 569.2 896.7C568.2 925.6 569 957 575.1 984.1C575.5 986 575.9 987.9 576.3 989.8C576.5 989.5 576.8 989.2 577 988.9C576.2 987.5 575.6 985.9 575.4 984.2C583.3 984 585.4 969.7 584.3 962.7C585 953.4 585 943.9 585.4 934.6C587.3 886.8 587.3 838.3 574.4 791.8C555.2 720.1 512.3 684.2 456.5 640C381.9 577.6 300.5 522.7 221.6 466.7C216.5 467.7 213.3 463.4 213.9 458.8C217 444.2 235.4 431 244.4 418.3C237.9 419.8 232 416 226.4 412.5C224.9 411.5 223.4 410.6 221.9 409.8C215.4 406.1 208.8 402.6 202.2 399.2C166 380.3 127.6 365.9 88.6 353.9C70.3 401.1 54.6 449.2 37.8 497C33.5 508.4 31 521.2 23.6 531.1ZM900.7 942.7C879.9 805.4 892.1 665.6 870.8 528.1C863.9 472.6 854.1 417.6 844.2 362.5C807.6 368.9 772.3 381.7 740.9 401.4C740.4 418.8 739.5 436.2 738.5 453.6C745 482.4 750.6 511.2 756.1 540.1C778.7 660.8 795.7 782.6 811.2 904.4C811.5 910.4 812.5 916.4 813.4 922.5C815.2 933.7 817 944.9 815 956C843.4 950.7 871.9 946 900.7 942.7ZM728.1 888.1C718.7 837 718.9 785.2 722.9 733.5C727.4 653.4 731.7 573.2 736.3 493.1C756.2 638.1 777.5 783 793.8 928.5C795 938.6 794.8 949.3 799.9 958.4C771.7 962.2 741.6 966 714.1 956.4C726.2 935.5 730.4 911.8 728.1 888.1ZM84.1 1333.2C10.8 1260.8 -3.5 1140.1 23.6 1045.2C26 1010 38.3 976.5 49.4 943.2C84.5 842.2 130.6 745 186 653.2C254.6 672.1 323.2 691.5 392 709.7C401.5 711.8 411 715.8 420.7 716.4C424.2 718.6 427.7 721.1 431.3 723.2C427.4 742.3 429 761.6 430.6 780.8C431.2 787.7 431.8 794.6 432.1 801.4C433.2 821.8 431 841.9 428.3 862.1C428.1 864.2 427.8 866.7 427.5 869.4C423.7 904.9 414.6 988.5 437.8 1004.8C442.6 1007.1 447.1 1004.2 450.7 1001.9C453.6 1000.1 455.9 998.6 457.5 1000.1C460.8 997.8 463.9 994.8 466.4 991.5C476 1022.7 491.8 1051.7 501.5 1082.9C505.6 1097.3 512.5 1114.5 519.9 1132.6C536 1172.4 554.1 1216.8 547.6 1246.9C540.3 1274 508.3 1279.8 485.2 1288.6C458.5 1297.9 431.6 1306.4 404.2 1313.3C390.8 1284.9 378 1256.3 365.4 1227.5C308.1 1094.7 257.3 959.2 211.9 822.1C211 819 200.6 786.1 198.7 795.3C198.5 794.3 197.3 791.9 196.9 794C204.6 826.2 212.4 858.4 220.8 890.4C200.1 887.5 177.8 886.3 158.8 896.5C157.8 897 158.5 898.3 159.5 898.2C178.6 894.9 197.1 899.7 215.4 904.4C218.7 905.3 222 906.1 225.3 906.9C255.6 1010.2 294.8 1110.9 336.2 1210.3C327.6 1207.6 318 1208.8 308.5 1209.9C304 1210.5 299.5 1211 295.2 1211.1C253 1215.5 211.4 1224.7 171.6 1239C121.5 1255.2 86.1 1276.4 84.1 1333.2ZM676.1 1346.4C677.9 1344.5 678.7 1342.1 677 1339.2C671.4 1332.1 660.9 1335 652.7 1337.3C651 1337.7 649.5 1338.2 648.1 1338.5C644.9 1335.8 641.7 1333.1 638.6 1330.3C639.3 1325.8 635.9 1322.3 632.6 1319C631 1317.3 629.5 1315.8 628.4 1314.1C625.2 1310.3 622.2 1306 618.3 1302.9C611.7 1297.7 603.3 1298.6 595.1 1299.5C591.6 1299.9 588.2 1300.3 584.9 1300.2C576.5 1289.5 567.9 1279.1 559.9 1268.1C569.1 1252.6 569.7 1234.4 566.7 1217.1C708.1 1163.5 830.5 1061.9 983.5 1038.4C988.8 1037.5 991.7 1031.1 990.4 1026.4C979.7 1001 826.4 1066.7 803.5 1078.6C735.9 1110.9 672.6 1151.3 606.9 1186.9C593.2 1194.2 578.1 1198.1 563.1 1201.8C540.1 1126.3 501.1 1057 471.3 984.2C473.2 980.8 474.9 977.3 476.3 973.7C475.3 1013.8 514.2 1013.2 519.6 975.2C517.4 995 532.4 1037.4 554 1009.6C559.1 1002.6 560.9 993.6 561.7 984.6C562.8 990.8 564.1 997.1 565.5 1003.3C571.1 1015.5 586.2 1000.6 589.7 994.2C591.8 993.8 593.7 992.9 595 991.8C633.3 997.1 678.3 996.8 706.4 966.6C744.6 981.3 786.1 973.6 825.9 966.2C835.6 964.4 845.3 962.6 854.7 961.2C878.2 958.5 901.7 955.5 925.3 952.4C999.8 942.8 1074.7 933.1 1149.7 934.1C1193.8 936.7 1245.9 943.8 1273.8 981.4C1309.6 1035.7 1289.3 1109 1249.9 1155.9C1154.9 1276.2 828.9 1328.5 676.1 1346.4ZM98.9 1348.2C97.4 1326.5 101.1 1299.5 117.2 1283.3C153.9 1252.3 205.4 1242.5 251.4 1231.2C272.8 1227 294.5 1224.2 316.3 1222.8C318.1 1222.7 319.9 1222.6 321.8 1222.6C328.3 1222.5 335.1 1222.5 339.3 1217.6C342.1 1224.3 345 1230.9 347.8 1237.6C256.3 1225.6 65.4 1267.2 118.9 1392.6C107.6 1380.3 100.1 1365.4 98.9 1348.2ZM317.7 1270.5C337.6 1266.3 359.2 1278.7 370.8 1293.9C372.9 1296.6 374.7 1299.5 376.4 1302.4C368.6 1285.2 360.9 1267.8 353.4 1250.5C273.7 1243.4 138.6 1254.5 121.5 1350.1C120.3 1366.2 124.7 1385.2 137.8 1396.1C150.7 1406.8 165.8 1400.4 180 1394.3C184.5 1392.4 188.9 1390.5 193.1 1389.3C217.9 1380.6 243.4 1374.3 269.3 1370C268.9 1350.5 268.3 1330.7 263.9 1311.7C272.7 1294.5 289.2 1361.7 289 1367.2C292.5 1366.7 296.1 1366.3 299.7 1366C299 1346.2 298.9 1326.3 301.7 1306.7C301.8 1305.9 302.8 1305.7 303.1 1306.5C307 1316.3 310 1326.5 312.7 1336.8C316.4 1345.6 313.8 1358.5 324.1 1363C334.5 1367.4 346 1368 356.9 1371C359.1 1370.9 361.2 1370.6 363.2 1370.1C366.6 1369.3 365.8 1364.7 362.9 1364.2C363.1 1363.6 363.3 1362.8 363.5 1362C364.1 1362 364.7 1362 365.3 1361.9C363.8 1355.8 365.3 1349.6 366.9 1343.3C368.4 1337.4 369.9 1331.4 368.9 1325.4C368 1298 344.5 1276.7 317.7 1273.1C316.4 1272.8 316.4 1270.8 317.7 1270.5ZM569.6 1306.2C562.9 1297 557.7 1287 553.5 1276.5C529.2 1300.3 487.2 1309.3 455.5 1321.2C457.9 1323.8 460.3 1326.4 462.7 1328.9C496.9 1365.5 524.9 1395.5 551.3 1326.6C555.7 1318.6 561.9 1311.2 569.6 1306.2ZM385.8 1323.4C385.2 1324.8 384.3 1326.2 384.2 1327.8C383.6 1322.2 382.4 1316.8 380.5 1311.6C382.2 1315.5 384 1319.5 385.8 1323.4ZM683.9 1388.4C682.2 1388.8 680.5 1389.2 678.7 1389.7C667.5 1392.7 656.6 1396.8 646 1401.6C645.2 1402 644.4 1401 645 1400.3C651.8 1392 660.3 1384.4 669.8 1378.1C660 1370.8 650.7 1362.8 642.1 1354.2C630.4 1357.2 619.5 1361.9 608.6 1367.5C599.6 1367.5 630.3 1344.8 633.2 1344.6C624.6 1335.1 618.3 1324.1 611 1313.7C610.8 1314.6 610.3 1315.6 609.9 1316.3C603.4 1310.5 593.4 1311.6 585.6 1316.8C570.9 1321.7 565.4 1338 559.1 1350.1C540.9 1389.9 504.8 1392.7 476.3 1360.7C446.2 1415.6 519.3 1448.2 561 1464.7C593.8 1479 630.1 1495.1 663 1509.6C673.2 1514.2 683.4 1519 694.6 1520.7C725 1527 756.6 1526 787 1520.5C796.5 1518.8 805.8 1516.6 815.1 1514.1C820.4 1512.7 828.8 1511.7 832.3 1507.2C839.4 1481.7 775.1 1444 727.6 1416C708.4 1404.7 691.9 1395 683.9 1388.4ZM388.4 1360C391 1359.7 393.6 1359.3 396.2 1359C419.8 1356.1 443.3 1351.9 467 1349.8C460.5 1341.4 455.2 1332.2 450.2 1322.9C437.5 1326.9 424.8 1330.7 411.9 1334.2C403 1337.4 388.8 1340.9 384.4 1329.5C385.3 1337 384.7 1344.6 383.2 1351.9C386.5 1353 388.6 1356.5 388.4 1360ZM819.3 1544.5C713.2 1592.1 601 1539.1 510.6 1482.5C489.7 1470.9 462.2 1454.3 466.5 1426.9C481.8 1449.4 507.2 1462.2 531.5 1473.3C572.4 1491.8 613.5 1509.7 654.4 1527.9C658.3 1540.7 676.8 1541.2 688 1544.1C737.8 1553.7 791.3 1548.9 838.1 1529.7C835.4 1537.7 826.5 1541.4 819.3 1544.5Z" transform="translate(100 -54)" fill="currentColor" fill-rule="evenodd" stroke="none"></path></g><g transform="translate(225 0)"><g><g><path d="M343.9 57.2C333.6 20 294.2 3.8 258.7 1.2C162.7 -8.8 65 44.7 22.4 131.5C-11.7 197.4 -12.7 266.7 60.5 304.3C64.5 306.5 68.7 308.9 73 311C76.7 314.4 80.5 317.7 84.7 320.5C124.5 346.8 173.5 358.1 220.9 355.6C291 354.2 316 306.7 331.3 245.7C347.4 185.1 356.4 119.2 343.9 57.2L343.9 57.2Z" transform="translate(62 146)" fill="#fff" stroke="none"></path><path d="M525.8 506.7C522.6 496.8 518.5 487.2 514.6 477.5C513.8 472.7 513.3 467.8 513.2 462.9C512.6 445.4 515.9 427.7 519.6 410.6C527.1 375.9 535 341.5 539 306.2C546.1 243 541.9 177.2 513.1 119.5C488.2 69.5 445.9 28.6 391.4 13.3C375.3 8.7 358.7 6.2 342 5.2C339.9 4.9 337.8 4.6 335.8 4.3C312.5 0.8 289 -1 265.5 0.5C226.5 3.1 187.9 14.2 155.5 36.4C122.8 58.7 99.6 90 88.8 128.1C77.6 167.8 78.5 210.7 59.1 247.9C53.4 258.9 46.7 269.3 40.3 280C23.4 298.9 5 319.9 1 345.8C-4 377.9 14.5 405.1 32 430.1C47.8 452.7 69.2 484 52.9 511.8C45.3 525 33 534.8 23.8 546.8C14.2 559.2 6.7 573.5 2.9 588.8C-4.4 617.4 2.3 647.3 21.7 669.7C31.8 681.3 44.7 689.1 58.8 695.1C73.1 701.2 87.2 707 99.1 717.5C104.5 722.3 109.5 727.5 114.2 733C118.5 739.8 123.6 746.2 129.4 752.1C135.7 758.5 148.1 749.7 142.3 742.1C141.9 741.5 141.5 741 141 740.4C136.8 734.9 132.5 729.4 128 724C114.7 702.9 109.6 677 116.2 652.3C117.9 645.9 120.4 639.9 123.4 634.1C124 635.8 124.7 637.4 125.4 639.1C128.3 645.4 132.4 652.9 137.5 659.3C137.7 663.7 138.4 668 139.6 672.3C147.6 698.7 174 711.7 197.9 721.9C200.3 722.9 202.6 723.8 204.8 724.8C211.1 727.4 217.7 718.5 213.8 713.1C212.8 711.7 211.8 710.3 210.8 708.8C199.6 691.5 194.3 670.7 197.3 650.1C200.5 628.2 213.4 610.1 226.2 592.8C238.7 575.7 252.2 558.3 257.9 537.5C264.1 514.5 258.4 491.6 248.8 470.4C240 451.1 228.3 433.2 218.5 414.4C221.9 417.8 225.3 421 228.9 424.1C232.9 427.6 237 431.7 241.8 434.2C245.3 436 248.9 431.6 246.1 428.6C242.4 424.7 237.7 421.7 233.6 418.2C229.7 414.9 225.9 411.4 222.2 407.9C217.7 403.5 213.3 398.9 209.2 394.1C205.8 385.6 203.1 376.9 200.8 368C197.8 356 195 343.2 195.2 330.7C195.4 317.9 202 309 210.9 300.4C214.6 296.8 218.4 293.2 222.2 289.6C230.2 283.7 237.8 277.1 245.2 270.5C258.3 258.8 271 246.4 283.1 233.7C286.3 230.3 289.6 226.8 292.7 223.3C303.9 211.9 314.5 200 324.5 187.7C334.4 184 344 179.2 352.9 173.6C349 177.6 345.1 181.5 341.2 185.4C332.4 194.1 323.4 202.9 313.2 210.1C312.2 210.8 312.8 212.4 314.1 212.1C327 209.6 339 205.3 350.3 198.5C361.7 191.5 371.8 182.1 381.2 172.6C386.5 170.2 391.6 167.2 396.3 164.1C396.6 164 396.8 163.8 397.1 163.6C392.4 178.3 385.7 194.8 371.2 200.1C370.7 200.2 370.8 201 371.3 201C383.5 200.3 393.3 194.8 401 186.8C407.2 182.3 413.1 177.6 418.8 172.4C424.3 167.4 429.5 162.1 434.4 156.5C427.5 170.2 419.8 183.5 412.2 196.7C411.8 197.4 412.6 198.4 413.3 197.9C429.4 187 441.6 173 451.6 156.4C453 153.9 454.5 151.4 455.8 148.9C454.8 152.9 453.7 156.8 452.4 160.6C450.3 167.6 448.1 174.7 445.9 181.7C444.7 185.4 443.3 189.1 441.7 192.8C440.6 195.4 439.1 197.9 438.9 200.8C438.8 201 439.1 201.1 439.2 201.1C445.6 199.5 451.6 192.2 456.2 187.6C458.7 185.1 461.1 182.3 463.3 179.4C463.7 196.2 464 213 463.6 229.9C462.9 260.9 460.9 291.8 458.3 322.7C456.1 349.9 454.4 378.6 439.2 402.3C427.4 420.6 408.3 433.3 387.6 439.5C385.7 440 383.9 440.5 382 441C352 448.1 322.1 440 295.5 425.7C287.5 421.4 280.7 433.1 288.4 437.9C317.2 455.8 353.8 461.9 386.4 453.9C385.4 492.4 404.4 529 423.2 561.6C433.8 579.9 444.4 598.1 451.9 617.9C458.2 634.8 462.5 652.2 464 670.2C465.7 691.4 464 712.7 461 733.7C460.9 734.8 460.7 736 460.5 737.1C459.9 741.6 463.9 745.4 468.3 743.1C487.7 732.9 496.1 711.2 501.2 691.1C506 672.2 509.2 653 511 633.7C513.6 641 515.8 648.5 517.4 656.1C517.7 657.2 517.9 658.3 518.1 659.4C519.4 665.7 529 665.3 530.5 659.4C530.8 658.3 531.1 657.2 531.3 656.1C539.3 624 541.4 590.5 537.2 557.6C535 540.3 531.3 523.2 525.8 506.7" transform="translate(-74 47)" fill="currentColor" stroke="none"></path></g></g><g transform="translate(159 186)"><g><path d="M175.4 49.6C175.7 49.4 176 49.2 176.2 48.9C179 44.3 179.3 38.9 178 33.6C176.6 27.2 172.9 21 168.9 16.8C164 11.5 157.9 7.8 151.2 4.9C150.8 4.7 150.3 4.5 149.8 4.3C143 1.4 134.6 -2 127.9 1.5C125.2 2.9 123.7 5.2 123.3 7.7C122.8 10.5 123.6 13.4 125.5 15.7C128.6 19.6 133.3 20.4 138.1 21C139.6 21.3 141.1 21.5 142.5 21.8C147.4 23 152.6 24.4 157.1 26.7C166.3 31.4 170.5 38.6 172.7 48.3C172.8 48.7 173 49 173.3 49.2C173.6 49.5 173.9 49.7 174.3 49.7C174.7 49.8 175 49.7 175.4 49.6ZM58.4 19.2C55.1 22.4 51.1 22.9 47.2 23.4C44.9 23.6 43.2 23.8 41.4 24.2C36.7 25.3 31.9 26.9 27.6 29.3C23.1 31.7 18.2 34.7 14.7 38.4C13.9 39.3 13.1 40.3 12.3 41.2C11.5 42.1 10.9 42.9 10.1 43.7C9.3 44.6 8.5 45.6 7.7 46.6C7.2 47.4 7.1 47.6 7 47.8C6.8 48.1 6.7 48.4 6.5 48.8C6.2 49.3 5.9 49.9 5.5 50.4C5 51.3 4.7 51.6 4.4 51.7C4 51.9 3.6 52 3.2 51.9C2.9 51.9 2.5 51.7 2.2 51.4C0.5 50 -0 47.6 0 45.1C0.1 41.3 1.5 37.1 2.8 34.5C5.8 28.4 10 22.2 15 17.7C20.7 12.5 27 8.6 34.2 6C38.7 4.3 43.9 2.8 48.8 3C52.3 3.1 55.6 4.1 58.4 6.7C60.1 8.3 60.9 10.6 60.9 12.9C60.9 15.2 60.1 17.6 58.4 19.2ZM164.6 78.3C166.5 78.9 167.8 78.6 169.4 77.8C170.7 77.1 171.6 76 172.1 74.8C172.6 73.6 172.7 72.1 172.5 70.8C171.4 65.2 168 60.3 163.5 57.1C159.1 54 153.6 52.5 148 53.7C144 54.6 138 58.4 134.8 63.1C133.5 65.1 132.7 67.3 132.6 69.4C132.5 71.4 133 73.4 135.7 76.1C135.9 76.2 136.2 76.2 136.5 76.2C137.1 76.2 137.8 75.9 138.3 75.5C139.5 74.5 140.3 73.2 141.2 71.7C141.6 71 142.1 70.2 142.7 69.5C144.4 67.5 147 65.8 149.7 65.3C152.2 64.9 154.4 65.6 156.2 67C158.3 68.7 159.7 71.2 160.3 73.8C160.5 74.9 161 75.9 161.8 76.6C162.6 77.4 163.6 78 164.6 78.3ZM46.2 69.1C43.7 67.6 40.9 67 37.7 68.5C35.3 69.6 30.9 73.3 27.9 78.3C25.8 81.6 24.4 85.6 24.7 89.7C24.7 90.7 24.4 91.4 23.8 91.9C23.4 92.3 22.8 92.6 22 92.7C21.4 92.8 20.7 92.7 20.1 92.5C19 92.2 18.4 91.5 18.2 90.9C16.1 85.3 17 79 19.4 73.4C22.6 65.7 28.4 59.4 32.2 57.3C38.7 53.8 46.3 53.6 52.9 57.2C58.4 60.3 61.9 65.2 65.3 70.2C66.1 71.3 66.8 72.4 67.5 73.4C69.1 75.5 69.2 77.6 68.6 79.3C68 81.3 66.3 83 64.3 83.8C62.4 84.6 60.1 84.8 58.2 83.9C56.5 83.2 55 81.9 54.1 79.6C52.4 75.7 49.7 71.4 46.2 69.1ZM127.7 116C135.9 104.6 124.4 93.9 116.8 89.3C114.8 87.9 116.4 83.2 120.6 83.9C159 90.5 139.1 156.6 90.1 120.4C84.3 115.6 91.3 105.3 97.6 109.3C98 109.6 98.3 109.8 98.6 110.1C105.7 115.5 118.6 125.5 127.7 116ZM117 185.1C109.7 187.2 101.8 187.4 94.3 185.2C87.4 183.2 80.5 178.8 75.4 173C71 167.8 68.1 161.5 68.2 154.8C68.2 154.1 68.5 153.4 68.9 152.9C69.4 152.4 70 152 70.7 151.9C71.4 151.7 72.1 151.8 72.8 152.1C73.3 152.3 73.8 152.8 74.1 153.4C74.9 154.4 75.7 155.4 76.4 156.4C82.6 164 88.6 169.7 97.9 171.8C103 172.9 108 172.4 112.7 170.7C117.6 168.9 122.1 165.7 125.6 161.6C127.2 159.8 129.1 159 130.9 159C133 159 135 159.9 136.6 161.5C138.1 163 139.1 165.1 139.2 167.2C139.3 169.1 138.7 171.1 137 172.8C131.6 178.7 124.6 182.9 117 185.1Z" transform="translate(54 55.1)" fill="currentColor" fill-rule="evenodd" stroke="none"></path></g></g><g transform="translate(123 338)"></g><g transform="translate(47 241)"></g></g></g></svg></div>
+      </div>
+    </div>
+    <div class="ribbon" id="ribbon"><div class="ribbon-track" id="ribbonTrack"></div></div>
+    <svg class="wave" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C 160 58, 320 4, 520 24 S 880 54, 1060 26 S 1320 6, 1440 26 V56 H0 Z"/></svg>
+  </section>
+
+  <div class="libin">
+    <label class="search"><span class="vh">作品をさがす</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l5 5-1.4 1.4-5-5A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><input type="search" id="q" placeholder="作品名・作家名でさがす" autocomplete="off" enterkeyhint="search"></label>
+
+    <section id="recentSec" hidden>
+      <h3 class="sec"><span class="sq">続きから読む</span></h3>
+      <div class="shelf" id="recentList"></div>
+    </section>
+
+    <section id="authorSec">
+      <h3 class="sec"><span class="sq">作家からさがす</span><button class="btn seclink" type="button" id="allAuthorsBtn">作家いちらん<small><span id="authorTotal">321</span>人</small></button></h3>
+      <div class="astrip" id="authorStrip"></div>
+    </section>
+
+    <section class="today rv" id="todaySec" hidden aria-labelledby="todayTitle">
+      <svg class="spark s1" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#F6E85E" stroke="#1B1A17" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <svg class="spark s2" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#fff" stroke="#1B1A17" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <div id="todayCover"></div>
+      <div class="tx">
+        <span class="label">きょうの一冊</span>
+        <h4 id="todayTitle"></h4>
+        <p class="au" id="todayAuthor"></p>
+        <p class="syn" id="todaySyn"></p>
+        <div class="acts"><button class="btn primary" type="button" id="todayRead">この作品を読む</button><button class="btn" type="button" id="todayMore">くわしく</button></div>
+      </div>
+      <div class="peep"><svg aria-hidden="true" focusable="false" view-box="0 0 850 1200" viewBox="12 -47 808 1218"><g><g transform="translate(0 459)"><path d="M0 0L229 0L229 282L0 282L0 0Z" transform="translate(461 279)" fill="#fff" stroke="none"></path><path d="M478.2 10C451.9 -8.1 389.9 0.4 365.2 19.2C356.5 26.3 355.9 33.2 355.4 40.5C355.2 42.2 355.1 43.9 354.9 45.7L354.8 46.4C353.5 54.3 348 63 347.4 73.3C344.9 71.8 342.4 70.1 340.1 68.4C335 64.9 330.3 61.7 326.6 61.8C310.2 62 303.5 85.1 287.9 97.6C273.9 106.2 256.2 106.9 240.3 109L238.8 109.2C184.4 117 137 151.3 104.7 194.8C30 301.1 23.2 439 3.9 563.7C3.5 568.1 3 572.7 2.5 577.4C-1.1 611.9 -5.4 653.5 25.4 674.5C25 674.7 23.9 674.6 22.6 674.6C19.7 674.5 15.9 674.3 17.8 676.2C55.9 687.8 96.5 685.2 134.8 675.1C133.2 685.6 131.8 696 130.2 706.5C129.4 711.7 132.3 716.9 138.2 716.9C299.8 715.9 461.4 711.9 623.1 709.9L627.4 709.8C659.5 709.4 691.6 709.3 723.6 710.4C735.2 710.8 746.6 712.2 758.1 713.2C767 713.6 772.7 703 768.3 695.5C766.4 691.3 764.5 687.8 761.9 684.1C775.9 601.8 756.6 521.3 737.3 441.2C729.9 410.3 722.5 379.4 717 348.5C702.2 239.3 683.4 143 560 123.4C557.1 116.6 557 102.6 552.8 97.6C549.5 87 530.6 79.2 519.2 84.6C507.1 57.6 504.2 28.2 478.2 10ZM504.1 341.2C506.2 339.8 595.8 327.7 630.5 351.8C638.2 357.2 636 395.3 633.5 430.7L632.4 444.9C627.8 453.9 618.9 482.9 611.2 494.4C596.7 515.9 553.3 525.8 528.4 516.2C516.4 512.2 498.3 506.2 492.3 494.4C486.6 481.1 493.1 467.9 499.6 454.4C503.4 446.6 507.3 438.7 508.7 430.8C509.4 427.4 507.6 423.7 505.8 420C504.4 417.1 503 414.2 502.8 411.5C502.8 410.1 502.9 408.4 503 406.6C503.3 402.1 503.7 397 502.8 393.7C501.5 388.9 499.4 384.5 497.5 380.2C493.7 372 490.1 364.2 492.3 354.7C486.8 356.8 483.2 350.8 488 349.3C490.4 348.9 492.8 348.6 495.2 348.3C497.7 344.4 499.6 344.1 504.1 341.2Z" transform="translate(29 -16)" fill="#fff" fill-rule="evenodd" stroke="none"></path><path d="M335.3 6.1L325.3 0C309.8 1.4 303.1 23.6 287.9 35.7C274.4 44.1 257.3 45 241.8 47L240.3 47.2L238.8 47.4C184.4 55.1 137 89.5 104.7 132.9C30 239.3 23.2 377.2 3.9 501.8C3.5 506.2 3 510.8 2.5 515.6C-1.1 550 -5.4 591.6 25.4 612.7C25 612.8 23.9 612.8 22.6 612.7C19.7 612.6 15.9 612.4 17.8 614.4C55.9 625.9 96.5 623.4 134.8 613.3C133.2 623.7 131.8 634.2 130.2 644.6C129.4 649.8 132.3 655.1 138.2 655.1C299.8 654 461.4 650.1 623.1 648L627.4 648C659.5 647.6 691.6 647.4 723.6 648.6C735.2 649 746.6 650.4 758.1 651.4C767 651.8 772.7 641.2 768.3 633.7C766.4 629.5 764.5 625.9 761.9 622.3C775.9 539.9 756.6 459.4 737.3 379.3C729.9 348.4 722.5 317.6 717 286.7C702.2 177.4 683.4 81.2 560 61.5C557.1 54.8 557 40.7 552.8 35.7C550.4 27.8 539.3 21.5 529.1 21L530.8 26.4L514.2 42C476.3 68.2 457.3 83.2 457.3 87.1C457.3 90.8 458.3 98.1 460.1 109L460.5 111.6L441.2 130.9Q409.7 99.3 409.7 90.4L409.7 45.8Q409.7 39.3 392.9 34.6L335.3 6.1ZM463.5 261.3Q455 261.3 428.8 287.7L427.2 288.4C406 298.2 392 306.7 385.1 313.9L384.9 314.2Q374.5 325.4 343.6 373.7L313.8 391.3L302.6 391.3L294.5 449.5L313.8 491L357.5 476.3L428.8 457.6L469.6 416.1L492.7 408.4C489.9 416.4 488.9 424.5 492.3 432.5C498.3 444.3 516.4 450.4 528.4 454.4C553.3 463.9 596.7 454 611.2 432.5C618.9 421 627.8 392.1 632.4 383.1L633.8 364.6C636.1 330.5 637.9 295.1 630.5 290C595.8 265.9 506.2 278 504.1 279.3C499.6 282.3 497.7 282.6 495.2 286.4L494 286.6L501.1 276.9L498.6 275.6C480.6 266.1 468.9 261.3 463.5 261.3ZM497.5 318.4C493.7 310.1 490.1 302.4 492.3 292.8C492 292.9 491.8 293 491.5 293.1L491.5 309.5L502.3 330.1C500.9 325.9 499.2 322.1 497.5 318.4Z" transform="translate(29 45.9)" fill="#fff" fill-rule="evenodd" stroke="none"></path><path d="M358.5 5.7C357.9 -1.9 369.9 -1.9 370.5 5.7C371.7 22.3 368 38.7 360 53.2C359.9 53.3 359.9 53.4 359.8 53.5C364.8 56.1 369.9 58.6 375.1 60.9C381.7 63.8 388.5 66.4 395.4 68.6C401.6 70.6 409.3 71.4 414.5 75.5C424.9 83.8 421.8 100.5 419.7 112.2C419.5 113 419.4 113.7 419.3 114.4L418.9 116.3C417.9 122.4 417.1 128.6 419.7 134.4C422.4 140.7 428 145.3 432.9 149.8L433.9 150.7C438.3 154.7 443.3 159.5 446.5 164.9C449.4 158.9 453.4 153.9 457.7 148.3C460.1 145.1 459.2 143.6 457.6 141.1C457.2 140.5 456.8 139.9 456.4 139.2C454.3 135.4 453.3 131.4 453.9 127.2C455.1 119.3 461.4 113.6 467.7 109.3C475.1 104.2 483.4 100.5 491 95.8C506.8 86.1 522.1 75.1 535.9 62.8C536.3 62.5 536.9 63 536.6 63.4C525.7 80 512.9 94.3 497.2 106.5C490.8 111.4 484.1 115.5 477.4 119.8L475.5 121.1C472.8 122.8 469.4 125.2 468.2 128.2C467.2 130.4 468.5 132.3 469.8 134.2C470.2 134.7 470.6 135.3 471 135.9C475.5 143.8 473.3 151.2 468 157.9L467.7 158.2C462.4 164.7 458.4 170.7 456.5 179.1C452.4 196.9 458.1 215.6 464.1 232.3L464.4 233C467.6 242.1 471.1 251 473.9 260.2L474.7 262.8C477.2 271.2 479.3 279.6 476.5 288.3C475.5 291.2 471.4 291.9 469.8 289.1C463.9 279.3 462.4 267.5 458.7 256.7C455.1 246.2 450.9 235.9 447.4 225.3C443 211.7 439.9 197.1 441.6 182.8C441.5 182.7 441.5 182.7 441.4 182.6L440.3 180.1C437.2 173.3 434.2 167.4 428.5 162C422.6 156.4 416.2 151.4 411.5 144.6C403.8 133.3 405.6 121 407.5 108.6C408 104.8 408.6 100.9 408.9 97.1L409 95.1C409.2 91.8 409.4 87.2 407.2 84.9C404.7 82.3 398.9 81.6 395.6 80.4C387.2 77.4 378.8 74 370.9 69.8C363.3 65.8 356 61.4 349.2 56.2L345.7 53.6C340.3 49.5 334.6 45 330.9 39.4C330.5 38.7 331.2 37.7 332 38C338.1 40.5 343.7 44.4 349.4 47.8C349.5 47.6 349.6 47.4 349.7 47.2C356.8 34.4 359.7 20.3 358.5 5.7ZM522.7 23C524.3 15.7 513.1 12.7 511.2 20C507 35.9 512.4 53.5 525.4 63.9C531.3 68.6 539.8 60.2 533.8 55.4L533.4 55.2C524 47.4 519.5 35.2 522.7 23.2L522.7 23ZM330 40.1C331.5 37.2 328 34.6 325.6 36.7C315.6 45.6 305.3 55.1 294.1 62.5C290.8 64.7 289.1 69.4 291.1 73C275.6 79.8 257.9 81.2 241.3 83.5C224.9 85.7 208.7 89.3 193 94.7C177.3 100 162.1 107 148.7 116.8C134.3 127.2 123.5 140.2 113.4 154.7C92.1 184.8 76.8 218.4 63.6 252.7L62.4 255.9C48.1 293.5 36.2 331.9 27.2 371.1C22.2 393.1 17.8 415.3 14.1 437.6C12.3 448.6 10.6 459.6 9.2 470.7C8.9 472.8 8.6 475 8.2 477.2C6.8 486.5 5.4 496.1 6.6 505.3C6.9 507.7 8 509.7 9.6 511C6.6 523 4.6 535.3 3 547.3C0.6 565.3 -0.4 583.7 0.1 601.9C0.5 616.6 1.5 631.9 8.6 645.1C15.8 658.5 29.2 666.7 43.6 670.6C76.2 679.4 109.3 668.6 139.2 655.6L142 654.4L144.1 653.5C141.4 661.4 140.4 669.7 137.5 677.5C136.3 680.7 138.3 684.7 141.1 686.3L141.5 686.5L141.7 686.7C143.8 687.8 146.5 687.8 148.6 686.5L148.9 686.3C149.2 686.1 149.4 685.9 149.7 685.7L149.7 685.7L149.7 685.7L149.9 685.5L149.9 685.5L150.2 685.3C152.3 683.3 153 680.6 152.5 677.5L152.3 676.3C151 667.9 151.6 659.3 149.9 650.9C178.3 638.1 206.1 624.1 233.4 609.2C250.3 600 267 590.3 283.4 580C291.4 575 299.4 569.8 307.3 564.6L307.9 564.3C315.9 559 324.9 554.3 330.1 546C331.9 543.1 331 539.9 328.9 537.9C330.4 536.6 331.4 534.7 331.6 532.6C343.7 525.5 357.6 521.8 371.2 518.8L372.4 518.6C390.5 514.6 408.9 511.7 426 504.3C434.2 500.7 441.9 496.1 448.7 490.1C456.1 483.5 461.7 475.2 468.8 468.3C472.2 465 475.9 462.2 480.3 460.5C481.3 460.1 482.4 459.7 483.5 459.4C485.8 467.9 488.7 476.5 494.1 483.6C500.3 491.9 509.2 496.4 519.4 498.1C530.8 499.9 542.5 499.9 554 500.5C556.3 500.6 558.7 500.8 561.1 501C570.9 501.7 581 502.4 590.3 499.8C609.5 494.4 622.1 473.2 630 456.1L630.5 455C638.9 436.5 643.4 416.7 645.2 396.5C647.2 373 645.2 349.4 640.7 326.4C640.4 324.7 638.9 323.5 637.4 323C598.2 311 553.5 306.4 513.4 316.6C513.7 314.8 513.6 312.9 512.8 311.2C510.9 306.7 506 305.5 501.8 304.1L501.2 303.9C495.5 302.1 489.8 300.1 484.2 298.3L484 298.2C474.7 295.2 465.1 292.1 456 297.7C451.8 300.2 448.2 303.9 445 307.6C443.2 309.8 441.3 312 439.5 314.3C439.2 314.6 438.4 316.1 437.5 317.5L436 320.1C436 320.1 435.9 320 435.8 320C434.8 319.5 434.2 319.7 433.4 320.6C433.1 320.9 432.9 321.4 433 321.8C417.2 326.2 402.2 333.2 390.1 344.5C375.2 358.3 365.8 376.9 354.8 393.7C348.8 402.9 341.9 411.9 333.8 419.3C329.9 422.9 325.5 425.7 320.8 427.8C320.7 427.7 320.6 427.6 320.5 427.5C316.8 424 311 422.4 306.7 424.7C306.6 424.7 306.6 424.7 306.6 424.7L306.4 424.7C306.4 424.7 306.3 424.7 306.3 424.7L306 424.8C304.4 422.3 301.3 420.9 298 422.7C267.4 440 236 455.9 203.9 470.1C193.9 474.5 183.9 478.8 173.8 483.1C173.8 481 172.9 479 171.4 477.1C170.1 475.6 168 475.6 166.4 476.5C177.6 462.9 178.1 444.5 178.7 426.8L178.8 422.1C179.2 413.1 179.6 404 180.1 395C181.1 375.4 182 355.8 181.9 336.1C181.9 334.9 180 334.6 179.8 335.8C176.1 359 173.7 382.3 171.5 405.7L170.2 419C168.4 437 170.1 461.4 153.8 473.4C152.3 474.5 151.3 476.4 151.1 478.3C145.5 476.9 139.8 475.8 134.2 474.8L130.9 474.3C128.9 473.9 126.8 473.5 124.8 473.1C117.6 471.7 110.1 470.2 103.1 470.7C102.5 470.7 102.1 471.6 102.8 471.9C110.8 476.1 120.5 477.8 129.1 480.6C138.4 483.5 147.8 487 157.3 489.3C157.6 489.4 157.9 489.5 158.2 489.5L155.6 490.6C139.4 497 123 502.9 107.1 510C106.1 510.4 106.8 511.7 107.7 511.5C124 508.5 140.2 503.7 156 498.5L159.4 497.4C176 491.9 192.5 485.9 208.7 479.2C240.4 466.1 271.2 451.4 301.3 434.9C300.9 437.3 300.6 439.6 300.3 441.8C299.4 447.4 298.6 453 298 458.7C297.8 460.2 297.6 461.8 297.4 463.3C296.2 472.9 295.1 482.6 295.4 492.3C296 506.2 300.6 523.4 311.7 533C310.1 535.5 311 538.2 312.9 540C309 542.2 305.4 545.1 301.7 547.6C295.1 552.1 288.4 556.5 281.7 560.8C268.1 569.6 254.3 578.2 240.3 586.5C212.9 602.8 184.8 617.8 155.9 631.3C154.8 631.9 153.6 632.4 152.5 632.9C125.4 645.7 96.1 659.4 65.7 659C52.1 658.8 36.6 655.8 26.5 645.9C16.7 636.4 14.5 621.9 13.5 608.9L13.3 606.5C12 588.7 11.8 571 12.3 553.2C12.5 542.5 13.3 531.8 14.2 521.2L14.8 513.2C18 513.4 21.1 511.6 22.4 507.5C25.5 497.8 25.8 487.4 27 477.3C28.1 467.8 29.3 458.3 30.7 448.9C33.6 429.4 37.2 409.9 41.6 390.6C50.2 352.7 60.8 315.2 73.6 278.5C85.8 243.2 99.7 208.3 119.5 176.4C128.4 162.2 138 147.6 150.5 136.2C162.2 125.5 176.3 117.6 190.7 111C207 103.5 224.2 98.5 241.6 94.2L243.5 93.7C260.8 89.5 277.9 85.1 292.8 75C302.5 83.5 311.3 92 319.5 102C327.8 112.1 335.8 122.4 345.2 131.4C354.7 140.5 365.4 147.6 377.7 152.2C390.4 157 404.2 158.5 415.9 165.7C418.1 167.1 420.8 164.4 419.4 162.1C412.7 150.8 400 145.2 388 141L385.6 140.1C373.7 135.9 363.9 129.6 355 120.6C346 111.5 338.4 101.1 330.4 91.1C324.1 83.3 317.5 75 309.7 68.3C312.7 65.1 315.7 61.8 318.5 58.3C323.1 52.6 326.6 46.5 330 40.1ZM536.9 52.3C536.6 51.4 537.8 50.5 538.6 51C543.3 54.1 547.3 58.1 551.7 61.6C556.5 65.6 561.3 69.4 566.2 73.2C573.4 78.7 565.1 88.9 558.8 82.8C550.1 74.6 540.7 63.8 536.9 52.3ZM566.6 95.1C567 87.2 556 86.7 553.5 93.3C551.6 98.6 551.1 104.3 548.7 109.5C546.4 114.6 543.7 119.6 540.7 124.4C534.9 133.8 528.6 143.6 521.6 152.3C515 160.6 504.4 164.2 494.1 160.9C492.1 160.3 489.9 159.1 487.7 157.8C482.5 154.8 477.1 151.6 472.1 155.6C471.5 156 472.1 156.9 472.7 156.7C476.9 155.4 480.7 158.8 484.2 162C485.9 163.5 487.5 164.9 489 165.8C493.1 168.1 497.8 169.3 502.4 169.6C513.5 170.4 523.1 165.6 530.4 157.5C538.4 148.7 546 139.3 552.4 129.2C555.8 124 558.6 118.6 561.1 112.8L561.3 112.2C563.7 106.7 566.3 101.2 566.6 95.1ZM567.5 100.4C565.9 100 565.4 102.2 566.8 102.8C602.3 117.4 638.6 132.5 664 162.5C689 192 701.3 231 709.6 268.2L710.1 270.4C718.6 309.1 726.1 348.1 733.5 387L738.5 413C741.8 430.3 745.1 447.7 748.3 465.1L748.9 468.3C752.7 488.7 757 509 760 529.6C763.4 554.1 765.7 578.7 766.8 603.4C768 628 766.8 652.5 765.2 677.1C764.6 685.7 779 687.8 780.3 679.2C786.9 635.6 783.3 590.7 777.2 547.2L776.7 544.1C770.7 501.9 762.5 460.1 753.8 418.3L752.1 409.9C742.7 365.1 734.2 320.1 724.9 275.2C716.5 234.8 705.9 194.4 680.4 161.2C667.3 144.1 650.8 130.2 631.2 120.8C611.7 111.5 591.2 106.1 570.3 101.1L567.5 100.4ZM475.5 308.1C476.1 308.3 476.7 308.6 477.3 308.8C481.5 310.3 485.7 311.7 489.9 313.1L489.9 313.1C490.5 313.3 494.4 314.8 497.7 316L499.2 316.5L498.5 317.2C498.4 317.3 498.3 317.4 498.2 317.5C496.9 318.8 495.8 320 494.8 321.5C494.8 321.5 494.8 321.6 494.7 321.6C482.6 312.4 463.5 315.4 449 318.2L446.2 318.8C451.8 314.2 458.1 307.3 465.2 306.1C468.7 305.6 472.2 306.9 475.5 308.1ZM320.9 317.7C321.8 317.5 322.8 317.2 323.8 317C327.4 316.1 331.1 315.1 334.4 316.4C336.6 317.3 337.7 320 335.9 321.8C332.6 325.1 327.9 325.3 323.6 326L323.2 326.1C318.1 327 312.9 327.9 307.8 328.8C298.1 330.4 288.4 331.8 278.6 333C268.6 334.3 258.6 335.4 248.5 336.2L244.6 336.5C236.1 337.2 227.3 337.7 219 336.4C217.8 336.2 218 334.5 219 334.1C228.1 331.4 238.1 330.6 247.6 329.5C257.6 328.2 267.6 326.9 277.6 325.4C287.6 323.8 297.5 322.1 307.5 320.3C311.9 319.4 316.4 318.6 320.9 317.7ZM573.7 318.8C553.5 316.6 533.3 317.1 513.1 317.7C511.5 323 505.8 327.5 500.4 327.6C504.7 334.1 505.1 342.9 502.1 349.8C508.5 352.4 513.9 356.9 517.3 363.4C521.9 372.4 521.3 382.4 516.7 390.7C520.6 394.2 522.9 399.9 522.7 405.3C522.4 411.3 518.8 416.5 515.9 421.5C512.6 426.8 512.5 431.6 511.5 437.6C510.1 446.4 504.1 451.8 496.5 455.1L496.9 456.7C498.9 464.4 501.3 472.5 507 478.2C514.2 485.4 525.5 485.3 535.1 485.8L535.5 485.8C544.3 486.3 553.1 486.8 561.9 487.3L568.5 487.6C578.6 488.2 588.3 488.3 596.6 481.6C610 470.7 619.3 452.6 625.1 436.6C637.4 403.1 637.5 366.2 631.9 331.3C613 325.2 593.4 320.9 573.7 318.8ZM490.1 336.1C486.8 328.4 474.7 328.5 467.8 329C450.5 330.2 431.8 334.5 416.4 342.6C400.4 351 389.7 364.4 380.1 379.3L379.6 380C370.2 394.6 361.2 411.8 346.5 421.8C339.1 426.9 330.3 431.6 321.3 433.6C320.6 434.7 319.6 435.6 318.3 435.9L317.7 436C315.1 436.6 311.1 437.2 307.6 436.9C307.6 438.6 307.6 440.2 307.7 441.9C307.8 446.5 307.8 451.1 307.8 455.7C307.8 459.2 307.8 462.7 307.7 466.2C307.6 472.3 307.5 478.5 307.7 484.7C308.1 493.2 309.3 502.1 313.4 509.8C316.4 515.4 320.4 519.1 325.2 522.6C336.9 515.4 350.3 511.1 363.8 507.8C380.2 503.8 396.9 501.1 412.9 495.7C420.6 493.1 428 489.7 434.7 485.1C441.8 480.2 447.2 473.6 452.8 467.1L453.7 466.1C459.4 459.5 465.6 453.3 473.7 449.7C480.6 446.7 489.8 446.1 495.8 441.4C499 438.9 499.3 435.3 499.6 431.6C496.6 432.1 493.4 431.6 490.4 431.2C489.5 431.1 488.6 431 487.7 430.9L485.7 430.6C482.1 430.2 478.5 429.7 474.9 428.8C474.2 428.6 474.2 427.6 474.9 427.4C479.1 426.3 483.4 425.8 487.7 425.3L488.8 425.2C489.3 425.1 489.8 425.1 490.3 425C493.8 424.5 497.4 424 500.8 424.8C501.5 422.1 502.5 419.6 503.9 417.1C505.8 413.5 509.6 409.5 510.1 405.3C510.3 404.1 510 402.6 509.4 401.5L509.2 401.2C508.9 400.7 508.6 400.3 508.2 400C508.2 400 508.1 400.1 507.8 400.2C504.9 401.1 502.3 399.7 500.9 397.4C497 397.9 492.9 397.9 488.9 398C486.9 398 485 398 483.1 398.1L477.5 398.4C471.6 398.7 465.4 398.8 459.8 397.6C459 397.4 458.8 396.1 459.6 395.8C466.4 392.9 474.8 391.9 482.1 390.8C486.2 390.2 490.4 389.7 494.5 389.1C497.2 388.8 500.1 388.1 503 388C510.1 379.1 506.2 365.1 496.3 361.3C493.5 362.6 490.8 362.3 487.9 361.9C487.1 361.8 486.4 361.7 485.5 361.6C481.6 361.3 477.6 361.1 473.7 361.1C470.5 361.1 467.2 361.5 463.9 361.8C459 362.3 454.2 362.9 449.5 362.3C448.3 362.2 447.1 360.5 448.3 359.4C454.3 354.5 462.9 352.9 470.6 351.9L472.2 351.7C474.7 351.3 477.8 350.9 481 350.6C481.8 349.1 483.1 348.1 485 347.8C485.6 347.7 486.2 347.7 486.8 347.6L486.8 347.6C491.6 347.3 491.4 339.2 490.1 336.1ZM682.4 356.9C682.9 356.2 684 356.7 683.8 357.5C678.3 379.7 673.3 402 669.9 424.6C664.4 462.2 664.9 500.3 665.4 538.2C665.4 541.5 665.5 544.7 665.5 548L665.5 550.1C665.8 572.3 666.1 594.4 666.9 616.6C667 619.3 667.1 622 667.2 624.7C667.5 633.2 667.9 641.8 667.6 650.3C667.4 656.4 665.8 662.1 665.2 668.1C664.8 672.5 665 676.9 665.2 681.3C665.3 682.2 665.3 683.1 665.4 684C665.5 687.5 660.4 687.3 660 684L659.6 679.7C659 674.2 658.3 668.7 656.5 663.5C654.3 657.2 653.3 651 652.5 644.4C651.4 634.2 650.9 624 650.4 613.7L650.1 606.7C648.3 564 648.4 521.1 651.3 478.4L651.6 475.4C654.5 435 659.7 391.5 682.4 356.9ZM406.1 374.5L405.9 374.5C404.6 374.4 403.9 376.2 404.5 377.2C406.1 380.2 405.1 383.7 404 387.2C403.3 389.7 402.6 392.1 402.7 394.3C402.9 397.2 403.5 400 404.6 402.7C405.8 405.4 407.8 407.7 409 410.3C410.1 413 410 416 409.9 419C409.9 421.5 409.8 424.1 410.5 426.5C412.2 432.4 417.1 437.2 423.5 435.1C425.5 434.5 426.4 433 426.6 431C426.9 428.9 426.5 426.9 426 424.9L425.6 423.1C425 420.4 425.1 417.6 424.8 414.9C424.3 408.3 422.1 404 418.4 398.6C414.9 393.3 415.6 388.1 414.1 382.3C413.1 378.3 410.2 374.9 406.1 374.5ZM161.7 487.9C161.8 487.8 161.9 487.7 162 487.6L162.4 487.8L161.6 488.1L161.7 487.9ZM474.7 497.4C475.3 496 477.4 496.2 478.1 497.4C480.6 502.1 480.9 508.2 481.4 513.5L481.5 514.1C482.1 520.6 482.6 527.2 483 533.7C483.6 546.2 483.9 558.6 483.9 571C483.8 583.8 483.6 596.5 482.9 609.3L482.7 612.7C482.1 623.8 481 636.1 475.7 645.8C473.8 649.3 468.6 648.3 467.5 644.7C464.4 634.6 465.4 622.7 466.3 612C466.4 610.4 466.6 608.8 466.7 607.3L467.4 598C468.1 588.7 468.8 579.4 469.3 570C470.1 557.3 470.7 544.5 471.3 531.8C471.5 527.6 471.7 523.5 471.9 519.3L472.2 513.1C472.5 507.9 472.5 502.2 474.7 497.4ZM68.1 512.3L66.5 513.9C61 519.2 55.9 524.8 51.2 530.9C46.5 536.9 41.1 543.5 38 550.6C36.4 554.3 36.2 557.9 40.4 559.3C40.9 559.4 41.4 558.8 41.1 558.4L41 558.3C40.2 556.4 46.7 550 49.8 547C50.4 546.3 50.9 545.8 51.2 545.5L52.6 544C56.5 539.8 60.4 535.8 64.5 531.9C69.2 527.5 73.8 523.1 78.7 519C83.2 515.3 89.5 512.1 90.7 506C91.3 503.1 89.5 500.7 86.6 500.5C80.2 500.1 74.6 505.8 70.1 510.4C69.4 511.1 68.7 511.7 68.1 512.3Z" transform="translate(24 7)" fill="currentColor" fill-rule="evenodd" stroke="none"></path></g><g transform="translate(225 0)"><g><g><path d="M101.6 0.3C253.1 -7.1 356 112.4 360.4 160.1C363.5 193.2 361.4 237.3 361.4 266.9C361.4 282 369 327.8 360.4 349.8C341.2 398.8 319.6 437.1 259.7 437.1C199.7 437.1 108.4 406.1 77 366C71.3 358.7 0.1 305.1 0.1 263C0.1 173.2 -6.6 5.7 101.6 0.3Z" transform="translate(47.9 63.5)" fill="#fff" stroke="none"></path><path d="M130.2 8.1C126.2 2.1 120.7 -1.8 112.1 0.9C109.6 1.7 107.3 3 105.2 4.8C100.1 1.5 93.2 2.3 89 8.5C87.8 10.2 86.9 12 86.1 14C81.8 12.1 77.3 12.2 73.1 16.5C71.4 18.2 70.4 20.3 69.9 22.5C69.8 22.2 69.7 22 69.5 21.7L69.4 21.5C67.2 17 59.7 15.2 55.7 18.1C53 20 51 22.2 49.7 24.8C48 24.8 46.4 25 44.8 25.6C38.9 27.7 36.3 33.8 36.8 39.9C31.7 41.7 26.9 44.3 22.5 47.6C18.9 50.4 17.5 54.1 18.6 57.8C14.3 59.6 10.8 62.3 8.6 66.6C6.2 71.5 5.9 77.2 7.8 81.7C7.1 83 6.6 84.2 6.2 85.6C2.3 86.5 -0.5 90.2 0.1 94.5C0.5 98 2.8 100.3 5.7 101.1C6.4 104.1 7.5 106.9 9 109.5C5.6 112.1 2.6 115.3 1.1 119.2C-0 122.1 0.4 124.8 1.7 126.8C1.8 130.4 3.8 134 6.8 135.8C4.5 140.3 6.1 146.5 10.9 148.3C9 152.3 7.9 156.5 8.3 161.2C8.8 167.6 12.1 173.8 17.2 177.5C15.8 183.5 15.9 189.8 17.7 196.1C19.2 201.3 24.6 203.5 29.4 201.6C30.2 203.8 31.9 205.7 34.1 206.7C34.2 206.8 34.3 206.8 34.3 206.8L34.7 207C34.1 208.2 33.8 209.6 34 211.2C34.6 215.3 38.8 218.6 43 217.3C46.3 216.2 49.3 214.3 52.2 212.3C52.2 213.1 52.3 213.8 52.5 214.6C53.8 219.6 58.3 222.9 63.3 223.5C67.8 224 71.9 222.5 75.3 219.9C79 227.2 87.5 229.9 95 225.5C98.7 223.2 103.2 219.5 106.5 215.3C107.6 214.5 108.6 213.7 109.6 212.9C107.9 217 106.3 221.1 104.8 225.3C103.8 227.9 102.9 230.6 102.1 233.3C99.8 233.9 97.7 234.7 96.2 235.4C92 237.4 90.1 242.7 91.1 247.2C88.9 249.6 87.5 252.6 87.5 256.3C87.5 258.4 87.9 260.2 88.6 261.9C87.3 264.1 86.2 266.4 85.2 269C83.7 272.6 84.9 276.5 87.3 279.4C85.6 281.8 84.5 284.6 84.5 288C84.6 289.6 84.8 291.1 85.3 292.5C84.1 295.3 84.2 298.5 85.2 301.3C82.4 304.9 80.5 308.7 81.6 312.8C82.1 315 83.3 316.8 84.9 318.2C84.7 319.6 84.7 321 85 322.3C83.9 324.3 83.4 326.6 83.5 329C83.9 334.9 87.3 338.1 91.8 339.7C91.6 340 91.4 340.4 91.3 340.8C90.3 344 90.5 347.7 92.1 350.7C92.3 351 92.5 351.3 92.6 351.6C93.9 353.9 95.9 355.7 98.3 357.1C99 357.4 99.8 357.7 100.8 358L102.2 358.5C102.2 358.5 102.1 358.6 102 358.7L101.4 359.4C99.2 362 97.3 364.8 97.1 368.3C96.8 372.2 98.8 376 102.1 378C102.4 378.3 102.8 378.5 103.2 378.7L103.2 379C102.4 380.2 101.8 381.6 102 383C102.7 389.8 106.7 393 112.7 395.4L113.9 395.9L114 397.4C114.1 397.9 114.1 398.4 114.1 398.9C113.9 399.5 113.6 400.1 113.5 400.4L113.4 400.6C111.1 407.7 114.5 415.3 120.5 419.3C121.4 419.9 122.2 420.4 123.1 420.8C124 423.7 125.5 426.3 127.5 428.7C129.1 430.6 131.2 432.4 133.6 433.7C134.9 436.2 137 438 139.7 438.9C140.1 439 140.5 439.1 140.9 439.2C140.5 442.1 141.3 445.2 143.3 447.4C144.3 448.4 145.4 449.1 146.5 449.6C147.1 449.9 147.8 450.1 148.5 450.1C149.9 450.4 151.5 450.3 153 450.2C154 451.7 155.2 453 156.6 454.3C158.1 455.7 160.1 456.4 162.1 456.2C166.3 458.8 171.3 459.1 176.2 458.5C177.3 458.3 178.4 458 179.3 457.6C183.9 463 188.8 468.1 193.8 473.1C201.1 480.2 208.2 487.4 218.3 490.2C220.8 490.9 224.2 488.3 223 485.5C217.3 471.6 203.4 462.5 193.5 451.5C188.4 445.8 183.7 439.9 179.6 433.4C175.1 426.6 172 421.7 163.9 419.1L163.3 418.9C151.4 415.1 141.9 407.4 136 396.3C130.9 386.9 128.3 373.4 132.9 363.2C133.6 362.3 134.2 361.2 134.5 360.1C134.9 359.5 135.3 359 135.7 358.4C140.5 352.4 147.6 349 155 347.3C159.2 346.3 163.7 345.9 168 346C171.4 346.2 174.8 347 178.2 347.4C178.6 347.7 179 348 179.3 348.3L180 348.8C184.6 352.4 190.4 356.7 196.3 356.9C210.8 357.3 209.8 340.8 209.1 329.7C209.1 328.7 209 327.8 209 326.9L208.9 325.9C208.4 313.6 208.2 301.2 207.7 288.9L207.7 288.8C207.7 288.6 207.7 288.2 207.7 287.8L207.7 285C208.3 281.1 208.9 277.3 209.6 273.5C214.6 273.8 219.7 272.4 224.1 269.7C229.9 270.3 235.8 268.1 239.8 263.8C240.6 263.5 241.5 263.2 242.3 262.8C242.9 262.5 243.5 262.2 244 261.9C247.8 263.5 252.4 263.1 255.9 259.7C258.2 259.8 260.5 259.3 262.3 258.2C264 257.1 265.6 256 267.1 254.8C269.7 254.7 272.3 253.7 274.8 251.7L278.4 248.8C279.7 249 281.1 248.9 282.4 248.5C286.5 247.3 290.4 245.6 294 243.3C295.7 243.3 297.5 242.8 299.4 241.8C310.8 235.5 321.7 228.6 331.8 220.5C336.2 220.1 339.8 217.1 343.1 214C349.7 212.1 355.4 210.2 361.1 205.9C365 203 368.5 199.7 371.9 196.2C373.2 196.8 374.7 197.3 376.3 197.5C378.9 197.9 381.6 197.1 384.3 196.4C387.4 195.5 390.6 194.6 393.6 195.7C398.9 197.7 403.1 201.9 408.3 204.1C411.2 205.3 414.1 205.9 417 206C418 206.5 418.9 207.1 419.9 207.7C422.2 210.6 425.3 212.6 428.9 213.9C429.2 214.2 429.5 214.4 429.7 214.6C432.6 216.8 435.2 219.2 437.8 221.7C438.2 222.9 438.7 224 439.3 225C441.1 228.1 443.7 230.8 446.8 232.6C446.9 232.7 447.1 232.8 447.4 232.9L447.7 233C449.1 234.9 450.5 236.9 451.8 238.9C451.8 239.5 451.9 240.1 452 240.7C452.7 243.4 454.6 245.6 456.7 247.3C462.7 257.5 473.4 275.8 474.7 275.8C473.1 284.5 472.1 293.4 471.3 302.2L470.6 309.8C469.2 324.3 468.1 338.9 467.6 353.5C467.2 364.8 467.2 376.1 467.3 387.5L467.5 401C467.6 413.4 467.7 425.8 465.7 438.1C458.8 482.2 423.9 519.5 379 525.7C366.6 527.4 353.6 526.8 341.4 524C335.3 522.7 329.2 520.8 323.5 518.4C317 515.7 311.2 511.9 304.7 509.3C298.1 506.7 293.6 516.2 298 520.6C306.5 529.1 319.9 533.9 331.4 537.1L332.7 537.5C344.6 540.7 357.1 542.1 369.5 541.4C393.7 540 416.5 531.2 435.4 516.1C453.9 501.3 467.7 481.8 474.6 459C481.5 436.1 480.3 412.1 479 388.4C478.8 383.4 478.5 378.3 478.3 373.3C477.7 356.1 477.4 338.9 477.5 321.7C477.5 314.9 477.7 308.2 478 301.4C478.3 292.3 478.6 283.2 478.4 274.1C478.7 273.8 479 273.4 479.3 272.9C481.4 268.9 483.5 264 484.5 259.1C486.5 257.9 487.5 255.3 487.7 253.1C487.9 251.5 487.3 249.9 486.3 248.6C486.9 247.6 487 245.9 487.4 244.8C488.3 241.8 489.1 239 489.5 235.9C489.7 233.3 489.7 230.5 488.9 228C488.4 226.7 487.9 225.6 487.2 224.5C488 223.1 488.7 221.6 488.7 219.7C488.7 215.6 486.3 212.2 482.9 210.2C482.2 209.8 481.5 209.5 480.8 209.1L480.8 209.1L480.7 208.8C480.6 208.4 480.6 208.1 480.5 207.8L480.3 206.5C479.8 203.2 479.5 200.2 477.9 197.3C475.7 193.4 472.1 191.2 468.1 189.9C467.3 189.6 465.9 189.5 465.1 189C465.9 189.4 465.2 187.3 464.8 186C464.7 185.8 464.7 185.6 464.6 185.4L464.4 184.8C462.5 177.9 457.9 174 452 170.5L451.2 170.1C449.2 168.9 447.1 167.9 445.8 166C443.9 163.4 443.2 160 441.6 157.3C440.2 155 438.5 152.9 436.3 151.5C435.7 148.6 435.2 145.8 433.8 143.2C430.4 136.9 423.4 134.4 416.8 133.1C414.4 132.6 411.3 132.7 409.2 131.3C408.8 130.9 408.3 130.5 407.9 130.1C406.6 128.4 404.7 125.4 403.4 123.8C397.7 116.8 390.2 114.1 381.3 115.9C380.7 116 379.3 116.5 378.4 116.7C378.4 116.6 378.3 116.5 378.2 116.3L378 115.9C376.6 112.8 374.1 109.5 371.8 107.2C365.7 100.8 357.7 100.5 349.5 100.7L347.3 100.8C345.3 100.8 344.4 100.6 342.9 99L342.5 98.6C339.2 95.1 336 92.2 331.1 90.9C326.4 89.6 321.6 90.5 317 91.7L316.5 91.8C312.2 92.9 309.5 93.1 305 91.9L303.8 91.6C294.3 89.2 285.5 88.1 275.8 91C275.5 91.1 275.1 91.3 274.8 91.4L273.9 91.7C272.5 92.2 271.2 92.7 269.8 93.3C267.1 91.6 263.5 91.6 260.6 94.3C258.4 96.5 256 98.5 253.7 100.7C245.5 101.9 237.3 103.7 229.3 106C228.9 107 228 107.8 226.7 108.2C208.7 114.4 191.7 123.5 177.7 136.5C176.1 137.9 174.3 138 172.8 137.2C174.7 134.2 176.7 131.3 178.9 128.6C183.4 123 188.5 118.1 193.9 113.4C202.4 108.3 211.5 104.1 221 100.7C224.4 94.9 227.5 88.8 231.1 83.3L231.2 83.1C233.8 78.7 230 74 225.5 73.6L225.5 73.6L225.5 73.2C227.1 63.2 226.4 52.5 217.9 45.6C216.2 44.2 214.4 43.1 212.4 42.3C213 41.3 213.6 40.3 214.3 39.3L214.4 39.1C219.8 31.1 212 21.9 203.9 21.3C200.2 21 196.3 21.5 192.7 22.6C191.7 22.9 190.8 23.3 189.8 23.8C188.7 23.1 187.6 22.6 186.4 22.3C185.3 20.3 183.9 18.5 182.1 17.1C178.2 14.2 173.3 13.1 168.6 14.3C167.7 14.5 166.9 14.8 166.2 15.2C165.2 14.4 163.9 13.8 162.6 13.4C162.1 12.1 161.4 10.9 160.5 9.9C156.2 4.4 149.3 3.3 142.9 5.6L142.1 5.8C140.5 5.6 138.8 5.9 137.2 7.1C136.4 7.6 135.7 8.3 135.1 9L134.9 9.1C134.6 8.9 134.3 8.7 134 8.6C133.6 8.4 133 8.2 132.8 8.1C131.9 7.9 131 7.9 130.2 8.1ZM169.3 372.4C161 369.2 150.7 368.2 142.2 371.5C141.5 371.8 141.3 373 142.2 373.2C150.4 374.4 158 376 165.3 380.2C168.8 382.2 171.9 384.5 174.8 387.3C177.7 390.2 179.7 394.2 183.3 396.2C187.5 398.4 191.6 394.7 190.8 390.4C189.4 382.1 177.4 375.6 170 372.6L169.3 372.4Z" transform="translate(-66 -34)" fill="currentColor" fill-rule="evenodd" stroke="none"></path></g></g><g transform="translate(159 186)"><g><path d="M140.6 0.5L139.2 0.2C137.5 -0.2 135.8 -0 134.3 0.6C132.8 1.2 131.6 2.2 130.7 3.7C129.5 5.7 129.3 7.4 129.9 9.6C130.3 11.3 131.2 12.6 132.5 13.5C133.7 14.5 135.4 15.1 137.1 15.3C144.9 16.2 152.5 17.9 160 20.3C163.5 21.5 166.8 23 170.1 24.6L172.9 26C175.5 27.3 178.2 28.5 181.6 29.4C181.8 29.5 182.1 29.5 182.3 29.6C183.3 29.3 183.4 28.9 183.6 28.7L183.7 28.6C184 28.3 184.3 27.8 184 25.6C176.6 10.3 156.3 3.7 140.6 0.5ZM43.6 4.8L45.5 4.5C51.3 3.5 58.5 2.5 62.6 7.2C64.8 9.7 65.5 14.3 62.6 16.6C58.8 19.8 54.6 19.7 50.2 19.5C48.7 19.5 47.2 19.5 45.6 19.6C40.5 19.8 35.6 20.7 30.7 22.1C19.9 25.2 11.2 30.8 2 36.9C0.8 37.7 -0.4 36.2 0.1 35.1C5.4 24.7 15.7 16.2 26 11C31.5 8.2 37.5 5.9 43.6 4.8ZM30 50.1C30.8 39.8 46.6 37.4 48.1 47.7C49.5 56.9 47.9 65.3 43.8 73.6C39.8 81.5 29.9 77.8 29.1 70.6C28.4 63.5 28.9 59.2 29.4 54.9C29.6 53.4 29.8 51.8 30 50.1ZM159.2 41.8C155.4 40.7 152.2 42.7 150 45.6C149.8 45.9 149.6 46.2 149.4 46.5C142.5 52.9 145.1 65.6 150.5 72C153.8 76 161.1 74.8 163.4 70.4C167.6 62.2 171.1 45.3 159.2 41.8ZM128.7 119C136.9 107.7 125.4 97 117.8 92.4C115.8 90.9 117.4 86.2 121.6 87C160 93.6 140.1 159.7 91.1 123.4C85.3 118.7 92.3 108.3 98.6 112.4C99 112.6 99.3 112.9 99.6 113.1C106.7 118.6 119.6 128.6 128.7 119ZM93.6 188.9C86.9 186.2 80.9 181.6 76.5 175.8C75 173.7 74.6 171.6 74.9 169.6C75.2 167.4 76.5 165.4 78.3 164.1C80.1 162.7 82.3 162.1 84.5 162.4C86.4 162.7 88.2 163.7 89.7 165.9L90 166.3C92.6 169.8 96 172.7 99.9 174.6C103.6 176.4 107.8 177.2 112.1 176.7C120.4 175.8 126 171.3 132 165.3C132.8 164.5 133.5 163.8 134.3 163C134.8 162.2 135.4 161.8 136.2 161.5C137 161.3 137.9 161.3 138.7 161.6C139.5 161.8 140.3 162.4 140.7 163.1C141.2 163.8 141.5 164.6 141.4 165.6C140.8 171.8 137.6 177.4 132.9 181.8C127.8 186.7 120.9 190 114.5 191.2C107.4 192.5 100.1 191.6 93.6 188.9Z" transform="translate(53 52)" fill="currentColor" fill-rule="evenodd" stroke="none"></path></g></g><g transform="translate(123 338)"></g><g transform="translate(47 241)"></g></g></g></svg></div>
+    </section>
+
+    <section id="worksSec">
+      <h3 class="sec"><span class="sq">作品</span><small id="libCount"></small></h3>
+      <div class="filterbar">
+        <div class="pills" role="group" aria-label="長さ・新着で絞り込む" id="lenSeg">
+          <span class="pill-bg" aria-hidden="true"></span>
           <button type="button" data-len="all" aria-pressed="true">すべて</button>
           <button type="button" data-len="s" aria-pressed="false">短編</button>
           <button type="button" data-len="m" aria-pressed="false">中編</button>
           <button type="button" data-len="l" aria-pressed="false">長編</button>
+          <button type="button" data-len="new" aria-pressed="false">新着</button>
         </div>
         <select class="sortsel" id="sort" aria-label="並び順">
           <option value="rank">人気順</option>
@@ -318,16 +568,9 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
           <option value="new">新着順</option>
         </select>
       </div>
-    </div>
-
-    <div class="libsec" id="recentSec" hidden>
-      <h3>続きを読む</h3>
-      <div class="list" id="recentList"></div>
-    </div>
-    <div class="libsec">
-      <h3>作品<span id="libCount"></span></h3>
-      <div class="list" id="libList"></div>
-    </div>
+      <div class="active-filter" id="activeFilter" hidden></div>
+      <div class="grid" id="libList"></div>
+    </section>
 
     <details class="other">
       <summary>本棚にない作品を読む（ファイル・貼り付け）</summary>
@@ -346,7 +589,36 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
         <div><button class="btn primary" type="button" id="pasteBtn">貼り付けた文を読む</button></div>
       </div>
     </details>
-    <p class="credit">本棚には、<a href="https://www.aozora.gr.jp/access_ranking/" target="_blank" rel="noopener">青空文庫アクセスランキング</a>（2009〜2022年の各年上位500作品）に入った作品と、2023年以降に公開された作品のうち、著作権の切れたものを収録しています。番号はランキングをまとめた人気順です。入力・校正は青空文庫のボランティアの皆さんによるものです。文の区切りには <a href="https://github.com/google/budoux" target="_blank" rel="noopener">BudouX</a>（Apache License 2.0）を使っています。</p>
+    <p class="credit">本棚には、<a href="https://www.aozora.gr.jp/access_ranking/" target="_blank" rel="noopener">青空文庫アクセスランキング</a>（2009〜2022年の各年上位500作品）に入った作品と、2023年以降に公開された作品のうち、著作権の切れたものを収録しています。入力・校正は青空文庫のボランティアの皆さんによるものです。あらすじは、AIが本文をもとに作成したものです。人物のイラストは <a href="https://www.openpeeps.com/" target="_blank" rel="noopener">Open Peeps</a>（Pablo Stanley, CC0）、文の区切りには <a href="https://github.com/google/budoux" target="_blank" rel="noopener">BudouX</a>（Apache License 2.0）を使っています。</p>
+  </div>
+</div>
+
+<div class="sheet" id="workSheet" hidden role="dialog" aria-modal="true" aria-labelledby="wsTitle">
+  <div class="sheet-card">
+    <button class="xbtn" type="button" id="wsClose" aria-label="閉じる">×</button>
+    <div class="ws-top">
+      <div id="wsCover"></div>
+      <div>
+        <h3 id="wsTitle"></h3>
+        <button class="alink" type="button" id="wsAuthor"></button>
+        <div class="tags" id="wsTags"></div>
+      </div>
+    </div>
+    <div class="ws-block" id="wsSynBlock"><h4>あらすじ</h4><p id="wsSyn"></p><small>AIが本文をもとに作成したあらすじです。</small></div>
+    <div class="ws-block"><h4>書き出し</h4><blockquote id="wsOpen"></blockquote></div>
+    <div class="ws-meta" id="wsMeta"></div>
+    <div class="ws-acts">
+      <button class="btn primary big" type="button" id="wsRead">この作品を読む</button>
+      <a id="wsCard" href="https://www.aozora.gr.jp/" target="_blank" rel="noopener">青空文庫の図書カードを見る</a>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="authorSheet" hidden role="dialog" aria-modal="true" aria-labelledby="asTitle">
+  <div class="sheet-card">
+    <div class="sheet-head"><b id="asTitle">作家いちらん</b><button class="btn" type="button" id="asClose">閉じる</button></div>
+    <div class="kana"><div class="pills" role="tablist" aria-label="50音" id="kanaTabs"><span class="pill-bg" aria-hidden="true"></span></div></div>
+    <div class="agrid" id="authorGrid"></div>
   </div>
 </div>
 
@@ -972,7 +1244,7 @@ function getBundle(b){
 }
 async function openLibWork(id){
   const e = byId.get(id); if (!e) return;
-  $('loading').hidden = false; $('loading').textContent = `『${e[1]}』を読み込んでいます…`;
+  $('loading').hidden = false; $('loading').textContent = `『${e[1]}』を開いています…`;
   closeLib();
   try {
     const bundle = await getBundle(e[7]);
@@ -1119,71 +1391,352 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- 本棚 ---------- */
-const L = { q: '', author: '', len: 'all', sort: 'rank', limit: 150 };
-const PAGE = 150;
-const kana = s => s.normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/[\s・　]/g, '');
-const SEARCH = CATALOG.map(e => kana(e[1] + e[2] + e[3] + e[4] + e[5]));
+/* [作家名, 表示名, よみ, はんこの字, 作品数]（作品数の多い順） */
+const AUTHORS = [["山本周五郎","山本周五郎","やまもとしゅうごろう","周",225],["芥川竜之介","芥川竜之介","あくたがわりゅうのすけ","竜",168],["太宰治","太宰治","だざいおさむ","治",108],["江戸川乱歩","江戸川乱歩","えどがわらんぽ","乱",108],["吉川英治","吉川英治","よしかわえいじ","英",80],["中谷宇吉郎","中谷宇吉郎","なかやうきちろう","宇",75],["宮沢賢治","宮沢賢治","みやざわけんじ","賢",66],["坂口安吾","坂口安吾","さかぐちあんご","安",64],["紫式部","紫式部","むらさき しきぶ","紫",56],["北大路魯山人","北大路魯山人","きたおおじろさんじん","魯",56],["夏目漱石","夏目漱石","なつめそうせき","漱",51],["谷崎潤一郎","谷崎潤一郎","たにざきじゅんいちろう","潤",35],["柳田国男","柳田国男","やなぎたくにお","国",30],["中野鈴子","中野鈴子","なかのすずこ","鈴",28],["泉鏡花","泉鏡花","いずみきょうか","鏡",27],["森鴎外","森鴎外","もりおうがい","鴎",26],["グリムヴィルヘルム・カール","ヴィルヘルム・カール・グリム","グリムヴィルヘルム・カール","グ",26],["菊池寛","菊池寛","きくちかん","寛",25],["岡本綺堂","岡本綺堂","おかもときどう","綺",25],["野村胡堂","野村胡堂","のむらこどう","胡",21],["佐藤春夫","佐藤春夫","さとうはるお","春",21],["新美南吉","新美南吉","にいみなんきち","南",20],["永井荷風","永井荷風","ながいかふう","荷",20],["夢野久作","夢野久作","ゆめのきゅうさく","久",19],["小川未明","小川未明","おがわみめい","未",17],["ポーエドガー・アラン","エドガー・アラン・ポー","ポーエドガー・アラン","ポ",16],["アンデルセンハンス・クリスチャン","ハンス・クリスチャン・アンデルセン","アンデルセンハンス・クリスチャン","ア",16],["寺田寅彦","寺田寅彦","てらだとらひこ","寅",16],["中島敦","中島敦","なかじまあつし","敦",13],["岡本かの子","岡本かの子","おかもとかのこ","か",13],["伊藤野枝","伊藤野枝","いとうのえ","野",12],["島崎藤村","島崎藤村","しまざきとうそん","藤",11],["樋口一葉","樋口一葉","ひぐちいちよう","一",11],["作者不詳","作者不詳","さくしゃふしょう","作",11],["楠山正雄","楠山正雄","くすやままさお","正",11],["海野十三","海野十三","うんのじゅうざ","十",11],["ドイルアーサー・コナン","アーサー・コナン・ドイル","ドイルアーサー・コナン","ド",10],["有島武郎","有島武郎","ありしまたけお","武",9],["幸田露伴","幸田露伴","こうだろはん","露",9],["牧逸馬","牧逸馬","まきいつま","逸",9],["カフカフランツ","フランツ・カフカ","カフカフランツ","カ",8],["折口信夫","折口信夫","おりくちしのぶ","信",8],["原民喜","原民喜","はらたみき","民",8],["梶井基次郎","梶井基次郎","かじいもとじろう","基",7],["石川啄木","石川啄木","いしかわたくぼく","啄",7],["中原中也","中原中也","なかはらちゅうや","中",7],["萩原朔太郎","萩原朔太郎","はぎわらさくたろう","朔",7],["ドストエフスキーフィヨードル・ミハイロヴィチ","フィヨードル・ミハイロヴィチ・ドストエフスキー","ドストエフスキーフィヨードル・ミハイロヴィチ","ド",7],["国木田独歩","国木田独歩","くにきだどっぽ","独",7],["ユゴーヴィクトル","ヴィクトル・ユゴー","ユゴーヴィクトル","ユ",7],["横光利一","横光利一","よこみつりいち","利",7],["正岡子規","正岡子規","まさおかしき","子",7],["チェーホフアントン","アントン・チェーホフ","チェーホフアントン","チ",7],["室生犀星","室生犀星","むろうさいせい","犀",7],["山川方夫","山川方夫","やまかわまさお","方",7],["福沢諭吉","福沢諭吉","ふくざわゆきち","諭",6],["北原白秋","北原白秋","きたはらはくしゅう","白",6],["高浜虚子","高浜虚子","たかはまきょし","虚",6],["山本和久三","山本和久三","やまもとわくぞう","和",6],["森於菟","森於菟","もりおと","於",6],["平野零児","平野零児","ひらのれいじ","零",6],["尾崎士郎","尾崎士郎","おざきしろう","士",6],["高村光太郎","高村光太郎","たかむらこうたろう","光",5],["魯迅","魯迅","ろじん","魯",5],["田山花袋","田山花袋","たやまかたい","花",5],["小泉八雲","小泉八雲","こいずみやくも","八",5],["三遊亭円朝","三遊亭円朝","さんゆうていえんちょう","円",5],["南方熊楠","南方熊楠","みなかたくまぐす","熊",5],["久生十蘭","久生十蘭","ひさおじゅうらん","十",5],["ルヴェルモーリス","モーリス・ルヴェル","ルヴェルモーリス","ル",5],["堀辰雄","堀辰雄","ほりたつお","辰",4],["織田作之助","織田作之助","おださくのすけ","作",4],["アーヴィングワシントン","ワシントン・アーヴィング","アーヴィングワシントン","ア",4],["林芙美子","林芙美子","はやしふみこ","芙",4],["牧野富太郎","牧野富太郎","まきのとみたろう","富",4],["ペローシャルル","シャルル・ペロー","ペローシャルル","ペ",4],["立原道造","立原道造","たちはらみちぞう","道",4],["山之口貘","山之口貘","やまのくちばく","貘",4],["前田夕暮","前田夕暮","まえだゆうぐれ","夕",4],["萩原恭次郎","萩原恭次郎","はぎわらきょうじろう","恭",4],["小林多喜二","小林多喜二","こばやしたきじ","多",3],["ディケンズチャールズ","チャールズ・ディケンズ","ディケンズチャールズ","デ",3],["スティーブンソンロバート・ルイス","ロバート・ルイス・スティーブンソン","スティーブンソンロバート・ルイス","ス",3],["ダンテアリギエリ","アリギエリ・ダンテ","ダンテアリギエリ","ダ",3],["与謝野晶子","与謝野晶子","よさのあきこ","晶",3],["三木清","三木清","みききよし","清",3],["西田幾多郎","西田幾多郎","にしだきたろう","幾",3],["ルブランモーリス","モーリス・ルブラン","ルブランモーリス","ル",3],["種田山頭火","種田山頭火","たねださんとうか","山",3],["北村透谷","北村透谷","きたむらとうこく","透",3],["斎藤茂吉","斎藤茂吉","さいとうもきち","茂",3],["下村湖人","下村湖人","しもむらこじん","湖",3],["モーパッサンギ・ド","ギ・ド・モーパッサン","モーパッサンギ・ド","モ",3],["勝海舟","勝海舟","かつかいしゅう","海",3],["西郷隆盛","西郷隆盛","さいごうたかもり","隆",3],["ゴーゴリニコライ","ニコライ・ゴーゴリ","ゴーゴリニコライ","ゴ",3],["柳宗悦","柳宗悦","やなぎむねよし","宗",3],["生田春月","生田春月","いくたしゅんげつ","春",3],["正宗白鳥","正宗白鳥","まさむねはくちょう","白",3],["佐藤垢石","佐藤垢石","さとうこうせき","垢",3],["岡本一平","岡本一平","おかもといっぺい","一",3],["鴨長明","鴨長明","かもちょうめい","長",2],["小栗虫太郎","小栗虫太郎","おぐりむしたろう","虫",2],["トルストイレオ","レオ・トルストイ","トルストイレオ","ト",2],["太安万侶","太安万侶","おおのやすまろ","安",2],["石原莞爾","石原莞爾","いしわらかんじ","莞",2],["和辻哲郎","和辻哲郎","わつじてつろう","哲",2],["八木重吉","八木重吉","やぎじゅうきち","重",2],["永井隆","永井隆","ながいたかし","隆",2],["ツルゲーネフイワン","イワン・ツルゲーネフ","ツルゲーネフイワン","ツ",2],["坂本竜馬","坂本竜馬","さかもとりょうま","竜",2],["鈴木三重吉","鈴木三重吉","すずきみえきち","三",2],["中勘助","中勘助","なかかんすけ","勘",2],["中里介山","中里介山","なかざとかいざん","介",2],["日本国","日本国","にほんこく","日",2],["豊島与志雄","豊島与志雄","とよしまよしお","与",2],["壺井栄","壺井栄","つぼいさかえ","栄",2],["山村暮鳥","山村暮鳥","やまむらぼちょう","暮",2],["北条民雄","北条民雄","ほうじょうたみお","民",2],["新渡戸稲造","新渡戸稲造","にとべいなぞう","稲",2],["ロランロマン","ロマン・ロラン","ロランロマン","ロ",2],["牧野信一","牧野信一","まきのしんいち","信",2],["宮本百合子","宮本百合子","みやもとゆりこ","百",2],["桑原隲蔵","桑原隲蔵","くわばらじつぞう","隲",2],["香倶土三鳥","香倶土三鳥","かぐつちみどり","三",2],["木下杢太郎","木下杢太郎","きのしたもくたろう","杢",2],["イエイツウィリアム・バトラー","ウィリアム・バトラー・イエイツ","イエイツウィリアム・バトラー","イ",2],["田中英光","田中英光","たなかひでみつ","英",2],["井上円了","井上円了","いのうええんりょう","円",2],["南部修太郎","南部修太郎","なんぶしゅうたろう","修",2],["徳田秋声","徳田秋声","とくだしゅうせい","秋",2],["高見順","高見順","たかみじゅん","順",2],["長谷川時雨","長谷川時雨","はせがわしぐれ","時",2],["戸坂潤","戸坂潤","とさかじゅん","潤",2],["大杉栄","大杉栄","おおすぎさかえ","栄",2],["久坂葉子","久坂葉子","くさかようこ","葉",2],["杉浦正一郎","杉浦正一郎","すぎうらしょういちろう","正",2],["大下宇陀児","大下宇陀児","おおしたうだる","宇",2],["上田秋成","上田秋成","うえだあきなり","秋",2],["吉田甲子太郎","吉田甲子太郎","よしだきねたろう","甲",2],["鵜月洋","鵜月洋","うづきひろし","洋",2],["三富朽葉","三富朽葉","みとみくちは","朽",2],["中井正一","中井正一","なかいまさかず","正",2],["折口春洋","折口春洋","おりくちはるみ","春",2],["尾崎紅葉","尾崎紅葉","おざきこうよう","紅",1],["紀貫之","紀貫之","きのつらゆき","貫",1],["スウィフトジョナサン","ジョナサン・スウィフト","スウィフトジョナサン","ス",1],["二葉亭四迷","二葉亭四迷","ふたばていしめい","四",1],["シェークスピアウィリアム","ウィリアム・シェークスピア","シェークスピアウィリアム","シ",1],["伊藤左千夫","伊藤左千夫","いとうさちお","左",1],["ゲーテヨハン・ヴォルフガング・フォン","ヨハン・ヴォルフガング・フォン・ゲーテ","ゲーテヨハン・ヴォルフガング・フォン","ゲ",1],["岡倉覚三","岡倉覚三","おかくらかくぞう","覚",1],["文部省","文部省","もんぶしょう","文",1],["テニソンアルフレッド","アルフレッド・テニソン","テニソンアルフレッド","テ",1],["オルコットルイーザ・メイ","ルイーザ・メイ・オルコット","オルコットルイーザ・メイ","オ",1],["渡辺温","渡辺温","わたなべおん","温",1],["葉山嘉樹","葉山嘉樹","はやまよしき","嘉",1],["九鬼周造","九鬼周造","くきしゅうぞう","周",1],["伊丹万作","伊丹万作","いたみまんさく","万",1],["尾崎放哉","尾崎放哉","おざきほうさい","放",1],["シェリーメアリー・ウォルストンクラフト","メアリー・ウォルストンクラフト・シェリー","シェリーメアリー・ウォルストンクラフト","シ",1],["河口慧海","河口慧海","かわぐちえかい","慧",1],["愛知敬一","愛知敬一","あいちけいいち","敬",1],["徳冨蘆花","徳冨蘆花","とくとみろか","蘆",1],["黒岩涙香","黒岩涙香","くろいわるいこう","涙",1],["アインシュタインアルベルト","アルベルト・アインシュタイン","アインシュタインアルベルト","ア",1],["上田敏","上田敏","うえだびん","敏",1],["イプセンヘンリック","ヘンリック・イプセン","イプセンヘンリック","イ",1],["ハイヤームオマル","オマル・ハイヤーム","ハイヤームオマル","ハ",1],["ランボージャン・ニコラ・アルチュール","ジャン・ニコラ・アルチュール・ランボー","ランボージャン・ニコラ・アルチュール","ラ",1],["峠三吉","峠三吉","とうげさんきち","三",1],["アミーチスエドモンド・デ","エドモンド・デ・アミーチス","アミーチスエドモンド・デ","ア",1],["和田万吉","和田万吉","わだまんきち","万",1],["三好達治","三好達治","みよしたつじ","達",1],["内村鑑三","内村鑑三","うちむらかんぞう","鑑",1],["バーネットフランシス・ホジソン・エリザ","フランシス・ホジソン・エリザ・バーネット","バーネットフランシス・ホジソン・エリザ","バ",1],["エンゲルスフリードリッヒ","フリードリッヒ・エンゲルス","エンゲルスフリードリッヒ","エ",1],["ド・ラ・ラメーマリー・ルイーズ","マリー・ルイーズ・ド・ラ・ラメー","ド・ラ・ラメーマリー・ルイーズ","ド",1],["須川邦彦","須川邦彦","すがわくにひこ","邦",1],["高神覚昇","高神覚昇","たかがみかくしょう","覚",1],["佐藤紅緑","佐藤紅緑","さとうこうろく","紅",1],["ガンジーマハトマ","マハトマ・ガンジー","ガンジーマハトマ","ガ",1],["加藤文太郎","加藤文太郎","かとうぶんたろう","文",1],["デカルトルネ","ルネ・デカルト","デカルトルネ","デ",1],["ダ・ヴィンチレオナルド","レオナルド・ダ・ヴィンチ","ダ・ヴィンチレオナルド","ダ",1],["長塚節","長塚節","ながつかたかし","節",1],["浅野和三郎","浅野和三郎","あさのわさぶろう","和",1],["河上肇","河上肇","かわかみはじめ","肇",1],["巌谷小波","巌谷小波","いわやさざなみ","小",1],["倉田百三","倉田百三","くらたひゃくぞう","百",1],["会津八一","会津八一","あいづやいち","八",1],["ジェファーソントマス","トマス・ジェファーソン","ジェファーソントマス","ジ",1],["村山槐多","村山槐多","むらやまかいた","槐",1],["小酒井不木","小酒井不木","こざかいふぼく","不",1],["ウェルズハーバート・ジョージ","ハーバート・ジョージ・ウェルズ","ウェルズハーバート・ジョージ","ウ",1],["山崎富栄","山崎富栄","やまざきとみえ","富",1],["ホーマー","ホーマー","ホーマー","ホ",1],["アレニウススヴァンテ","スヴァンテ・アレニウス","アレニウススヴァンテ","ア",1],["池田蕉園","池田蕉園","いけだしょうえん","蕉",1],["邦枝完二","邦枝完二","くにえだかんじ","完",1],["ビアスアンブローズ","アンブローズ・ビアス","ビアスアンブローズ","ビ",1],["徳冨健次郎","徳冨健次郎","とくとみけんじろう","健",1],["桐生悠々","桐生悠々","きりゅうゆうゆう","悠",1],["河野広道","河野広道","こうのひろみち","広",1],["岸田国士","岸田国士","きしだくにお","国",1],["ファーブルジャン・アンリ","ジャン・アンリ・ファーブル","ファーブルジャン・アンリ","フ",1],["橋本五郎","橋本五郎","はしもとごろう","五",1],["直木三十五","直木三十五","なおきさんじゅうご","三",1],["井原西鶴","井原西鶴","いはらさいかく","西",1],["陳寿","陳寿","ちんじゅ","寿",1],["内田魯庵","内田魯庵","うちだろあん","魯",1],["オー・ヘンリー","オー・ヘンリー","オー・ヘンリー","オ",1],["土原耕作","土原耕作","つちはらこうさく","耕",1],["竹久夢二","竹久夢二","たけひさゆめじ","夢",1],["榎本武揚","榎本武揚","えのもとたけあき","武",1],["浅沼稲次郎","浅沼稲次郎","あさぬまいねじろう","稲",1],["小熊秀雄","小熊秀雄","おぐまひでお","秀",1],["田中貢太郎","田中貢太郎","たなかこうたろう","貢",1],["小野佐世男","小野佐世男","おのさせお","佐",1],["杉山萠円","杉山萠円","すぎやまほうえん","萠",1],["古川緑波","古川緑波","ふるかわろっぱ","緑",1],["サキ","サキ","サキ","サ",1],["平光吾一","平光吾一","ひらこうごいち","吾",1],["福田英子","福田英子","ふくだひでこ","英",1],["神西清","神西清","じんざいきよし","清",1],["高田力","高田力","たかたつとむ","力",1],["野口雨情","野口雨情","のぐちうじょう","雨",1],["フランスアナトール","アナトール・フランス","フランスアナトール","フ",1],["大手拓次","大手拓次","おおてたくじ","拓",1],["池田菊苗","池田菊苗","いけだきくなえ","菊",1],["尾形亀之助","尾形亀之助","おがたかめのすけ","亀",1],["幸徳秋水","幸徳秋水","こうとくしゅうすい","秋",1],["ソローヘンリー・デイビッド","ヘンリー・デイビッド・ソロー","ソローヘンリー・デイビッド","ソ",1],["プーシキンアレクサンドル・セルゲーヴィチ","アレクサンドル・セルゲーヴィチ・プーシキン","プーシキンアレクサンドル・セルゲーヴィチ","プ",1],["森本薫","森本薫","もりもとかおる","薫",1],["新島襄","新島襄","にいじまじょう","襄",1],["波多野精一","波多野精一","はたのせいいち","精",1],["木村荘八","木村荘八","きむらしょうはち","荘",1],["押川春浪","押川春浪","おしかわしゅんろう","春",1],["海若藍平","海若藍平","かいじゃくらんぺい","藍",1],["島田清次郎","島田清次郎","しまだせいじろう","清",1],["アンドレーエフレオニード・ニコラーエヴィチ","レオニード・ニコラーエヴィチ・アンドレーエフ","アンドレーエフレオニード・ニコラーエヴィチ","ア",1],["亀井勝一郎","亀井勝一郎","かめいかついちろう","勝",1],["火野葦平","火野葦平","ひのあしへい","葦",1],["チェスタートンギルバート・キース","ギルバート・キース・チェスタートン","チェスタートンギルバート・キース","チ",1],["浜尾四郎","浜尾四郎","はまおしろう","四",1],["増田雅子","増田雅子","ますだまさこ","雅",1],["かぐつちみどり","かぐつちみどり","かぐつちみどり","み",1],["阿部次郎","阿部次郎","あべじろう","次",1],["マクドナルドジョージ","ジョージ・マクドナルド","マクドナルドジョージ","マ",1],["国枝史郎","国枝史郎","くにえだしろう","史",1],["岸田劉生","岸田劉生","きしだりゅうせい","劉",1],["田中正造","田中正造","たなかしょうぞう","正",1],["梅崎春生","梅崎春生","うめざきはるお","春",1],["鈴木大拙","鈴木大拙","すずきだいせつ","大",1],["ベートーヴェンルートヴィヒ・ヴァン","ルートヴィヒ・ヴァン・ベートーヴェン","ベートーヴェンルートヴィヒ・ヴァン","ベ",1],["喜田貞吉","喜田貞吉","きたさだきち","貞",1],["三好十郎","三好十郎","みよしじゅうろう","十",1],["ソログープフョードル","フョードル・ソログープ","ソログープフョードル","ソ",1],["矢内原忠雄","矢内原忠雄","やないはらただお","忠",1],["秋田雨雀","秋田雨雀","あきたうじゃく","雨",1],["武田祐吉","武田祐吉","たけだゆうきち","祐",1],["シートンアーネスト・トンプソン","アーネスト・トンプソン・シートン","シートンアーネスト・トンプソン","シ",1],["マロエクトール・アンリ","エクトール・アンリ・マロ","マロエクトール・アンリ","マ",1],["原口統三","原口統三","はらぐちとうぞう","統",1],["リットンエドワード・ジョージ・アール・ブルワー","エドワード・ジョージ・アール・ブルワー・リットン","リットンエドワード・ジョージ・アール・ブルワー","リ",1],["村松梢風","村松梢風","むらまつしょうふう","梢",1],["五十公野清一","五十公野清一","いずみのせいいち","清",1],["ホフマンエルンスト・テオドーア・アマーデウス","エルンスト・テオドーア・アマーデウス・ホフマン","ホフマンエルンスト・テオドーア・アマーデウス","ホ",1],["竹内浩三","竹内浩三","たけうちこうぞう","浩",1],["土井晩翠","土井晩翠","どいばんすい","晩",1],["高山毅","高山毅","たかやまつよし","毅",1],["柳原白蓮","柳原白蓮","やなぎわらびゃくれん","白",1],["服部之総","服部之総","はっとりしそう","之",1],["秋月種樹","秋月種樹","あきづきたねたつ","種",1],["小出楢重","小出楢重","こいでならしげ","楢",1],["田辺元","田辺元","たなべはじめ","元",1],["キプリングラデャード","ラデャード・キプリング","キプリングラデャード","キ",1],["内藤鳴雪","内藤鳴雪","ないとうめいせつ","鳴",1],["岩波茂雄","岩波茂雄","いわなみしげお","茂",1],["北一輝","北一輝","きたいっき","一",1],["末弘厳太郎","末弘厳太郎","すえひろいずたろう","厳",1],["宮武外骨","宮武外骨","みやたけがいこつ","外",1],["藤村操","藤村操","ふじむらみさお","操",1],["井上貞治郎","井上貞治郎","いのうえていじろう","貞",1],["大坪砂男","大坪砂男","おおつぼすなお","砂",1],["大隈重信","大隈重信","おおくましげのぶ","重",1],["高田義一郎","高田義一郎","たかだぎいちろう","義",1],["兼好法師","兼好法師","けんこうほうし","兼",1],["司馬遷","司馬遷","しばせん","遷",1],["松尾芭蕉","松尾芭蕉","まつおばしょう","芭",1],["若山牧水","若山牧水","わかやまぼくすい","牧",1],["和田信賢","和田信賢","わだのぶかた","信",1],["武田麟太郎","武田麟太郎","たけだりんたろう","麟",1],["相馬御風","相馬御風","そうまぎょふう","御",1],["市島春城","市島春城","いちじましゅんじょう","春",1],["ヤコブセンイエンス・ペーター","イエンス・ペーター・ヤコブセン","ヤコブセンイエンス・ペーター","ヤ",1],["ファン・ゴッホフィンセント","フィンセント・ファン・ゴッホ","ファン・ゴッホフィンセント","フ",1],["吉野作造","吉野作造","よしのさくぞう","作",1],["妹尾アキ夫","妹尾アキ夫","せのおあきお","ア",1],["蘭郁二郎","蘭郁二郎","らんいくじろう","郁",1],["佐佐木茂索","佐佐木茂索","ささきもさく","茂",1],["呉秀三","呉秀三","くれしゅうぞう","秀",1],["久保田万太郎","久保田万太郎","くぼたまんたろう","万",1],["片山敏彦","片山敏彦","かたやまとしひこ","敏",1],["野上彰","野上彰","のがみあきら","彰",1],["小倉金之助","小倉金之助","おぐらきんのすけ","金",1],["パロマコスティス","コスティス・パロマ","パロマコスティス","パ",1],["宇野浩二","宇野浩二","うのこうじ","浩",1],["吉野秀雄","吉野秀雄","よしのひでお","秀",1],["東野辺薫","東野辺薫","とうのべかおる","薫",1],["矢田津世子","矢田津世子","やだつせこ","津",1],["岡本良雄","岡本良雄","おかもとよしお","良",1],["賀川豊彦","賀川豊彦","かがわとよひこ","豊",1],["志賀重昂","志賀重昂","しがしげたか","重",1],["小栗風葉","小栗風葉","おぐりふうよう","風",1],["大石誠之助","大石誠之助","おおいしせいのすけ","誠",1],["三角錫子","三角錫子","みすみすずこ","錫",1],["畔柳二美","畔柳二美","くろやなぎふみ","二",1],["左川ちか","左川ちか","さがわちか","ち",1],["津村信夫","津村信夫","つむらのぶお","信",1]];
+/* 帯に流す書き出し [id, 文] */
+const RIBBON = [[773,"私はその人を常に先生と呼んでいた。"],[789,"吾輩は猫である。名前はまだ無い。"],[301,"私は、その男の写真を三葉、見たことがある。"],[752,"親譲りの無鉄砲で小供の時から損ばかりしている。"],[424,"えたいの知れない不吉な塊が私の心を始終圧えつけていた。"],[776,"山路を登りながら、こう考えた。"],[47061,"「天は人の上に人を造らず人の下に人を造らず」と言えり。"],[1465,"「おい地獄さ行ぐんだで！」"],[975,"行く川のながれは絶えずして、しかも本の水にあらず。"],[42,"禅智内供の鼻と云えば、池の尾で知らない者はない。"],[470,"ゴーシュは町の活動写真館でセロを弾く係りでした。"],[275,"あさ、眼をさますときの気持は、面白い。"],[42620,"半年のうちに世相は変った。醜の御楯といでたつ我は。"],[45245,"高瀬舟は京都の高瀬川を上下する小舟である。"],[473,"よだかは、実にみにくい鳥です。"],[14,"保吉はずつと以前からこの店の主人を見知つてゐる。"]];
+const MOTIFS = (() => {
+// 作家のモチーフ（代表作にちなんだ小さな線画）。64×64、黒い太線＋やわらかい色。
+const K = '#1B1A17';
+const s = (inner) => `<svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="${K}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const MOTIFS = {
+  __all: s(`<rect x="10" y="40" width="44" height="12" rx="2" fill="#8FD0EE"/><rect x="14" y="28" width="38" height="12" rx="2" fill="#F6E85E"/><rect x="8" y="16" width="40" height="12" rx="2" fill="#F7B7A3" transform="rotate(-6 28 22)"/><path d="M16 46 H46 M20 34 H44" stroke-width="2"/>`),
+  __more: s(`<rect x="10" y="10" width="18" height="18" rx="5" fill="#fff"/><rect x="36" y="10" width="18" height="18" rx="5" fill="#F6E85E"/><rect x="10" y="36" width="18" height="18" rx="5" fill="#A6D98F"/><rect x="36" y="36" width="18" height="18" rx="5" fill="#fff"/>`),
+  // 夏目漱石『吾輩は猫である』：猫
+  '夏目漱石': s(`<path d="M17 25 L15 11 L27 19 Q32 17.5 37 19 L49 11 L47 25 Q51 31 49 38 Q45 50 32 50 Q19 50 15 38 Q13 31 17 25 Z" fill="#fff"/><path d="M25 32 v2 M39 32 v2" stroke-width="3.6"/><path d="M29 40 Q32 43 35 40 M32 37.5 v2.5"/><path d="M11 36 h9 M12 42 l8 -3 M53 36 h-9 M52 42 l-8 -3" stroke-width="2.2"/>`),
+  // 芥川竜之介『蜘蛛の糸』：糸にさがる蜘蛛
+  '芥川竜之介': s(`<path d="M32 3 V27" stroke-width="1.8" stroke-dasharray="1 3.2"/><ellipse cx="32" cy="36" rx="7" ry="8" fill="${K}"/><circle cx="32" cy="27" r="4" fill="${K}"/><path d="M26 32 L16 26 L12 30 M25 37 L14 36 L10 41 M26 42 L17 47 L15 53 M38 32 L48 26 L52 30 M39 37 L50 36 L54 41 M38 42 L47 47 L49 53" stroke-width="2.4"/>`),
+  // 太宰治『桜桃』：さくらんぼ
+  '太宰治': s(`<path d="M40 10 Q34 22 22 38 M40 10 Q42 26 44 40" /><path d="M40 10 Q50 6 56 12 Q48 18 40 10 Z" fill="#A6D98F"/><circle cx="20" cy="44" r="9.5" fill="#E4532F"/><circle cx="44" cy="46" r="9.5" fill="#E4532F"/><path d="M16 40 q2 -3 5 -3 M40 42 q2 -3 5 -3" stroke="#fff" stroke-width="2.4"/>`),
+  // 江戸川乱歩：虫めがね
+  '江戸川乱歩': s(`<circle cx="27" cy="27" r="15" fill="#fff"/><circle cx="27" cy="27" r="10" stroke-width="2" stroke-dasharray="3 4"/><path d="M38 38 L54 54" stroke-width="7"/><path d="M38 38 L54 54" stroke="#F6E85E" stroke-width="2.4"/>`),
+  // 山本周五郎『樅ノ木は残った』：樅の木
+  '山本周五郎': s(`<path d="M32 6 L20 22 H27 L15 36 H25 L11 50 H53 L39 36 H49 L37 22 H44 Z" fill="#A6D98F"/><path d="M32 50 V58" stroke-width="5"/><path d="M8 58 H56"/>`),
+  // 吉川英治『宮本武蔵』：二本の刀
+  '吉川英治': s(`<path d="M14 50 L46 12" stroke-width="3.6"/><path d="M18 14 L50 50" stroke-width="3.6"/><path d="M11 45 l8 8 M45 45 l8 -8" stroke-width="3"/><circle cx="17.5" cy="46.5" r="4" fill="#F6E85E"/><circle cx="46.5" cy="46.5" r="4" fill="#F6E85E"/><path d="M10 56 l4 -4 M54 56 l-4 -4" stroke-width="4.5"/>`),
+  // 中谷宇吉郎『雪』：雪の結晶
+  '中谷宇吉郎': s(`<g stroke-width="3"><path d="M32 6 V58 M9.5 19 L54.5 45 M9.5 45 L54.5 19"/><path d="M32 14 l-5 -5 M32 14 l5 -5 M32 50 l-5 5 M32 50 l5 5 M16 22.6 l-2 -7 M16 22.6 l-7 2 M48 41.4 l2 7 M48 41.4 l7 -2 M16 41.4 l-7 -2 M16 41.4 l-2 7 M48 22.6 l7 2 M48 22.6 l2 -7"/></g><circle cx="32" cy="32" r="4" fill="#8FD0EE"/>`),
+  // 宮沢賢治『銀河鉄道の夜』：流れ星
+  '宮沢賢治': s(`<path d="M8 50 L24 38 M12 58 L27 45 M4 42 L20 31" stroke-width="2.4" stroke-dasharray="1 4"/><path d="M40 12 L44.5 23 L56 23.8 L47 31 L50.2 42.5 L40 36 L29.8 42.5 L33 31 L24 23.8 L35.5 23 Z" fill="#F6E85E"/>`),
+  // 坂口安吾『桜の森の満開の下』：桜の花
+  '坂口安吾': s(`<g fill="#F4A8C4"><path d="M32 30 Q24 18 29 10 L32 14 L35 10 Q40 18 32 30 Z"/><path d="M32 30 Q24 18 29 10 L32 14 L35 10 Q40 18 32 30 Z" transform="rotate(72 32 32)"/><path d="M32 30 Q24 18 29 10 L32 14 L35 10 Q40 18 32 30 Z" transform="rotate(144 32 32)"/><path d="M32 30 Q24 18 29 10 L32 14 L35 10 Q40 18 32 30 Z" transform="rotate(216 32 32)"/><path d="M32 30 Q24 18 29 10 L32 14 L35 10 Q40 18 32 30 Z" transform="rotate(288 32 32)"/></g><circle cx="32" cy="32" r="3.2" fill="#F6E85E"/>`),
+  // 紫式部『源氏物語』：扇
+  '紫式部': s(`<path d="M32 54 L8 26 Q32 4 56 26 Z" fill="#C8B9F2"/><path d="M32 54 L17 17 M32 54 L32 11 M32 54 L47 17" stroke-width="2"/><path d="M14 30 Q32 14 50 30" stroke-width="2" stroke-dasharray="2 4"/><circle cx="32" cy="54" r="3" fill="${K}"/>`),
+  // 北大路魯山人（美食）：湯気の立つお椀
+  '北大路魯山人': s(`<path d="M10 32 H54 Q52 50 32 52 Q12 50 10 32 Z" fill="#E4532F"/><path d="M22 52 H42 L40 57 H24 Z" fill="${K}"/><path d="M24 26 q-4 -5 0 -10 q4 -5 0 -10 M34 26 q-4 -5 0 -10 q4 -5 0 -10 M44 26 q-4 -5 0 -10" stroke-width="2.4"/><path d="M14 38 H50" stroke="#fff" stroke-width="2"/>`),
+  // 谷崎潤一郎『陰翳礼讃』：燭台のろうそく
+  '谷崎潤一郎': s(`<path d="M32 8 Q39 17 32 24 Q25 17 32 8 Z" fill="#F6E85E"/><rect x="25" y="26" width="14" height="22" rx="2" fill="#fff"/><path d="M16 48 H48 L44 56 H20 Z" fill="#F3D39C"/>`),
+  // 柳田国男『遠野物語』：山と月
+  '柳田国男': s(`<circle cx="46" cy="16" r="6" fill="#F6E85E"/><path d="M4 54 L22 24 L32 38 L40 28 L60 54 Z" fill="#A6D98F"/><path d="M18 31 L22 34 L26 30" stroke-width="2.4"/>`),
+  // 中野鈴子：鈴
+  '中野鈴子': s(`<path d="M32 8 v6"/><path d="M14 36 Q14 16 32 14 Q50 16 50 36 Q50 50 32 52 Q14 50 14 36 Z" fill="#F6E85E"/><path d="M14 34 H50"/><path d="M32 40 v6" stroke-width="3.6"/><circle cx="32" cy="38" r="3" fill="${K}"/>`),
+  // 泉鏡花『高野聖』：ちょう
+  '泉鏡花': s(`<path d="M32 22 Q20 6 10 14 Q6 26 30 32 Q10 34 14 48 Q24 54 31 38 Z" fill="#C8B9F2"/><path d="M32 22 Q44 6 54 14 Q58 26 34 32 Q54 34 50 48 Q40 54 33 38 Z" fill="#C8B9F2"/><path d="M32 18 V46" stroke-width="3.6"/><path d="M32 18 Q28 10 24 9 M32 18 Q36 10 40 9" stroke-width="2"/>`),
+  // 森鴎外『高瀬舟』：川をゆく舟
+  '森鴎外': s(`<path d="M6 36 H58 L50 46 H14 Z" fill="#F3D39C"/><path d="M40 36 L50 10" stroke-width="2.4"/><path d="M4 54 q6 -4 12 0 t12 0 t12 0 t12 0 t12 0" stroke="#1F6FAE" stroke-width="2.4"/><circle cx="26" cy="30" r="4" fill="#fff"/><path d="M22 36 L24 30 M30 36 L28 30"/>`),
+  // グリム：りんご
+  'グリムヴィルヘルム・カール': s(`<path d="M32 20 Q20 12 13 22 Q6 36 18 50 Q25 57 32 52 Q39 57 46 50 Q58 36 51 22 Q44 12 32 20 Z" fill="#E4532F"/><path d="M32 20 Q31 12 35 7"/><path d="M35 12 Q44 6 49 12 Q41 17 35 12 Z" fill="#A6D98F"/><path d="M20 28 q2 -4 6 -5" stroke="#fff" stroke-width="2.4"/>`),
+  // 菊池寛『恩讐の彼方に』：のみと石
+  '菊池寛': s(`<path d="M8 56 L20 30 L36 22 L56 30 L56 56 Z" fill="#D9D3C7"/><path d="M40 8 L28 34" stroke-width="5"/><path d="M28 34 L25 40" stroke-width="2.4"/><path d="M34 40 l4 4 M40 36 l5 2 M36 46 l6 2" stroke-width="2"/>`),
+  // 岡本綺堂『半七捕物帳』：提灯
+  '岡本綺堂': s(`<path d="M26 8 H38 V13 H26 Z" fill="${K}"/><path d="M26 51 H38 V56 H26 Z" fill="${K}"/><path d="M20 13 H44 Q54 32 44 51 H20 Q10 32 20 13 Z" fill="#E4532F"/><path d="M16 22 H48 M14 32 H50 M16 42 H48" stroke="#fff" stroke-width="1.8"/><path d="M32 4 v4"/>`),
+  // 野村胡堂『銭形平次』：寛永通宝
+  '野村胡堂': s(`<circle cx="32" cy="32" r="22" fill="#F3D39C"/><circle cx="32" cy="32" r="16" stroke-width="2"/><rect x="26" y="26" width="12" height="12" fill="#fff"/><path d="M32 12 v4 M32 48 v4 M12 32 h4 M48 32 h4" stroke-width="2.4"/>`),
+  // 佐藤春夫『秋刀魚の歌』：さんま
+  '佐藤春夫': s(`<path d="M6 34 Q24 22 46 28 L58 20 L55 34 L58 46 L46 38 Q24 44 6 34 Z" fill="#B5C9F5"/><circle cx="14" cy="32" r="2" fill="${K}"/><path d="M8 36 Q16 38 22 36" stroke-width="2"/><path d="M26 30 L30 38 M34 29 L37 38" stroke-width="1.8"/>`),
+  // 新美南吉『ごん狐』：きつね
+  '新美南吉': s(`<path d="M12 12 L26 22 L32 20 L38 22 L52 12 L50 30 Q50 42 32 54 Q14 42 14 30 Z" fill="#FFB77A"/><path d="M20 34 Q26 32 28 36 M44 34 Q38 32 36 36" stroke-width="2.4"/><path d="M26 44 Q32 50 38 44" /><circle cx="32" cy="50" r="2.6" fill="${K}"/><path d="M18 17 L24 22 M46 17 L40 22" stroke-width="2"/>`),
+  // 永井荷風『濹東綺譚』：傘
+  '永井荷風': s(`<path d="M6 30 Q32 2 58 30 Q52 26 45 30 Q39 26 32 30 Q25 26 19 30 Q12 26 6 30 Z" fill="#8FD0EE"/><path d="M32 12 V52 Q32 58 26 58 Q21 58 21 53"/><path d="M19 30 L32 12 L45 30" stroke-width="2"/>`),
+  // 夢野久作『瓶詰地獄』：手紙入りの瓶
+  '夢野久作': s(`<path d="M26 6 H38 V12 Q38 18 44 22 Q50 26 50 34 V54 Q50 58 46 58 H18 Q14 58 14 54 V34 Q14 26 20 22 Q26 18 26 12 Z" fill="#9FE0D4"/><rect x="24" y="2" width="16" height="6" rx="2" fill="#F3D39C"/><path d="M22 36 H42 V50 H22 Z" fill="#fff" transform="rotate(-8 32 43)"/><path d="M25 41 H38 M25 45 H36" stroke-width="1.6" transform="rotate(-8 32 43)"/>`),
+  // 小川未明『赤い蝋燭と人魚』：赤いろうそく
+  '小川未明': s(`<path d="M32 6 Q39 15 32 22 Q25 15 32 6 Z" fill="#F6E85E"/><rect x="24" y="24" width="16" height="30" rx="2.5" fill="#E4532F"/><path d="M28 28 Q30 34 28 38" stroke="#fff" stroke-width="2"/><path d="M14 56 H50"/>`),
+  // ポー『大鴉』：からす
+  'ポーエドガー・アラン': s(`<path d="M8 40 Q20 22 36 24 L46 16 L48 24 Q56 28 58 34 L48 34 Q46 46 32 48 L18 56 L22 46 Q12 46 8 40 Z" fill="${K}"/><circle cx="46" cy="26" r="1.8" fill="#fff" stroke="none"/><path d="M28 48 L26 58 M34 47 L34 58" stroke-width="2.4"/>`),
+  // アンデルセン『マッチ売りの少女』：マッチ
+  'アンデルセンハンス・クリスチャン': s(`<path d="M20 56 L40 20" stroke-width="5"/><path d="M20 56 L40 20" stroke="#F3D39C" stroke-width="2"/><ellipse cx="42" cy="17" rx="5" ry="6.5" fill="#E4532F" transform="rotate(30 42 17)"/><path d="M46 8 Q52 2 50 -2 M50 14 Q58 10 58 4" stroke="#F6E85E" stroke-width="2.4"/>`),
+  // 寺田寅彦：金平糖
+  '寺田寅彦': s(`<path d="M32 10 L36 18 L45 15 L44 24 L53 27 L47 34 L53 41 L44 43 L45 52 L36 49 L32 57 L28 49 L19 52 L20 43 L11 41 L17 34 L11 27 L20 24 L19 15 L28 18 Z" fill="#F4A8C4"/><circle cx="32" cy="33" r="6" fill="#fff"/>`),
+  // 中島敦『山月記』：月にほえる虎の横顔を月と山で
+  '中島敦': s(`<path d="M40 8 A18 18 0 1 0 56 34 A14 14 0 1 1 40 8 Z" fill="#F6E85E"/><path d="M6 58 L22 36 L30 46 L38 34 L58 58 Z" fill="#A6D98F"/><path d="M18 42 l4 -2 M34 40 l3 -2" stroke-width="2"/>`),
+  // 樋口一葉：一枚の葉
+  '樋口一葉': s(`<path d="M12 52 Q10 22 34 12 Q54 6 54 10 Q56 34 34 48 Q22 56 12 52 Z" fill="#A6D98F"/><path d="M12 52 Q28 34 46 18"/><path d="M24 40 L22 30 M30 34 L30 24 M36 28 L38 20 M22 42 L32 44 M28 36 L38 38" stroke-width="2"/>`),
+  // 島崎藤村『椰子の実』：椰子の実
+  '島崎藤村': s(`<ellipse cx="32" cy="38" rx="18" ry="16" fill="#C8955C"/><path d="M32 22 Q30 12 20 8 M32 22 Q36 10 48 8 M32 22 Q42 16 54 22" stroke-width="3"/><circle cx="26" cy="36" r="2.2" fill="${K}"/><circle cx="34" cy="34" r="2.2" fill="${K}"/><circle cx="30" cy="42" r="2.2" fill="${K}"/><path d="M4 58 q6 -4 12 0 t12 0 t12 0 t12 0 t12 0" stroke="#1F6FAE" stroke-width="2.4"/>`),
+  // 梶井基次郎『檸檬』：レモン
+  '梶井基次郎': s(`<path d="M10 34 Q8 30 12 28 Q18 14 34 14 Q50 14 54 28 Q58 30 56 34 Q58 38 54 40 Q48 52 32 52 Q16 52 12 40 Q8 38 10 34 Z" fill="#F6E85E"/><path d="M20 28 q4 -6 10 -7" stroke="#fff" stroke-width="2.4"/><path d="M40 16 Q44 8 50 8"/>`),
+  // 海野十三（科学小説）：ロボット
+  '海野十三': s(`<rect x="16" y="18" width="32" height="26" rx="6" fill="#B5C9F5"/><path d="M32 18 V10"/><circle cx="32" cy="8" r="3" fill="#E4532F"/><circle cx="25" cy="30" r="3.5" fill="#fff"/><circle cx="39" cy="30" r="3.5" fill="#fff"/><path d="M26 38 H38" stroke-width="2.4"/><path d="M20 44 V52 H44 V44"/><path d="M12 26 V36 M52 26 V36"/>`),
+  // ドイル（シャーロック・ホームズ）：パイプ
+  'ドイルアーサー・コナン': s(`<path d="M6 30 Q20 30 30 36 L34 38" stroke-width="4.5"/><path d="M32 30 H52 V40 Q52 54 42 54 Q32 54 32 40 Z" fill="#C8955C"/><path d="M36 22 q-3 -4 0 -8 M44 22 q-3 -4 0 -8" stroke-width="2.2"/>`),
+};
+return MOTIFS;
+})();
+const PEEP_PAPER = "<svg aria-hidden=\"true\" focusable=\"false\" view-box=\"0 0 850 1200\" viewBox=\"23 50 797 1132\"><g><g transform=\"translate(0 459)\"><path d=\"M672.6 227.6C663.8 193.8 655.8 179.4 640.3 167.7C625.9 156.7 604.7 147.5 573.9 140.7C541.7 135.1 540.8 118.4 532.8 91.6C530.4 83.5 518.8 81.4 513.8 87.2C513 86.4 512.3 85.7 511.5 85.1C512.2 81.2 506.6 70.2 506.8 66.5C508.8 28.1 496.2 8.8 464.8 1.7C458 0.1 411.7 -0.8 405 1C375.9 9.1 347.3 34.6 351.7 65.3C342.6 77.2 333.6 84.5 319.6 88.4C288.2 92.3 256.9 95.9 225.6 98.9C164.2 108.5 106.7 141 67.4 188.4C63.7 192.7 62.7 198.7 65.9 203.3C63.4 214.1 49.3 240.1 60.4 247.5C42.1 291.1 0.1 375.5 0 399.6C-0.3 500.9 10.6 632.8 110.6 688.8C114.6 692.8 115.2 697.1 116.9 703C121.3 721.4 137.3 734.6 154.7 733.5C240.8 735.4 324.2 724.9 410.2 724.4C448.2 724.2 493.8 729.9 526.8 733.6C559.8 737.4 593.1 734.1 624.7 724.4C627.4 728.6 632.8 731.1 638.3 729.9C671.1 723.4 697.6 703.1 720.7 681.1C727.8 668.2 755.3 631.6 744.4 618.9C754.3 576.9 753.8 531.8 736.1 491.8C738.6 484.5 734.1 476.4 736.1 468.8C737.6 463.4 741.4 461.1 743.4 455.7C746.1 448 743.1 437.8 740.1 430C738.8 426.1 742.4 421.9 743.4 418C748 399.3 737.3 401 729.6 388.5C729.7 388.4 731.8 379.5 731.7 379.6C732.9 373.2 730 365 727.4 359.7C725.6 356.1 721.9 353.9 718.2 354.3C721.9 341.6 726.7 331.1 731.7 318.8C740.7 297.3 752.1 276.7 765 257.2C770.3 249.2 763.2 240 754.6 239.4C727 237.7 699.6 233.7 672.6 227.6Z\" transform=\"translate(37.5 -31)\" fill=\"#fff\" stroke=\"none\"></path><path d=\"M692.4 192.8C705.5 193.5 718.6 194.5 731.7 195.8C744.3 197 757.3 197.8 769.8 200.6C771.5 200.9 773 203.2 772.3 205C771.8 206.1 771.3 207.3 770.9 208.4C756.4 243.5 740.3 277.8 723 311.5C727 311.8 730.4 313 732 317.7C735 326.2 737.1 335.8 734.2 344.6C734.1 344.9 733.8 344.9 733.6 344.8C733.5 349.7 735.2 354.4 738.6 358C741.6 361 745.7 363 748.2 366.5C752.4 372.3 749.5 377 746.5 381.9C745.9 382.9 745.3 383.8 744.8 384.8C742.6 388.7 744.8 390.7 747.3 392.9C748.3 393.7 749.3 394.6 750.1 395.6C752.6 398.9 753.3 402.9 752.8 406.9C752.2 411.5 750.2 415.8 748 419.8C745.5 424.7 743.1 430.3 739.6 434.6C739.4 434.7 739.3 434.9 739.2 435C739.2 434.9 739.2 434.9 739.3 434.9C739.8 434.9 740.5 435.8 740.7 436.3C740.9 436.7 741.1 437.2 741.3 437.7C741.3 437.6 741.3 437.6 741.2 437.5C741 437 741.7 436.5 742.1 436.5C742.7 436.6 743.7 437.7 743.9 438.2C747.6 446.5 750.7 454.9 753.4 463.6C754.5 467.7 755.5 471.9 756.6 476C758 482.1 758.9 488.3 759.7 494.5C760.4 498.6 760.9 502.8 761.2 507C761.9 513.3 762.3 519.5 762.4 525.7C762.3 535.9 761.2 545.9 759.8 555.9C759.3 560.1 758.6 564.2 757.7 568.2C756.7 574.4 755.3 580.5 753.5 586.5C752.5 590.2 751.6 594 750.7 597.7C750.3 598.8 749.9 599.9 749.5 601C748.9 603.3 748 605.7 747.1 608C746.7 609.1 746.3 610.2 745.9 611.2C737.6 608.8 729.2 606.7 720.4 606.6C715.2 606.5 715.2 614.5 720.4 614.6C728.1 614.7 735.4 616.4 742.7 618.6C741.6 620.8 740.4 623.1 739 625.2C735.3 632.5 731.6 639.8 727.3 646.8C724.8 650.8 722.1 654.7 719.2 658.4C714.2 664.8 708.5 670.9 701.9 675.7C698.7 678.3 695.4 680.6 691.6 682.2C687.4 684.1 683.1 685.5 678.5 686.6C676 687.2 673.5 687.7 670.9 688C667.8 688.4 664.7 688.4 661.7 688.9C658.9 689.3 656.2 689.9 653.5 690.9C652.1 691.5 650.9 692.1 649.8 692.8C648.9 693.6 648 694.5 647 695.7C647 695.7 647 695.7 647 695.7C646.1 698.2 644.2 700.3 640.8 700.8C622.1 703.9 603.7 704.3 584.9 702.3C566.3 700.4 548 697.3 529.4 695.6C518.6 694.6 507.7 693.8 496.8 693.2C498.1 690.5 499.6 687.9 500.9 685.2C503.3 680.6 496.4 676.5 494 681.1C492.1 685 490 688.9 488.1 692.8C445.3 691 402.3 692.1 359.4 693.2C348.4 693.5 337.4 693.8 326.4 694C291.8 694.7 257.3 695.1 222.7 696.3C206.4 696.8 190.1 697.5 173.8 698.1C172.5 693.9 171 689.7 169.6 685.5C167.9 680.7 160.2 682.8 161.9 687.7C163.1 691.3 164.4 694.8 165.5 698.4C150.3 699 135.1 699.3 119.9 699.3C119.5 699.3 119.1 699.2 118.7 699.1C118.6 699.4 118.6 699.7 118.5 700C118.5 700.2 118.3 700.1 118.3 700C118.3 699.6 118.3 699.3 118.3 698.9C117 698.4 116.1 697.4 115.7 696.1C114.6 691.9 114.6 687.7 115.2 683.6C114.2 681.4 112.9 679.4 111.1 678C105.8 673.5 97.7 672.5 91.6 669.3C86.8 666.9 82.2 664 78 660.7C69.1 654.1 61.6 646.1 55 637.2C40.3 617.6 30.5 594.6 23.1 571.5C8 524.2 1.3 473.3 0.1 423.8C-0.4 403.1 0.5 382.3 2.6 361.6C7.4 358.5 12.3 355.7 17.4 353.1C22 350.8 17.9 343.9 13.4 346.2C10.1 347.9 6.8 349.7 3.7 351.6C9.4 304.4 22 258 41.2 214.5C51.2 191.8 62.8 168.7 77.7 148.4C83.1 148.8 88.5 149.6 93.8 151.3C98.7 152.9 100.8 145.1 95.9 143.6C91.8 142.3 87.6 141.5 83.4 140.9C87.7 135.5 92.4 130.3 97.3 125.4C119.2 103.7 146.8 89.2 175.7 79.2C205.9 68.8 237.5 63.1 269 57.8C297.7 52.9 325 51.3 342.3 24.1C343.4 22.4 345.8 21.5 347.6 22.7C348.4 23.3 349.2 23.8 350 24.3C350 24.2 350 24.1 350.1 24C352.6 16.3 353.1 8.5 355 0.8C355.3 -0.4 356.8 -0.2 357.2 0.8C360.2 8.9 359.4 19.2 356.4 28.8C364.7 34.7 372.8 40.7 381.6 45.6C394.9 53.1 417.8 57 432.8 59.7C447.6 62.2 463.1 63.8 478.2 63C484 62.8 489.8 62 495.4 60.1C498.3 59.1 501.1 57.8 503.7 56.1C504.2 55.8 504.7 55.4 505.3 55C504.4 48.8 504.2 42.3 504.5 36.1C504.7 29.4 505 22.9 508.4 17.2C508.5 16.9 508.8 17 508.9 17.2C512.2 24.9 512.4 34 513.2 42.6C521.3 40.2 530 42.9 535.2 50.1C538.9 55.3 539.7 61.4 542.3 67.1C543 68.8 546.2 72.2 546.2 73.8C547.1 74.6 547 74.7 546 74.2C545.6 74.1 545.3 74 545.2 74C545.3 74 545.6 74.1 546 74.3C547.9 75.2 549.2 75.8 550.8 77.1C553 79 553.8 82.2 553.5 85C557.6 86.9 561.5 89 565.5 90.7C573 93.7 580.4 96.7 587.8 100.1C603.5 107.4 619 115.4 634.1 124C638.1 126.3 642.2 128.6 646.3 131C642.8 133.6 639.5 136.4 636.4 139.4C632.7 143.1 638.3 148.7 642 145.1C645.5 141.7 649.3 138.4 653.4 135.7C660.2 140.4 666.4 145.8 671 152.8C675 158.9 677.5 165.8 680.2 172.6C682.9 179.7 686 186 690.3 192.3C690.4 192.4 690.5 192.5 690.6 192.7C691.2 192.7 691.8 192.7 692.4 192.8ZM398.7 83C402.4 85.5 405.6 88.5 408.7 91.6C412.4 95.3 406.7 100.9 403.1 97.3C400.4 94.7 397.8 92 394.7 89.9C392.9 88.6 392.1 86.4 393.2 84.4C394.3 82.6 396.9 81.7 398.7 83ZM204.2 104.1C209.3 103.2 207.1 95.5 202.1 96.4C195.8 97.4 189.6 98.7 183.7 101C178.9 102.8 181 110.6 185.8 108.7C191.7 106.4 197.9 105.1 204.2 104.1ZM562.9 108.3C567.2 105.4 571.2 112.4 566.9 115.2C563.4 117.5 560 119.8 556.5 122.1C552.2 125 548.2 118 552.5 115.2L562.9 108.3ZM367.8 154C372.9 154.9 370.7 162.6 365.7 161.7C360.3 160.7 354.9 160.7 349.5 160.7C344.3 160.7 344.3 152.7 349.5 152.7C355.6 152.7 361.7 152.8 367.8 154ZM117.8 187.4C122.6 189.2 120.5 197 115.7 195.1C110.4 193 104.9 191.4 99.6 189.3C94.8 187.5 96.9 179.7 101.7 181.6C107 183.7 112.5 185.3 117.8 187.4ZM258.4 200.9C263.3 199.5 261.2 191.8 256.2 193.1C247.5 195.5 238.5 196.8 229.7 198.9C224.7 200.1 226.9 207.8 231.9 206.6C240.7 204.5 249.6 203.2 258.4 200.9ZM660.5 324.9C676.9 317.1 695 312.8 713.1 311.8C713.2 311.5 713.4 311.2 713.6 310.8C732.2 277.3 748.7 242.6 763.6 207.3C752.6 206.4 741.7 204.7 730.7 203.7C718.3 202.5 705.8 201.5 693.4 200.8C690.8 200.6 688.2 200.5 685.6 200.3C677.1 199.9 668.5 199.6 659.9 199.3C658.8 199.3 657.7 199.3 656.6 199.2C651.8 199.1 647.1 198.9 642.4 199C639.7 199 637.5 199.3 635.7 201.5C634.6 202.9 634 205 632.4 205.9C632.2 206 631.9 206.2 631.6 206.4C631.3 206.7 631 206.9 630.8 207.2C629.6 208.7 628.5 210.4 627.6 212.1C624.8 216.9 622.2 221.9 619.7 226.9C615.2 235.7 611.2 244.8 606.6 253.5C602.3 261.5 597.8 269.5 593 277.3C592 279 583.4 292.1 578.4 298.9C582.4 299 586.3 299.5 589.9 300.6C591.4 297.2 593.3 294 594.9 290.6C596.4 287.3 597.4 283.4 599.4 280.3C600.8 278.3 603.8 279.6 603.4 282C602.7 285.8 600.2 289.4 598.2 292.5C596.1 295.6 594 298.6 591.4 301.1C591.5 301.2 591.7 301.2 591.8 301.3C600.9 304.7 606.8 314.4 612.5 321.8C616.6 327.1 644.1 364.7 624.9 365.8C620 366.1 619.9 358.2 624.9 358.1C624 358.1 624 357.5 624 356.8C624 356.5 624 356.2 623.9 355.9C623.6 354.8 623.1 353.7 622.7 352.7C621.5 349.8 620.1 347 618.6 344.3C616.1 339.7 613.2 335.4 610.2 331.2C607 326.8 603.5 322.5 600.1 318.3C596.5 313.9 593.1 309.5 587.4 307.9C583.5 306.8 579.3 306.5 574.9 306.4C570.1 306.4 565.1 306.9 560.4 307.3C559.1 307.4 557.9 307.5 556.7 307.6C546.3 308.4 535.8 309.9 525.6 312.3C516.9 314.4 509.9 318.4 504 325.1C498.4 331.4 494.3 338.9 490.1 346.1C479.9 363.3 466.3 378 450.1 388.8C449.5 390 448.6 391 447.3 391.8C447.3 391.8 447.4 391.8 447.4 391.9C447 392 446.7 392.2 446.3 392.3C446.3 392.3 446.3 392.4 446.2 392.4C434.9 397.3 423.7 402.1 413.1 408.4C412.9 409.6 412.7 410.8 412.6 412C412.3 416.4 411.7 420.8 411.3 425.3C410.5 434.2 410 443.2 410.3 452.1C410.6 461.5 411.8 470.9 414 480C414.9 483.9 416.2 487.6 417.4 491.4C423.4 486.8 430.8 483.3 437.5 480.1C444.7 476.8 452.1 474.1 460 473C468.2 471.8 476.2 472.7 484.3 473.8C484.9 473.9 485.4 474 486 474.1C492.8 475 500.2 476.1 506.8 474C518.9 470.2 523.2 456 531.8 447.9C536 444.1 540.9 441.4 546.5 440.9C548 440.7 549.4 440.7 550.9 440.8C553.7 440.9 556.5 440.9 559 439.8C562.8 438.1 564.9 434.8 566 431C566.5 429.5 567.5 428.4 568.8 427.8C566.3 426.9 564.7 425.1 562.5 423.4C559.8 421.2 557 419.1 554.1 417.1C551.4 415.2 548.7 413.4 546.1 411.6C545.6 411.3 545 410.9 544.4 410.3C542.4 408.7 539.8 406.6 538 406.9C537.8 407 537.5 406.8 537.6 406.5C540.3 399.3 570.7 418.8 573.1 423.8C573.7 425.1 573.3 426.6 572.4 427.4C578.3 428.9 582.8 423.2 584.1 418.1C585.6 412.1 584.4 405.3 583.4 399.2C583.3 398.7 583.3 398.2 583.2 397.7C583.1 397 583.7 396.4 584.3 396.6L584.5 396.1C577.5 393 570 390.9 562.8 388.4C558.1 386.8 553.5 385.2 548.8 383.5C545.3 382.3 541.7 381.4 539.2 378.4C537.6 376.5 537.9 373.1 540.8 372.4C544.8 371.5 548.4 372.8 552.1 374.2C552.8 374.5 553.5 374.7 554.3 375C558.6 376.5 563 377.9 567.3 379.4C575 382.1 582.9 384.3 590.3 387.6C596.6 390.5 601.9 394.6 604.8 401C605.9 403.5 607.2 410 610.3 410.7C614 411.5 615 403.5 615.3 400.8C617.2 384.6 608.1 365.9 593.3 358.8C585.8 355.1 577.4 353 569.2 350.9C562.5 349.2 555.5 347.8 548.6 346.7C545.7 346.2 542.8 345.8 539.8 345.4C539.3 345.3 539.2 344.5 539.8 344.5C543.4 344.3 547.1 344.3 550.7 344.3C560.7 339.2 572.6 335.2 583.7 334.6C593.8 334 602.8 342.4 604.9 352.1C605.4 354.4 604.3 356.1 602.7 356.8C611.7 362.8 617.3 371.7 621 382.6C621.2 383.1 621.4 383.7 621.5 384.3C623.7 378.9 628.5 374.2 633.2 371.1C638.3 367.7 644.1 364.4 650.1 361.7C649.6 361.5 649.2 361.2 648.7 360.9C646.1 358.9 646.1 355.1 645.7 352.1C645.2 348.2 645 344.2 645.9 340.3C647.7 332.7 653.8 328.1 660.5 324.9ZM514.7 224.6C514.9 219.9 516.7 215.8 518.8 211.7C521.1 207.1 514.2 203 511.9 207.7C509.2 213.1 506.9 218.5 506.7 224.6C506.6 229.8 514.6 229.8 514.7 224.6ZM364 286.9C363.3 292 371 294.2 371.7 289.1C372.9 281.3 374.2 273.6 376.4 266C377.7 261.1 370 258.9 368.6 263.9C366.5 271.5 365.2 279.2 364 286.9ZM89.4 281.1C85 283.7 89 290.6 93.4 288C98.6 284.9 104.1 282.6 109.8 280.3C114.5 278.5 112.4 270.7 107.6 272.6C101.4 275.1 95.2 277.7 89.4 281.1ZM229.9 318C225.3 315.7 229.4 308.8 234 311C238.8 313.4 243.8 315.3 249.1 316.4C254.2 317.5 252 325.2 247 324.1C241.1 322.8 235.4 320.6 229.9 318ZM732.6 342.4C732.7 342.2 732.9 342.1 733 342.1C732 335.1 730.3 327.2 727.1 321C725.3 317.6 722.6 317.7 719.2 317.8C718.8 317.9 718.3 317.9 717.8 317.9C714.5 318 711.1 318.2 707.7 318.6C693.2 320.1 678.5 323.9 665.2 330C659.2 332.7 653.2 336 652.1 343.2C651.7 346.3 652 349.6 652.4 352.8C652.6 353.8 652.7 355.2 653.1 355.4C653.7 355.7 656.3 354.9 657.9 354.5C658.4 354.3 658.8 354.2 658.9 354.2C666.3 352.6 673.7 351 681 349.4C687.9 347.9 695.1 345.4 702.1 345.3C704.8 345.2 706.2 349.5 703.6 350.6C694.6 354.5 683.7 355.5 674.1 357.6L669.2 358.7C660 363 650.5 366.7 641.6 371.9C636.5 374.9 630.7 378.2 627.7 383.5C624.9 388.2 625.2 396.1 631.6 397.6C633.5 398 635.7 398 637.9 397.7C642.5 397.1 647.3 395.3 651.2 394.4L670.5 390.1C683.7 387.1 696.9 384.1 710.1 381.1C713.5 380.3 714.9 385.6 711.5 386.3C694.1 390.3 676.8 394.2 659.4 398.2C652.3 399.8 645.2 402 638 403C631.6 407.1 625.3 411.1 620.3 417C620 417.5 619.6 417.9 619.3 418.4C616.4 422 617.2 426.4 622.3 426.6C622.5 426.6 622.6 426.6 622.8 426.6C625.4 426.6 628.1 425.6 630.6 425C635.9 423.7 641.3 422.5 646.7 421.4C668.1 417.2 690 415.4 711.7 413.4C715.5 413 715.5 418.9 711.7 419.3C696.6 420.7 681.4 422.1 666.4 424.3C659 425.3 651.7 426.5 644.5 427.9C640.7 428.6 636.9 429.7 633.1 430.6C633.1 430.7 633.1 430.8 633 430.9C629 436.9 625.4 446.9 631.8 452.9C634.9 455.7 639.1 455.3 643 454.9L643.3 454.8C647.8 454.3 652.3 453.7 656.8 453.1C664.6 452 672.5 450.7 680.3 449.4C684.4 448.7 688.5 447.9 692.5 447.1C693.1 447 693.6 446.9 694 446.8C696.5 446.3 698.3 445.9 700.8 447.1C701.9 447.7 701.9 449.2 701.2 450C698.1 453.5 691.9 453.3 687.5 454.1C682.2 455.1 676.9 456 671.5 456.7C661.4 458.3 651 459.9 640.8 460.5C634.4 460.9 628.8 458.5 625.9 453.3C626 454.8 626.1 456.3 626.1 457.7C626.3 463 626.4 468.2 626.5 473.5C626.5 474 626.5 474.5 626.4 475.1L626.4 475.1L626.4 475.1C626.4 476.6 626.3 478.3 626.7 479.7C634.6 479.9 642.6 480 650.6 479.9C655.1 479.9 659.7 479.8 664.2 479.6C665 478.4 666.2 477.6 667.8 477.6C681.8 477.9 690.3 468.6 698.9 459.2C700.3 457.6 701.8 456.1 703.2 454.5C712.6 444.7 723.5 435 735.7 428.7C737.5 424.5 740.3 420.5 742.4 416.5L742.5 416.3C744.8 412 747.9 406.1 745.9 401.3C744.3 397.4 739.7 395.8 738.1 391.8C736.8 388.7 737.4 385.6 739 382.7C740.7 379.7 744.8 376.5 744.9 372.8C745.1 369.4 741.7 366.8 738.8 364.5C737.8 363.7 736.9 363 736.1 362.3C730.7 356.9 729.3 349.2 732.6 342.4ZM594.3 352.4C583.3 348.1 571.3 345.7 559.4 344.8C565.8 343.6 572.3 342.5 578.8 342C583.3 341.6 587.6 341.6 591 345.1C593.3 347.4 594.3 350.3 595.8 353.1C595.3 352.8 594.8 352.6 594.3 352.4ZM134.3 502C126.8 504.2 118.1 506.2 113 512.6C112.8 512.9 112.4 512.5 112.5 512.2C119 498.7 137.7 494 150.6 489.2C159.7 485.9 169.1 483.1 178.6 480.6C177.9 473.3 178.9 465.5 179.9 457.9C180.4 454.4 180.9 451 181.1 447.6C182.1 436.1 182.9 424.6 183.3 413.1C183.7 401.4 183.8 389.6 183.4 377.9C183 366.2 181.5 354.6 180.9 343C180.8 341.9 182.4 341.8 182.7 342.8C186.6 353.6 188.3 365.5 189.6 376.9C190.9 388.7 191.3 400.4 191.2 412.2C191 424.3 190.3 436.4 189.3 448.5C188.9 454.3 188.3 460 187.8 465.7C187.4 470.1 187.3 474.4 186.4 478.7C192.1 477.3 197.8 475.9 203.5 474.7C221.7 470.6 239.9 466.8 258 462.3C266.9 460.2 275.6 457.5 284.5 455.2C292.8 453.1 301.6 450.4 310.1 449.4C313.2 449.1 313.6 453.3 311.5 454.7C304.6 459.6 295.4 463 287.3 465.7C279.3 468.4 270.9 470.4 262.7 472.4C245.5 476.7 228.1 480.1 210.7 483.7C193.4 487.3 176.1 490.9 158.9 495.3C150.7 497.5 142.5 499.6 134.3 502ZM343.7 380.7C338.5 380.6 338.5 372.6 343.7 372.7C348.4 372.8 352.9 374 357.4 375.2C362.4 376.4 360.3 384.1 355.3 382.9C351.5 381.9 347.6 380.8 343.7 380.7ZM630.6 402.9C628.2 404 625.9 405.4 623.7 406.9C624 404.5 624.1 402 624 399.4C625.8 401.3 628.1 402.4 630.6 402.9ZM85.6 424.7C80.1 422.5 74.4 420.6 70 416.5C66.3 413 60.6 418.6 64.4 422.2C69.8 427.3 76.7 429.7 83.4 432.4C88.2 434.3 90.3 426.6 85.6 424.7ZM631.9 430.8C629.4 431.4 627 431.9 624.5 432.1C624.5 432.1 624.4 432.1 624.3 432.1C624.7 434.8 625 437.6 625.2 440.3C626.6 436.7 629.1 433.5 631.9 430.8ZM714.5 565.5C711.6 555.4 712.4 544.6 710.4 534.4C709.3 529.1 707.9 523.8 706.4 518.6C705.2 514.5 703.1 510 702.9 505.7C702.9 505.4 703.2 505.2 703.4 505.3C707.5 507.7 710.7 512.8 713 516.8C715.8 521.5 718 526.5 719.7 531.8C723.1 542.3 726 554.9 721.5 565.5C720.2 568.6 715.6 569.2 714.5 565.5ZM246.3 513.3C242.7 509.6 237 515.3 240.6 518.9L251 529.3C254.7 532.9 260.3 527.3 256.7 523.6L246.3 513.3ZM600.7 515.7C592.4 518.2 584.6 521.9 576.7 525.3C572 527.4 576 534.3 580.7 532.2C588 529.1 595.2 525.7 602.8 523.4C607.7 521.9 605.6 514.2 600.7 515.7ZM493.1 522.9C491.1 518.1 498.9 516.1 500.8 520.8C503 526.2 505.5 531.5 507.7 536.9C509.6 541.7 501.9 543.8 500 539.1C497.8 533.6 495.3 528.3 493.1 522.9ZM328 567.8C329.8 566.9 331.6 566.2 333.3 565.3C336.1 564 337.4 562.5 339.8 560.8C342.7 558.7 341 553.8 337.2 554.8C334.9 555.3 333.2 555.1 330.9 556.1C329.2 556.8 327.6 557.6 325.9 558.4C322.1 560.2 318.2 562.1 314.4 563.9C307.3 567.3 300.2 570.7 293.1 574C278 581.3 263.1 588.8 248.2 596.3C233.5 603.6 218.9 610.9 204.3 618.3C197 622 189.7 625.8 182.5 629.7C179 631.5 175.5 633.3 172.1 635.2C168.8 637.1 164.7 638.8 162.1 641.7C161.9 641.9 162.1 642.4 162.4 642.3C169.2 641.9 176.8 637 182.9 634.3C190.1 631 197.3 627.8 204.4 624.4C219.6 617.4 234.8 610.3 250 603.4C265 596.5 280 589.9 294.9 583C302.3 579.5 309.8 576.1 317.2 572.7C320.8 571 324.4 569.4 328 567.8ZM77.3 585.2C72.8 587.8 68.8 580.9 73.3 578.3C79.5 574.7 86.4 572.3 92.8 569.1C97.5 566.8 101.5 573.7 96.9 576C90.4 579.2 83.6 581.6 77.3 585.2ZM405 619.8C407.1 621 409.2 620.1 410.5 618.3C413.9 613.8 417.4 609.4 421.4 605.3C425 601.7 419.4 596 415.7 599.7C411.3 604.2 407.4 609.2 403.6 614.3C402.3 616 403.3 618.8 405 619.8ZM600.9 641.7C596.5 638.6 593.4 634.4 589.7 630.7C586.1 627 591.7 621.3 595.4 625C598.5 628.2 601.2 632.2 604.9 634.8C606.7 636 607.5 638.2 606.4 640.2C605.3 642 602.6 642.9 600.9 641.7ZM279.9 647.3C279.1 645.3 280.8 642.9 282.7 642.4C285 641.8 286.8 643.2 287.6 645.2C289.8 650.5 293 655.4 297 659.6C300.6 663.3 294.9 668.9 291.3 665.2C286.3 660.1 282.7 654 279.9 647.3Z\" transform=\"translate(35 7)\" fill=\"currentColor\" fill-rule=\"evenodd\" stroke=\"none\"></path></g><g transform=\"translate(225 0)\"><g><g><path d=\"M344.8 46.6C314.8 5.2 259.4 -6.7 211.4 3.4C117.6 20.5 28 92.1 11.4 189.4C-14.5 248.3 2.1 341 77.3 348C88 348.6 98.6 346.1 109.3 347.4C174.8 357.9 252.2 402.7 310.1 349.9C313 352 316.8 353 320.1 351.7C344.8 342.2 345.9 314.6 348 291.9C350.8 262.6 353.3 233.3 355.7 204C356.5 153.4 376.6 90.3 344.8 46.6L344.8 46.6Z\" transform=\"translate(47 121)\" fill=\"#fff\" stroke=\"none\"></path><path d=\"M432.7 37.4C398.2 16.2 325.4 -1.9 285.9 0.2C240.8 2.6 193 16.7 156.8 44.5C139.6 57.7 125.7 74.5 116.4 94.2C107.5 113 102.7 132.9 100 153.4C97 176.5 96.8 199.8 97.3 223.1C97.7 236.7 98.2 250.4 98.6 264.1C99.1 278.9 98.8 293.9 100.8 308.7C100.8 308.8 100.9 309 100.9 309.2C87.7 308.7 74.2 316.5 63 323.1L60.9 324.4C48.5 331.9 36.5 340.9 26.6 351.5C16.3 362.6 8 375.2 2.9 389.4C-0.3 398.3 -1.5 408.2 2.8 416.9C6.7 424.6 14.3 429.4 22.3 431.8C30.1 434.3 38.3 435.1 46.6 434.6C46.1 435.9 45.7 437.3 45.4 438.7C42.8 450.6 46.4 464.7 57.4 471.2C68.8 478 84.4 474.9 96.6 471.6L97.5 471.3C106.4 468.9 115 465.3 123.1 460.7C129.2 469.5 139.9 475.1 150.9 476.3C166 477.9 179.2 470 191 461.3L191.9 460.6C199.2 465.1 208.4 466.2 216.7 462.7C222.7 460.1 229.3 453.2 231.3 446.3C231.2 448.5 231.7 450.7 232.8 452.6C235.8 457.6 241 458.3 246.2 457.6C249.3 457.1 251.7 453.9 252.6 451.1C264.4 414.6 249.7 372.6 224.8 344.9C218.5 337.9 211.3 331.8 203.5 326.5C194.7 320.6 184.6 317.2 175.4 311.9C160.8 303.6 149.8 286 153.4 268.8C155.3 259.7 161 252.4 168.4 247C172.1 244.3 176.2 242.1 180.6 240.7C185.4 239.1 196.5 237 198.8 243.6C198.9 243.9 199.4 243.8 199.4 243.5L201.8 243.5L201.9 244.6C201.9 245.7 202 246.8 202 248L202.2 250.3C202.2 251.1 203.6 251.4 203.6 250.5C210.6 149.2 367.7 176.1 398.8 110.3C415.1 141.2 467.6 160.1 480.3 159C476.1 184.1 474.7 197 473.1 221.2L472.2 233.6C470.5 259.5 468.9 285.4 467.6 311.3C466.5 334.7 467.4 360.5 456.7 382.1C448.4 398.7 433.3 410.7 415.8 417.8C406 421.7 394.8 424.6 384.3 425.8C376.8 426.6 369.3 426.5 361.7 426.5C357.8 426.4 353.9 426.4 350 426.5C348.4 426.5 347.8 428.7 349.2 429.5C358.6 434.9 369.5 437.2 380.2 438.5C383.8 438.9 387.3 439.2 390.8 439.3C392.1 445.3 398 450.8 404.7 450.3C423.9 461 445 466.5 466.9 467.7L467.3 467.8C477 468.3 487.3 467 492.4 457.5C493.2 456 493.9 454.4 494.3 452.8C507.3 453.7 520.8 447.7 527.8 436.3C534.9 424.9 533.9 410.3 527.1 399.2C530.9 397.4 534.4 395.1 537.4 392.1C545.6 383.8 547.1 372 542.2 361.6C537 350.8 526.6 342.6 518.3 334.2L517.1 332.9C512.5 328.4 507.8 324.2 502.9 320L499.2 316.7L495.4 313.5C494 312.3 492 311 490.8 309.6C490 308.6 488.2 303.6 490.7 305.8C490.9 306 491.4 305.8 491.2 305.4C490.7 304.1 489.3 303.4 487.9 304C487.8 289.9 487.6 275.9 487.3 261.9L486.9 240.9C486.3 209.4 486.6 191.5 482.9 160.1C487.2 161.5 490 157.3 490.9 152.8C493.2 140.9 488.8 71.9 432.7 37.4ZM183.8 264.7C175.9 263.4 167 265.7 163 273.1C162.8 273.6 163.4 274.2 163.8 273.8C169.4 267.6 178.3 268.3 184.7 272.9C190.6 277.3 194 284.3 197 291L197.8 293C201.4 301.4 215.6 293.2 208.8 284.5C202.3 276.2 194.8 266.6 183.8 264.7Z\" transform=\"translate(-76 62)\" fill=\"currentColor\" fill-rule=\"evenodd\" stroke=\"none\"></path></g></g><g transform=\"translate(159 186)\"><g><path d=\"M175.4 49.6C175.7 49.4 176 49.2 176.2 48.9C179 44.3 179.3 38.9 178 33.6C176.6 27.2 172.9 21 168.9 16.8C164 11.5 157.9 7.8 151.2 4.9C150.8 4.7 150.3 4.5 149.8 4.3C143 1.4 134.6 -2 127.9 1.5C125.2 2.9 123.7 5.2 123.3 7.7C122.8 10.5 123.6 13.4 125.5 15.7C128.6 19.6 133.3 20.4 138.1 21C139.6 21.3 141.1 21.5 142.5 21.8C147.4 23 152.6 24.4 157.1 26.7C166.3 31.4 170.5 38.6 172.7 48.3C172.8 48.7 173 49 173.3 49.2C173.6 49.5 173.9 49.7 174.3 49.7C174.7 49.8 175 49.7 175.4 49.6ZM58.4 19.2C55.1 22.4 51.1 22.9 47.2 23.4C44.9 23.6 43.2 23.8 41.4 24.2C36.7 25.3 31.9 26.9 27.6 29.3C23.1 31.7 18.2 34.7 14.7 38.4C13.9 39.3 13.1 40.3 12.3 41.2C11.5 42.1 10.9 42.9 10.1 43.7C9.3 44.6 8.5 45.6 7.7 46.6C7.2 47.4 7.1 47.6 7 47.8C6.8 48.1 6.7 48.4 6.5 48.8C6.2 49.3 5.9 49.9 5.5 50.4C5 51.3 4.7 51.6 4.4 51.7C4 51.9 3.6 52 3.2 51.9C2.9 51.9 2.5 51.7 2.2 51.4C0.5 50 -0 47.6 0 45.1C0.1 41.3 1.5 37.1 2.8 34.5C5.8 28.4 10 22.2 15 17.7C20.7 12.5 27 8.6 34.2 6C38.7 4.3 43.9 2.8 48.8 3C52.3 3.1 55.6 4.1 58.4 6.7C60.1 8.3 60.9 10.6 60.9 12.9C60.9 15.2 60.1 17.6 58.4 19.2ZM164.6 78.3C166.5 78.9 167.8 78.6 169.4 77.8C170.7 77.1 171.6 76 172.1 74.8C172.6 73.6 172.7 72.1 172.5 70.8C171.4 65.2 168 60.3 163.5 57.1C159.1 54 153.6 52.5 148 53.7C144 54.6 138 58.4 134.8 63.1C133.5 65.1 132.7 67.3 132.6 69.4C132.5 71.4 133 73.4 135.7 76.1C135.9 76.2 136.2 76.2 136.5 76.2C137.1 76.2 137.8 75.9 138.3 75.5C139.5 74.5 140.3 73.2 141.2 71.7C141.6 71 142.1 70.2 142.7 69.5C144.4 67.5 147 65.8 149.7 65.3C152.2 64.9 154.4 65.6 156.2 67C158.3 68.7 159.7 71.2 160.3 73.8C160.5 74.9 161 75.9 161.8 76.6C162.6 77.4 163.6 78 164.6 78.3ZM46.2 69.1C43.7 67.6 40.9 67 37.7 68.5C35.3 69.6 30.9 73.3 27.9 78.3C25.8 81.6 24.4 85.6 24.7 89.7C24.7 90.7 24.4 91.4 23.8 91.9C23.4 92.3 22.8 92.6 22 92.7C21.4 92.8 20.7 92.7 20.1 92.5C19 92.2 18.4 91.5 18.2 90.9C16.1 85.3 17 79 19.4 73.4C22.6 65.7 28.4 59.4 32.2 57.3C38.7 53.8 46.3 53.6 52.9 57.2C58.4 60.3 61.9 65.2 65.3 70.2C66.1 71.3 66.8 72.4 67.5 73.4C69.1 75.5 69.2 77.6 68.6 79.3C68 81.3 66.3 83 64.3 83.8C62.4 84.6 60.1 84.8 58.2 83.9C56.5 83.2 55 81.9 54.1 79.6C52.4 75.7 49.7 71.4 46.2 69.1ZM127.7 116C135.9 104.6 124.4 93.9 116.8 89.3C114.8 87.9 116.4 83.2 120.6 83.9C159 90.5 139.1 156.6 90.1 120.4C84.3 115.6 91.3 105.3 97.6 109.3C98 109.6 98.3 109.8 98.6 110.1C105.7 115.5 118.6 125.5 127.7 116ZM117 185.1C109.7 187.2 101.8 187.4 94.3 185.2C87.4 183.2 80.5 178.8 75.4 173C71 167.8 68.1 161.5 68.2 154.8C68.2 154.1 68.5 153.4 68.9 152.9C69.4 152.4 70 152 70.7 151.9C71.4 151.7 72.1 151.8 72.8 152.1C73.3 152.3 73.8 152.8 74.1 153.4C74.9 154.4 75.7 155.4 76.4 156.4C82.6 164 88.6 169.7 97.9 171.8C103 172.9 108 172.4 112.7 170.7C117.6 168.9 122.1 165.7 125.6 161.6C127.2 159.8 129.1 159 130.9 159C133 159 135 159.9 136.6 161.5C138.1 163 139.1 165.1 139.2 167.2C139.3 169.1 138.7 171.1 137 172.8C131.6 178.7 124.6 182.9 117 185.1Z\" transform=\"translate(54 55.1)\" fill=\"currentColor\" fill-rule=\"evenodd\" stroke=\"none\"></path></g></g><g transform=\"translate(123 338)\"></g><g transform=\"translate(47 241)\"></g></g></g></svg>";
+const AUTH = new Map(AUTHORS.map(a => [a[0], a]));
+const L = { q: '', author: '', len: 'all', sort: 'rank', limit: 90 };
+const PAGE = 90;
+const kana = s => s.normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/[\s・　＝]/g, '');
+const SEARCH = CATALOG.map(e => kana(e[1] + e[2] + e[3] + e[4] + e[5] + (AUTH.get(e[3])?.[1] || '')));
 const RANK = new Map(); CATALOG.forEach(e => { if (e[9]) RANK.set(e[0], RANK.size + 1); });
 const LEN = { s: c => c < 10000, m: c => c >= 10000 && c < 60000, l: c => c >= 60000 };
+const LEN_NAME = c => c < 10000 ? '短編' : c < 60000 ? '中編' : '長編';
 
+// 作家ごとの色（同じ作家の本は同じ色の表紙になる）
+const PAL = ['#8FD0EE', '#F6E85E', '#F7B7A3', '#A6D98F', '#C8B9F2', '#F3D39C', '#9FE0D4', '#F4A8C4', '#B5C9F5', '#FFCB8E'];
+function hashStr(s){ let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+const colorOf = name => PAL[hashStr(name) % PAL.length];
+// 表紙の和柄（青海波・市松・七宝・鱗・矢絣・水玉・縞・波・格子）
+const PATTERNS = [
+  `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='16' viewBox='0 0 32 16'><g fill='none' stroke='#fff' stroke-opacity='.8' stroke-width='1.4'><path d='M0 16a16 16 0 0 1 32 0M5 16a11 11 0 0 1 22 0M10 16a6 6 0 0 1 12 0M-16 8a16 16 0 0 1 32 0M-11 8a11 11 0 0 1 22 0M-6 8a6 6 0 0 1 12 0M16 8a16 16 0 0 1 32 0M21 8a11 11 0 0 1 22 0M26 8a6 6 0 0 1 12 0'/></g></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><path d='M0 0h10v10H0zM10 10h10v10H10z' fill='#fff' fill-opacity='.45'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><g fill='none' stroke='#fff' stroke-opacity='.8' stroke-width='1.3'><circle cx='0' cy='0' r='12'/><circle cx='24' cy='0' r='12'/><circle cx='0' cy='24' r='12'/><circle cx='24' cy='24' r='12'/><circle cx='12' cy='12' r='12'/></g></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='20' height='18'><path d='M0 18L10 0L20 18Z' fill='#fff' fill-opacity='.42'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='20' height='28'><path d='M0 0l10 8l10-8v12l-10 8l-10-8z' fill='#fff' fill-opacity='.45'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18'><g fill='#fff' fill-opacity='.65'><circle cx='4.5' cy='4.5' r='2.6'/><circle cx='13.5' cy='13.5' r='2.6'/></g></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14'><path d='M0 0h5v14H0z' fill='#fff' fill-opacity='.42'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='28' height='12'><path d='M0 6q7-7 14 0t14 0' fill='none' stroke='#fff' stroke-opacity='.85' stroke-width='1.5'/></svg>`,
+  `<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path d='M0 .5H16M.5 0V16' stroke='#fff' stroke-opacity='.7' stroke-width='1.2'/></svg>`,
+];
+(() => {
+  const st = document.createElement('style');
+  st.textContent = PATTERNS.map((p, i) => `.cover.p${i}{background-image:url("data:image/svg+xml,${encodeURIComponent(p)}")}`).join('\n');
+  document.head.appendChild(st);
+})();
+
+const dispName = name => AUTH.get(name)?.[1] || name;
+const shortName = name => { const d = dispName(name); return d.includes('・') ? d.split('・').pop() : d; };
+function coverHTML(e, extra){
+  const n = Array.from(e[1]).length;
+  const size = n <= 5 ? 'l' : n <= 9 ? 'm' : n <= 16 ? 's' : 'xs';
+  const p = store.get('pos:lib:' + e[0], null);
+  let badges = '';
+  if (p && p.pct >= 100) badges += '<span class="badge done">読了</span>';
+  else if (p && p.pct > 0) badges += `<span class="badge pct">${p.pct}%</span>`;
+  if (e[8]) badges += '<span class="badge new">新着</span>';
+  return `<span class="cover p${e[0] % PATTERNS.length}" style="--c:${colorOf(e[3])}" aria-hidden="true"><span class="daisen ${size}">${esc(e[1])}</span><span class="bind"></span>${extra === false ? '' : badges}</span>`;
+}
+function stampHTML(name, cls){
+  const a = AUTH.get(name), m = MOTIFS[name];
+  return `<span class="astamp ${cls || ''}" style="--c:${colorOf(name)}" aria-hidden="true">${m || `<b>${esc(a ? a[3] : name.slice(0, 1))}</b>`}</span>`;
+}
 function fmtChars(c){ return c < 10000 ? `約${nf.format(Math.round(c / 100) * 100)}字` : `約${(c / 10000).toFixed(c < 100000 ? 1 : 0)}万字`; }
 function fmtRead(c){
   const min = useVoice() ? c / (voiceCps() * 60) * 1.1 : c / (S.n / S.t * 60) * (S.pause ? 1.35 : 1);
   return min < 60 ? `${Math.max(1, Math.round(min))}分` : `${Math.floor(min / 60)}時間${Math.round(min % 60)}分`;
 }
-function itemHTML(e){
-  const p = store.get('pos:lib:' + e[0], null);
-  let badge = p && p.pct > 0 ? `<span class="prog">${p.pct >= 100 ? '読了' : p.pct + '%'}</span>` : '';
-  if (e[8]) badge += `<span class="prog new">新着 ${e[8].slice(0, 7).replace('-', '.')}</span>`;
-  return `<button class="item" type="button" data-id="${e[0]}"><span class="rk">${RANK.get(e[0]) || ''}</span>` +
-    `<span><span class="tt">${esc(e[1])}${e[2] ? `<small>${esc(e[2])}</small>` : ''}</span><br><span class="au">${esc(e[3])}</span>${badge}</span>` +
-    `<span class="mt"><b>${fmtRead(e[6])}</b>${fmtChars(e[6])}</span></button>`;
+function cardHTML(e, still){
+  return `<button class="wcard rv${still ? ' in' : ''}" type="button" data-id="${e[0]}">${coverHTML(e)}` +
+    `<span class="wt">${esc(e[1])}${e[2] ? ' ' + esc(e[2]) : ''}</span><span class="wa">${esc(dispName(e[3]))}</span><span class="wx">${fmtRead(e[6])}・${fmtChars(e[6])}</span></button>`;
 }
-function renderChips(){
-  const count = new Map();
-  CATALOG.forEach(e => count.set(e[3], (count.get(e[3]) || 0) + 1));
-  const top = [...count].sort((a, b) => b[1] - a[1]).slice(0, 16);
-  const nNew = CATALOG.filter(e => e[8]).length;
-  $('authorChips').innerHTML = `<button class="chip" type="button" data-a="" aria-pressed="true">すべての作家</button>` +
-    `<button class="chip" type="button" data-a="__new" aria-pressed="false">新着（2023年〜）<small>${nNew}</small></button>` +
-    top.map(([a, n]) => `<button class="chip" type="button" data-a="${esc(a)}" aria-pressed="false">${esc(a)}<small>${n}</small></button>`).join('');
+
+// スクロールで下からふわっと出す（動きを減らす設定のときは出さない）
+// 画面に入ったものから順に表示する。見えている範囲は位置で判断するので、どの環境でも必ず表示される
+const RV = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (RV) document.documentElement.classList.add('rv-on');
+let rvT = 0;
+function reveal(){
+  if (!RV || rvT) return;
+  // 画面の書き換えを待たずにタイマーで調べる（裏に回ったタブでも止まらない）
+  rvT = setTimeout(() => {
+    rvT = 0;
+    const lib = $('lib'); if (lib.hidden) return;
+    const limit = lib.clientHeight * 0.96;
+    let n = 0;
+    for (const el of lib.querySelectorAll('.rv:not(.in)')) {
+      const r = el.getBoundingClientRect();
+      if (r.top < limit) { el.style.setProperty('--d', (n++ % 9) * 45 + 'ms'); el.classList.add('in'); }
+    }
+  }, 40);
 }
-function renderLib(){
+document.addEventListener('visibilitychange', reveal);
+$('lib').addEventListener('scroll', reveal, { passive: true });
+addEventListener('resize', reveal);
+// 選んだボタンの下へ、黄色いつまみがすべって動く
+function placePill(box){
+  const bg = box.querySelector('.pill-bg'), act = box.querySelector('[aria-pressed="true"],[aria-selected="true"]');
+  if (!bg || !act) return;
+  bg.style.setProperty('--x', act.offsetLeft + 'px'); bg.style.setProperty('--w', act.offsetWidth + 'px');
+}
+
+// あらすじ・書き出し（あとから読み込む）
+let aboutP = null;
+function getAbout(){
+  if (!aboutP) aboutP = fetch('lib/about.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).catch(e => { aboutP = null; return {}; });
+  return aboutP;
+}
+
+function renderAuthors(){
+  const top = AUTHORS.slice(0, 24);
+  $('authorStrip').innerHTML =
+    `<button class="atile all" type="button" data-a="" aria-pressed="${!L.author}"><span class="astamp" aria-hidden="true">${MOTIFS.__all}</span><span class="aname">すべての作家</span><span class="acount">${nf.format(CATALOG.length)}</span></button>` +
+    top.map(a => `<button class="atile" type="button" data-a="${esc(a[0])}" aria-pressed="${L.author === a[0]}">${stampHTML(a[0])}<span class="aname">${esc(shortName(a[0]))}</span><span class="acount">${a[4]}作品</span></button>`).join('') +
+    `<button class="atile all" type="button" data-more="1"><span class="astamp" aria-hidden="true">${MOTIFS.__more}</span><span class="aname">作家いちらん</span><span class="acount">${AUTHORS.length}人</span></button>`;
+  $('authorTotal').textContent = AUTHORS.length;
+}
+function renderLib(still){
   const q = kana(L.q.trim());
   let list = CATALOG.map((e, i) => i).filter(i => {
     const e = CATALOG[i];
-    if (L.author === '__new') { if (!e[8]) return false; }
-    else if (L.author && e[3] !== L.author) return false;
-    if (L.len !== 'all' && !LEN[L.len](e[6])) return false;
+    if (L.author && e[3] !== L.author) return false;
+    if (L.len === 'new') { if (!e[8]) return false; }
+    else if (L.len !== 'all' && !LEN[L.len](e[6])) return false;
     return !q || SEARCH[i].includes(q);
   });
   if (L.sort === 'short') list.sort((a, b) => CATALOG[a][6] - CATALOG[b][6]);
   else if (L.sort === 'long') list.sort((a, b) => CATALOG[b][6] - CATALOG[a][6]);
   else if (L.sort === 'yomi') list.sort((a, b) => CATALOG[a][4].localeCompare(CATALOG[b][4], 'ja'));
-  else if (L.sort === 'new') list.sort((a, b) => (CATALOG[b][8] || '').localeCompare(CATALOG[a][8] || '') || a - b);
-  else if (L.author === '__new') list.sort((a, b) => CATALOG[b][8].localeCompare(CATALOG[a][8]) || a - b);
+  else if (L.sort === 'new' || L.len === 'new') list.sort((a, b) => (CATALOG[b][8] || '').localeCompare(CATALOG[a][8] || '') || a - b);
   $('libCount').textContent = `${nf.format(list.length)}作品`;
   const shown = list.slice(0, L.limit);
-  $('libList').innerHTML = list.length ? shown.map(i => itemHTML(CATALOG[i])).join('') +
-    (list.length > shown.length ? `<button class="btn more" type="button" id="moreBtn">もっと見る（残り${nf.format(list.length - shown.length)}作品）</button>` : '')
-    : '<div class="empty">見つかりませんでした。「本棚にない作品を読む」からファイルで開けます。</div>';
+  $('libList').innerHTML = list.length ? shown.map(i => cardHTML(CATALOG[i], still)).join('')
+    : `<div class="empty" style="grid-column:1/-1">${PEEP_PAPER}見つかりませんでした。ことばを変えるか、「本棚にない作品を読む」からファイルで開けます。</div>`;
+  const more = list.length > shown.length;
+  let mb = $('moreBtn');
+  if (more) {
+    if (!mb) { $('libList').insertAdjacentHTML('afterend', '<button class="btn more" type="button" id="moreBtn"></button>'); mb = $('moreBtn'); mb.onclick = () => { L.limit += PAGE * 2; renderLib(); }; }
+    mb.textContent = `もっと見る（あと${nf.format(list.length - shown.length)}作品）`;
+  } else if (mb) mb.remove();
+  // 作家で絞り込み中の表示
+  const af = $('activeFilter');
+  if (L.author) {
+    af.hidden = false;
+    af.innerHTML = `<button class="fchip" type="button" id="clearAuthor">${stampHTML(L.author, 'sm')}<span>${esc(dispName(L.author))}の作品</span><span class="x" aria-hidden="true">×</span><span class="vh">絞り込みをやめる</span></button>`;
+    $('clearAuthor').onclick = () => { L.author = ''; resetLimit(); renderAuthors(); renderLib(); };
+  } else af.hidden = true;
+  // 続きから読む
   const recent = store.get('recent', []).map(id => byId.get(id)).filter(Boolean);
   $('recentSec').hidden = !recent.length || !!q || !!L.author || L.len !== 'all';
-  $('recentList').innerHTML = recent.map(e => itemHTML(e)).join('');
-  document.querySelectorAll('#authorChips .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.a === L.author));
+  $('recentList').innerHTML = recent.map(e => {
+    const p = store.get('pos:lib:' + e[0], null);
+    return `<button class="wcard" type="button" data-id="${e[0]}">${coverHTML(e, false)}<span class="wt">${esc(e[1])}</span>${p && p.pct > 0 ? `<span class="bar" aria-label="${p.pct}%まで読みました"><i style="width:${Math.min(100, p.pct)}%"></i></span>` : ''}</button>`;
+  }).join('');
+  document.querySelectorAll('#authorStrip .atile').forEach(c => { if (!c.dataset.more) c.setAttribute('aria-pressed', (c.dataset.a || '') === L.author); });
   document.querySelectorAll('#lenSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.len === L.len));
+  placePill($('lenSeg'));
+  reveal();
 }
-function openLib(){ pause(); closeSheet(); renderLib(); $('lib').hidden = false; $('libClose').hidden = !work; }
+
+// きょうの一冊（日付で決まる。あらすじのある作品から選ぶ）
+async function renderToday(){
+  const about = await getAbout();
+  const ids = CATALOG.filter(e => about[e[0]] && about[e[0]][0]).map(e => e[0]);
+  if (!ids.length) return;
+  const d = new Date(), key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  const id = ids[hashStr(key) % ids.length], e = byId.get(id);
+  $('todayCover').innerHTML = coverHTML(e, false);
+  $('todayTitle').textContent = e[1] + (e[2] ? ' ' + e[2] : '');
+  $('todayAuthor').textContent = dispName(e[3]) + '・' + fmtRead(e[6]);
+  $('todaySyn').textContent = about[id][0];
+  $('todayRead').onclick = () => openLibWork(id);
+  $('todayMore').onclick = () => openWorkSheet(id);
+  $('todaySec').hidden = false; $('todaySec').classList.add('has-peep');
+  reveal();
+}
+
+// 帯（書き出しが右から左へ流れる。押すとその作品のくわしくを開く）
+function renderRibbon(){
+  const items = RIBBON.map(([id, t]) => `<button type="button" data-id="${id}">${esc(t)}</button>`).join('');
+  $('ribbonTrack').innerHTML = items + items.replace(/<button /g, '<button tabindex="-1" aria-hidden="true" ');
+}
+
+// 作品のくわしく
+let wsId = 0, lastFocus = null;
+async function openWorkSheet(id){
+  const e = byId.get(id); if (!e) return;
+  wsId = id; lastFocus = document.activeElement;
+  $('wsCover').innerHTML = coverHTML(e);
+  $('wsTitle').innerHTML = esc(e[1]) + (e[2] ? `<small>${esc(e[2])}</small>` : '');
+  $('wsAuthor').innerHTML = stampHTML(e[3], 'sm') + `<span>${esc(dispName(e[3]))}</span>`;
+  const p = store.get('pos:lib:' + id, null);
+  $('wsTags').innerHTML = `<span class="tag sky">${LEN_NAME(e[6])}</span>` + (e[8] ? `<span class="tag sun">新着 ${e[8].slice(0, 7).replace('-', '.')}</span>` : '') +
+    (RANK.get(id) ? `<span class="tag">人気 ${RANK.get(id)}位</span>` : '') + (p && p.pct >= 100 ? '<span class="tag shu">読了</span>' : p && p.pct > 0 ? `<span class="tag">${p.pct}%まで読んだ</span>` : '');
+  $('wsMeta').innerHTML = `<span>文字数 <b>${fmtChars(e[6])}</b></span><span>読み終わる目安 <b>${fmtRead(e[6])}</b></span>`;
+  $('wsRead').textContent = p && p.pct > 0 && p.pct < 100 ? '続きから読む' : 'この作品を読む';
+  $('wsSynBlock').hidden = false;
+  $('wsSyn').innerHTML = '<span class="skel" style="width:90%"></span><span class="skel" style="width:70%;margin-top:8px"></span>';
+  $('wsOpen').innerHTML = '<span class="skel" style="width:80%"></span>';
+  $('wsCard').href = 'https://www.aozora.gr.jp/';
+  $('workSheet').hidden = false;
+  $('wsRead').focus({ preventScroll: true });
+  const about = await getAbout();
+  if (wsId !== id) return;
+  const a = about[id];
+  if (a && a[0]) $('wsSyn').textContent = a[0]; else $('wsSynBlock').hidden = true;
+  $('wsOpen').textContent = a && a[1] ? a[1].replace(/^「/, '') : '（本文を開くと読めます）';
+  if (a && a[2]) $('wsCard').href = `https://www.aozora.gr.jp/cards/${a[2]}/card${id}.html`;
+}
+function closeWorkSheet(){ $('workSheet').hidden = true; wsId = 0; try { lastFocus?.focus({ preventScroll: true }); } catch (e) {} }
+$('wsClose').onclick = closeWorkSheet;
+$('workSheet').addEventListener('click', e => { if (e.target.id === 'workSheet') closeWorkSheet(); });
+$('wsRead').onclick = () => { const id = wsId; closeWorkSheet(); openLibWork(id); };
+$('wsAuthor').onclick = () => { const e = byId.get(wsId); if (!e) return; closeWorkSheet(); pickAuthor(e[3]); };
+
+// 作家いちらん（50音のタブ）
+const ROWS = [['あ', 'あいうえお'], ['か', 'かきくけこ'], ['さ', 'さしすせそ'], ['た', 'たちつてと'], ['な', 'なにぬねの'], ['は', 'はひふへほ'], ['ま', 'まみむめも'], ['や', 'やゆよ'], ['ら', 'らりるれろ'], ['わ', 'わをん']];
+const rowOf = yomi => { const c = kana(yomi).normalize('NFD')[0] || ''; const r = ROWS.find(([, cs]) => cs.includes(c)); return r ? r[0] : 'わ'; };
+let kanaRow = 'あ';
+function renderAuthorSheet(){
+  const tabs = $('kanaTabs');
+  if (!tabs.querySelector('button')) tabs.insertAdjacentHTML('beforeend', ROWS.map(([r]) => `<button type="button" role="tab" data-row="${r}" aria-selected="false">${r}</button>`).join(''));
+  tabs.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.row === kanaRow));
+  const list = AUTHORS.filter(a => rowOf(a[2]) === kanaRow).sort((a, b) => kana(a[2]).localeCompare(kana(b[2]), 'ja'));
+  $('authorGrid').innerHTML = list.map(a => `<button class="arow" type="button" data-a="${esc(a[0])}" aria-pressed="${L.author === a[0]}">${stampHTML(a[0], 'sm')}<span class="nm">${esc(a[1])}</span><span class="ct">${a[4]}</span></button>`).join('') || '<p class="empty">この行の作家はいません。</p>';
+  requestAnimationFrame(() => placePill(tabs));
+}
+function openAuthorSheet(){
+  const cur = L.author && AUTH.get(L.author);
+  kanaRow = cur ? rowOf(cur[2]) : 'あ';
+  lastFocus = document.activeElement;
+  $('authorSheet').hidden = false; renderAuthorSheet();
+  $('asClose').focus({ preventScroll: true });
+}
+function closeAuthorSheet(){ $('authorSheet').hidden = true; try { lastFocus?.focus({ preventScroll: true }); } catch (e) {} }
+$('kanaTabs').addEventListener('click', e => { const b = e.target.closest('button[data-row]'); if (b) { kanaRow = b.dataset.row; renderAuthorSheet(); } });
+$('authorGrid').addEventListener('click', e => { const b = e.target.closest('.arow'); if (b) { closeAuthorSheet(); pickAuthor(b.dataset.a); } });
+$('asClose').onclick = closeAuthorSheet;
+$('authorSheet').addEventListener('click', e => { if (e.target.id === 'authorSheet') closeAuthorSheet(); });
+$('allAuthorsBtn').onclick = openAuthorSheet;
+
+function pickAuthor(name){
+  L.author = name; resetLimit(); renderAuthors(); renderLib();
+  $('worksSec').scrollIntoView({ behavior: RV ? 'smooth' : 'auto', block: 'start' });
+}
+
+function openLib(){
+  pause(); closeSheet(); renderLib(); $('lib').hidden = false; $('libClose').hidden = !work;
+  requestAnimationFrame(() => { placePill($('lenSeg')); reveal(); });
+  renderToday();
+}
 function closeLib(){ $('lib').hidden = true; }
+function openFromHash(){
+  const h = location.hash, m = /^#w(\d+)$/.exec(h);
+  if (m && byId.has(+m[1])) { openLib(); openWorkSheet(+m[1]); return true; }
+  if (h === '#authors') { openLib(); openAuthorSheet(); return true; }
+  if (/^#(shelf|hondana)$/.test(h)) { openLib(); return true; }
+  return false;
+}
+addEventListener('hashchange', openFromHash);
 $('openBtn').onclick = openLib;
 $('libClose').onclick = closeLib;
 const resetLimit = () => { L.limit = PAGE; };
-$('q').addEventListener('input', e => { L.q = e.target.value; resetLimit(); renderLib(); });
-$('authorChips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) { L.author = c.dataset.a; resetLimit(); renderLib(); } });
+$('q').addEventListener('input', e => { L.q = e.target.value; resetLimit(); renderLib(true); });   // 入力中は一覧をすぐ切り替える
+$('authorStrip').addEventListener('click', e => {
+  const c = e.target.closest('.atile'); if (!c) return;
+  if (c.dataset.more) { openAuthorSheet(); return; }
+  L.author = c.dataset.a === L.author ? '' : (c.dataset.a || ''); resetLimit(); renderAuthors(); renderLib();
+});
 $('lenSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { L.len = b.dataset.len; resetLimit(); renderLib(); } });
 $('sort').addEventListener('change', e => { L.sort = e.target.value; resetLimit(); renderLib(); });
-$('libList').addEventListener('click', e => { if (e.target.closest('#moreBtn')) { L.limit += PAGE * 2; renderLib(); } });
-['libList', 'recentList'].forEach(id => $(id).addEventListener('click', e => { const it = e.target.closest('.item'); if (it) openLibWork(+it.dataset.id); }));
+['libList', 'recentList'].forEach(id => $(id).addEventListener('click', e => { const it = e.target.closest('.wcard'); if (it) openWorkSheet(+it.dataset.id); }));
+$('ribbonTrack').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (b) openWorkSheet(+b.dataset.id); });
+addEventListener('resize', () => { placePill($('lenSeg')); if (!$('authorSheet').hidden) placePill($('kanaTabs')); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('workSheet').hidden) { closeWorkSheet(); e.stopImmediatePropagation(); }
+  else if (!$('authorSheet').hidden) { closeAuthorSheet(); e.stopImmediatePropagation(); }
+}, true);
 
 $('file').addEventListener('change', e => { const f = e.target.files[0]; if (f) handleFile(f); e.target.value = ''; });
 const drop = $('drop');
@@ -1200,7 +1753,7 @@ $('pasteBtn').onclick = () => {
 };
 
 /* ---------- 起動 ---------- */
-applyLook(); loadCps(); loadVoices(); updateVoiceUI(); saveSettings(); setPlayIcon(); renderChips();
+applyLook(); loadCps(); loadVoices(); updateVoiceUI(); saveSettings(); setPlayIcon(); renderAuthors(); renderRibbon(); $('heroCount').textContent = nf.format(CATALOG.length);
 (function boot(){
   const cur = store.get('current', null);
   if (cur && cur.src === 'file' && cur.raw) {
@@ -1210,8 +1763,9 @@ applyLook(); loadCps(); loadVoices(); updateVoiceUI(); saveSettings(); setPlayIc
       if (w.paras.length) { showWork(w); return; }
     } catch (e) {}
   }
-  openLibWork(cur && cur.src === 'lib' && byId.has(cur.id) ? cur.id : 1567);
+  openLibWork(cur && cur.src === 'lib' && byId.has(cur.id) ? cur.id : 1567).then(() => openFromHash());
 })();
+
 </script>
 
 </body>
