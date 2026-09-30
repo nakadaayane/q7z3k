@@ -261,18 +261,18 @@ kbd{font-family:var(--round);font-size:11px;border:1.5px solid var(--edge);borde
 .today .cover{width:120px}
 #todayCover{grid-area:cv}
 .today .tx{grid-area:tx;min-width:0}
-.today .label{display:inline-block;font-family:var(--hand);font-weight:600;font-size:17px;padding:0 12px;background:var(--paper);border:2px solid var(--edge);border-radius:999px;transform:rotate(-3deg);margin-bottom:8px}
+.today .label{display:inline-block;font-family:var(--hand);font-weight:600;font-size:17px;padding:0 12px;background:var(--paper);border:2px solid var(--edge);border-radius:999px;margin-bottom:8px}
 .today h4{margin:4px 0 0;font-family:var(--read);font-size:22px;line-height:1.35;font-weight:700}
 .today .au{margin:2px 0 8px;color:var(--muted);font-weight:700;font-size:14px}
 .today p.syn{margin:0 0 14px;font-size:15px;line-height:1.85;max-width:38em}
 .today .acts{display:flex;gap:10px;flex-wrap:wrap}
-.today .cat{position:absolute;right:16px;bottom:-4px;width:176px;pointer-events:none}
+.today .cat{position:absolute;right:30px;bottom:calc(100% - 11px);width:150px;pointer-events:none}
 .today .cat svg{width:100%;height:auto;display:block}
 .today .zz{position:absolute;font-family:var(--hand);font-weight:600;color:var(--ink);font-size:20px;opacity:0;animation:rise 3.8s ease-in infinite}
 .today .zz:nth-of-type(1){left:22%;top:8%}.today .zz:nth-of-type(2){left:32%;top:0;font-size:15px;animation-delay:1.9s}
-.today.has-cat{padding-right:210px}
+.today.has-cat{margin-top:96px}
 .spark{position:absolute;width:18px;height:18px;animation:kira 2.6s ease-in-out infinite}
-.spark.s1{top:-10px;left:130px}.spark.s2{top:20px;right:150px;animation-delay:.9s}.spark.s3{bottom:26px;left:10px;animation-delay:1.7s}
+.spark.s1{top:-10px;left:130px}.spark.s2{top:22px;right:36px;animation-delay:.9s}.spark.s3{bottom:26px;left:10px;animation-delay:1.7s}
 
 /* 絞り込み */
 .filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
@@ -408,9 +408,9 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
   .today .au{grid-column:2;margin:0}
   .today p.syn,.today .acts{grid-column:1 / -1}
   #todayCover{grid-row:1 / span 3}
-  .today.has-cat{padding-right:16px}
-  .today .cat{top:-62px;bottom:auto;right:6px;width:112px}
-  .today{margin-top:34px}
+  .today.has-cat{margin-top:70px}
+  .spark.s2{display:none}
+  .today .cat{right:14px;bottom:calc(100% - 8px);width:108px}
   .today h4{font-size:19px}
 }
 @media (prefers-reduced-motion: reduce){
