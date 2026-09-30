@@ -566,6 +566,7 @@ function savePos(off, pct){
 
 /* ---------- 再生 ---------- */
 let timer = null, playing = false, wakeLock = null;
+let finished = false;   // 最後まで読み終えた（次の再生は最初から）
 function runTick(){
   const bar = $('tick');
   bar.style.transition = 'none'; bar.style.width = '0';
@@ -574,7 +575,7 @@ function runTick(){
   bar.style.transition = `width ${d}ms linear`; bar.style.width = '100%';
   timer = setTimeout(() => {
     if (idx < chunks.length - 1) { idx++; render(true); runTick(); }
-    else pause();
+    else { finished = true; pause(); }
   }, d);
 }
 function barFor(ms){
@@ -585,7 +586,8 @@ function barFor(ms){
 }
 function play(){
   if (!chunks.length) return;
-  if (idx >= chunks.length - 1) idx = 0;
+  if (finished) idx = 0;
+  finished = false;
   playing = true; render(true); setPlayIcon();
   if (useVoice()) {
     speakFrom(idx);
@@ -594,7 +596,7 @@ function play(){
   try { navigator.wakeLock?.request('screen').then(l => wakeLock = l).catch(() => {}); } catch (e) {}
 }
 function pause(){
-  playing = false; clearTimeout(timer); stopVoice();
+  playing = false; clearTimeout(timer); stopVoice(); held = false;
   const bar = $('tick'); bar.style.transition = 'none'; bar.style.width = '0';
   setPlayIcon(); $('hint').hidden = !isMobile() || !work;
   try { wakeLock?.release(); } catch (e) {} wakeLock = null;
@@ -618,6 +620,8 @@ let voiceBroken = false;          // この端末で音声が出せないと分�
 const useVoice = () => TTS && S.speak && !voiceBroken;
 let vgen = 0, vtimers = [], vutt = null, voiceList = [];
 let cutAt = -1e9, restartT = 0, noStart = 0, extStops = 0, voiceErrors = 0, muteHint = false;
+let held = false;        // 端末やほかのタブに止められて、今の区切りで待っている（画面に戻ったら読み直す）
+let earlyEndAt = -1;     // iPhone で途中終了を読み直した位置（同じ位置では1回だけ）
 const vt = (fn, ms) => { const h = setTimeout(fn, ms); vtimers.push(h); return h; };
 function clearVoiceTimers(){ vtimers.forEach(clearTimeout); vtimers = []; clearTimeout(restartT); }
 // 取り消しは自分の読み上げがあるときだけ（Chrome の cancel() は他のタブの読み上げも止めてしまう）
@@ -651,9 +655,11 @@ const voiced = ch => { const v = (ch + '゙').normalize('NFC'); return v.length 
 const OLD_RUBY = /[ゐゑヰヱ]|[くぐ]わ|[かがさざただなはばぱまやらわ]う|[きぎしじちぢにひびぴみり]う|[けげせぜてでねへべぺめれ][うふ]|.[はひふへほ]/;
 function isOldKana(){
   if (work.oldKana === undefined) {
-    let n = 0;
-    for (const us of work.paras) { for (const u of us) if (!u.r && (u.t === 'ゐ' || u.t === 'ゑ')) n++; if (n >= 5) break; }
-    work.oldKana = n >= 5;
+    // 本文（ルビ以外）に出てくる旧仮名らしい書き方と、新仮名らしい書き方の数を比べる
+    const plain = work.paras.map(us => us.filter(u => !u.r).map(u => u.t).join('')).join('\n') + '\n';
+    const old = (plain.match(/[ゐゑ]|[ぁ-ゖ]ふ[。、」』）\n]|やう|さう|せう|でせう|ませう/g) || []).length;
+    const mod = (plain.match(/[ゃゅょ]う|っ[たてとか]|でしょう|ましょう|ている|ていた/g) || []).length;
+    work.oldKana = old > mod;
   }
   return work.oldKana;
 }
@@ -732,6 +738,7 @@ function pickVoice(){
 }
 const voiceLabel = v => v.name.replace(/^Microsoft /, '').replace(/ - Japanese \(Japan\)$/, '');
 function speakFrom(i){
+  held = false;
   const my = ++vgen; clearVoiceTimers();
   cutSpeech();
   const wait = afterCut();
@@ -742,6 +749,7 @@ function speakFrom(i){
 function restartSoon(){
   if (!playing) return;
   if (!useVoice()) return restartIfPlaying();
+  held = false;
   vgen++; clearVoiceTimers(); cutSpeech();
   restartT = setTimeout(() => { if (playing && useVoice()) speakFrom(idx); }, 300);
 }
@@ -749,14 +757,20 @@ function speakGroup(i, my){
   if (i >= chunks.length) { pause(); return; }
   const g = buildGroup(i);
   if (idx !== i) { idx = i; render(true); }
-  let t0 = 0, gotBoundary = false, ended = false, stallT = 0;
+  let t0 = 0, gotBoundary = false, ended = false, stallT = 0, lastCi = 0;
   // 端末やほかのタブが読み上げを止めたとき：今の区切りのまま待つ（先へは進めない）
-  const hold = () => { ended = true; vgen++; clearVoiceTimers(); };
+  const hold = () => { ended = true; vgen++; clearVoiceTimers(); held = true; };
+  // 画面が見えていれば少しおいて今の区切りから読み直す。止められ続けるときは一時停止して知らせる
+  const retryHere = () => {
+    if (document.hidden) return;   // 画面に戻ったとき（visibilitychange）に読み直す
+    if (++extStops >= 3) { pause(); showToast('読み上げが止められました。再生ボタンで続きから読みます。', 4000); return; }
+    vt(() => { if (playing && useVoice() && !document.hidden) speakFrom(idx); }, 400);
+  };
   const next = () => {
     if (my !== vgen || !playing) return;
     // 見積もりが遅れて表示しきれなかった区切りがあれば、短く見せてから次へ進む（読み飛ばし防止）
     if (idx < g.to - 1 && !document.hidden) { idx++; render(true); barFor(350); vt(next, 350); return; }
-    if (g.to >= chunks.length) { if (idx !== chunks.length - 1) { idx = chunks.length - 1; render(false); } pause(); return; }
+    if (g.to >= chunks.length) { if (idx !== chunks.length - 1) { idx = chunks.length - 1; render(false); } finished = true; pause(); return; }
     const endC = chunks[g.to - 1];
     const gap = S.pause ? (endC.e === work.paras[endC.p].length ? 350 : endC.stop === 2 ? 150 : 0) : 0;
     idx = g.to; render(true);
@@ -783,7 +797,7 @@ function speakGroup(i, my){
   };
   const started = () => {
     if (t0) return;
-    t0 = performance.now(); voiceErrors = 0; noStart = 0; extStops = 0;
+    t0 = performance.now(); voiceErrors = 0; noStart = 0;
     barFor(chunkEstimateMs(g.from, g));
     estimates();
     const total = g.text.length / voiceCps() * 1000;
@@ -799,7 +813,7 @@ function speakGroup(i, my){
     if (my !== vgen || !playing || ended) return;
     if (!t0) started();
     if (!(e.charIndex > 0)) return;
-    gotBoundary = true;
+    gotBoundary = true; lastCi = e.charIndex;
     // 声の位置が届く端末で、話の途中で合図が途絶えたら（Siri・通知などで止まった）今の区切りから読み直す
     clearTimeout(stallT);
     stallT = vt(() => { if (my === vgen && playing && !ended && !document.hidden) { ended = true; speakFrom(idx); } }, 6000);
@@ -809,21 +823,28 @@ function speakGroup(i, my){
   };
   u.onend = () => {
     if (my !== vgen || ended) return;
-    ended = true;
-    if (t0) calibrate(g.text.length, performance.now() - t0);
+    if (!t0) {
+      // 始まらないまま「終わり」が来た（タブやサイトのミュート、取り消し直後の発声が捨てられた等）。先へは進めない
+      hold();
+      if (!document.hidden) {
+        if (++noStart < 2) vt(() => { if (playing && useVoice() && !document.hidden) speakFrom(idx); }, 400);
+        else { pause(); showToast('音声を出せませんでした。タブのミュートや音量を確認して、もう一度 再生してください。', 5000); }
+      }
+      return;
+    }
+    // iPhone は Siri・アラーム・着信などで止められたときも「読み終わり」と知らせてくる。
+    // 最後の区切りまで声が届いていなければ、今の区切りから読み直す（同じ位置では1回だけ）
+    if (APPLE_WEBKIT && gotBoundary && g.to - g.from > 1 && lastCi < g.starts[g.to - 1 - g.from] && earlyEndAt !== idx) {
+      earlyEndAt = idx; hold(); retryHere(); return;
+    }
+    ended = true; earlyEndAt = -1; extStops = 0;
+    calibrate(g.text.length, performance.now() - t0);
     next();
   };
   u.onerror = e => {
     if (my !== vgen || ended) return;
     // ここに来る 'interrupted' / 'canceled' はこのページ以外（画面オフ・アプリ切替・ほかのタブ）が止めたもの
-    if (e.error === 'interrupted' || e.error === 'canceled' || document.hidden) {
-      hold();
-      if (!document.hidden) {
-        if (++extStops >= 3) { pause(); showToast('読み上げが止められました。再生ボタンで続きから読みます。', 4000); return; }
-        vt(() => { if (playing && useVoice() && !document.hidden) speakFrom(idx); }, 400);
-      }
-      return;   // 画面が隠れているときは、戻ったとき（visibilitychange）に今の区切りから読み直す
-    }
+    if (e.error === 'interrupted' || e.error === 'canceled' || document.hidden) { hold(); retryHere(); return; }
     ended = true;
     if (e.error === 'not-allowed') { pause(); showToast('音声を出すには、もう一度 再生ボタンを押してください。'); return; }
     if (++voiceErrors >= 2) { fallbackToVisual('読み上げができませんでした。表示だけで続けます。'); return; }
@@ -893,19 +914,21 @@ function setPlayIcon(){
 }
 function step(d){
   if (!chunks.length) return;
-  idx = Math.min(Math.max(0, idx + d), chunks.length - 1);
+  const n = Math.min(Math.max(0, idx + d), chunks.length - 1);
+  if (n === idx) return;
+  idx = n; finished = false;
   render(true); restartSoon();
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     // スマホは画面を消したりアプリを切り替えると、ページに知らせずに読み上げを止める。自分で止めて、今の区切りで待つ
-    if ((IOS || ANDROID) && playing && useVoice()) stopVoice();
+    if ((IOS || ANDROID) && playing && useVoice()) { stopVoice(); held = true; }
     return;
   }
   if (!playing) return;
   navigator.wakeLock?.request('screen').then(l => wakeLock = l).catch(() => {});
   // 戻ってきたら、今の区切りから読み直す（読み上げが続いていれば何もしない）
-  if (useVoice()) setTimeout(() => { if (playing && useVoice() && !document.hidden && !speechSynthesis.speaking && !speechSynthesis.pending) speakFrom(idx); }, 800);
+  if (useVoice() && held) setTimeout(() => { if (playing && useVoice() && !document.hidden && held) speakFrom(idx); }, 800);
 });
 window.addEventListener('pagehide', () => { if (TTS) stopVoice(); });
 
@@ -915,9 +938,10 @@ function showWork(w){
   work = w;
   $('wTitle').textContent = w.title;
   $('wAuthor').textContent = w.author;
-  buildChunks();
+  buildChunks(); rechunk.idx = -1;
   const saved = store.get('pos:' + w.key, null);
   idx = findByOffset(saved?.off ?? 0);
+  finished = chunks.length > 1 && idx === chunks.length - 1;   // 読了した作品は、再生で最初から
   render(false);
 }
 function findByOffset(off){
@@ -991,8 +1015,10 @@ function bindPair(rangeId, numId, key, onChange){
   const set = v => {
     v = parseFloat(v); if (!isFinite(v)) return;
     v = Math.min(parseFloat(n.max), Math.max(parseFloat(n.min), v));
-    S[key] = (key === 't' || key === 'rate') ? Math.round(v * 100) / 100 : Math.round(v);
-    r.value = S[key]; n.value = S[key]; saveSettings(); onChange();
+    const nv = (key === 't' || key === 'rate') ? Math.round(v * 100) / 100 : Math.round(v);
+    r.value = nv; n.value = nv;
+    if (nv === S[key]) return;   // 上限・下限で変わらないときは何もしない（読み直しもしない）
+    S[key] = nv; saveSettings(); onChange();
   };
   r.value = S[key]; n.value = S[key];
   r.addEventListener('input', () => set(r.value));
@@ -1007,8 +1033,10 @@ function saveSettings(){
 }
 function rechunk(){
   if (!work) return;
-  const off = chunks[idx]?.off ?? 0;
-  buildChunks(); idx = findByOffset(off); render(false); restartSoon();
+  // スライダーを動かしている間は、最初の位置を基準にし続ける（少しずつ前へずれていかないように）
+  const off = (rechunk.idx === idx && rechunk.off != null) ? rechunk.off : (chunks[idx]?.off ?? 0);
+  buildChunks(); idx = findByOffset(off); rechunk.off = off; rechunk.idx = idx;
+  render(false); restartSoon();
 }
 bindPair('nRange', 'nNum', 'n', rechunk);
 const setT = bindPair('tRange', 'tNum', 't', () => { render(false); restartIfPlaying(); if (!$('lib').hidden) renderLib(); });
@@ -1057,7 +1085,7 @@ $('scrim').onclick = closeSheet;
 $('playBtn').onclick = toggle;
 $('prevBtn').onclick = () => step(-1);
 $('nextBtn').onclick = () => step(1);
-$('seek').addEventListener('input', e => { idx = +e.target.value; render(false); restartSoon(); });
+$('seek').addEventListener('input', e => { idx = +e.target.value; finished = false; render(false); restartSoon(); });
 function toggleFS(){
   try { document.fullscreenElement ? document.exitFullscreen() : $('stagewrap').requestFullscreen?.().catch(() => {}); } catch (e) {}
 }
