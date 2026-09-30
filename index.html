@@ -79,6 +79,12 @@ header.top{grid-column:1 / -1;display:flex;align-items:center;gap:14px;padding:1
 .tick i{display:block;height:100%;width:0;background:var(--ai)}
 .para{position:absolute;top:10px;left:14px;font-size:12px;color:var(--muted);letter-spacing:.08em;pointer-events:none}
 .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted);pointer-events:none}
+.toast{position:absolute;left:12px;right:12px;bottom:12px;padding:8px 12px;border-radius:8px;background:var(--ink);color:var(--paper);font-size:13px;text-align:center;pointer-events:none;z-index:2}
+.tbtn[aria-pressed=true]{background:var(--ai-soft);border-color:var(--ai);color:var(--ai)}
+.field.off{opacity:.45}
+.note{margin:0;font-size:12px;color:var(--muted)}
+.note.warn{color:var(--shu)}
+.vsel{width:100%;min-height:38px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:14px}
 .loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--paper);color:var(--muted);font-size:14px}
 .stagewrap:fullscreen{margin:0;border-radius:0;border:0}
 
@@ -207,6 +213,7 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
       </div>
       <div class="hint" id="hint">タップで再生・停止／左右にスワイプで前後へ</div>
       <div class="loading" id="loading" hidden>読み込んでいます…</div>
+      <div class="toast" id="toast" role="status" hidden></div>
       <div class="tick"><i id="tick"></i></div>
     </div>
     <div class="transport">
@@ -217,6 +224,7 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
       <button class="tbtn" id="prevBtn" type="button" aria-label="ひとつ戻る"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
       <button class="tbtn play" id="playBtn" type="button" aria-label="再生"><svg viewBox="0 0 24 24" id="playIcon"><path d="M7 4v16l13-8z"/></svg></button>
       <button class="tbtn" id="nextBtn" type="button" aria-label="ひとつ進む"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <button class="tbtn" id="voiceBtn" type="button" aria-pressed="false" aria-label="声に出して読む" title="声に出して読む"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>
       <button class="tbtn only-desktop" id="fsBtn" type="button" aria-label="全画面"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z"/></svg></button>
       <button class="tbtn only-mobile" id="setBtn" type="button" aria-label="設定"><svg viewBox="0 0 24 24"><path d="M3 6h10v2H3zm14 0h4v2h-4zm-3-2h2v6h-2zM3 16h4v2H3zm8 0h10v2H11zm-3-2h2v6H8z"/></svg></button>
     </div>
@@ -230,11 +238,26 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
         <label for="nRange">一回に表示する文字数</label>
         <div class="row"><input type="range" id="nRange" min="1" max="60" step="1"><input class="num" type="number" inputmode="numeric" id="nNum" min="1" max="200"><span class="unit">字</span></div>
       </div>
-      <div class="field">
+      <div class="field" id="tField">
         <label for="tRange">表示時間</label>
         <div class="row"><input type="range" id="tRange" min="0.1" max="6" step="0.05"><input class="num" type="number" inputmode="decimal" id="tNum" min="0.05" max="60" step="0.05"><span class="unit">秒</span></div>
       </div>
-      <div class="speed"><strong id="cpm">0</strong><span>字／分</span><small>（区切りの調整を除く目安）</small></div>
+      <div class="speed"><strong id="cpm">0</strong><span>字／分</span><small id="cpmNote">（区切りの調整を除く目安）</small></div>
+    </div>
+
+    <div class="group" id="voiceGroup">
+      <h3>音声</h3>
+      <label class="check"><input type="checkbox" id="speak"><span>声に出して読む<small>端末に入っている読み上げの声で読みます。表示は声の進みに合わせて切り替わるので、表示時間の設定は使いません。</small></span></label>
+      <div class="field">
+        <label for="voiceSel">声</label>
+        <select class="vsel" id="voiceSel"></select>
+      </div>
+      <div class="field">
+        <label for="rateRange">読む速さ</label>
+        <div class="row"><input type="range" id="rateRange" min="0.5" max="2" step="0.05"><input class="num" type="number" inputmode="decimal" id="rateNum" min="0.5" max="3" step="0.05"><span class="unit">倍</span></div>
+      </div>
+      <label class="check"><input type="checkbox" id="speakRuby"><span>ルビの読み方で読む<small>「邪智暴虐《じゃちぼうぎゃく》」のようにルビが付いた言葉は、ルビの読みで読み上げます。</small></span></label>
+      <p class="note" id="voiceNote"></p>
     </div>
 
     <div class="group">
@@ -265,7 +288,7 @@ textarea{width:100%;min-height:110px;padding:10px;border:1px solid var(--line);b
 
     <div class="group keysgroup">
       <h3>キー操作</h3>
-      <div class="keys"><kbd>Space</kbd> 再生／停止　<kbd>←</kbd><kbd>→</kbd> 戻る／進む<br><kbd>↑</kbd><kbd>↓</kbd> 表示時間を短く／長く　<kbd>F</kbd> 全画面</div>
+      <div class="keys"><kbd>Space</kbd> 再生／停止　<kbd>←</kbd><kbd>→</kbd> 戻る／進む<br><kbd>↑</kbd><kbd>↓</kbd> 速く／遅く　<kbd>F</kbd> 全画面　<kbd>V</kbd> 読み上げ</div>
     </div>
   </aside>
   <div class="scrim" id="scrim" hidden></div>
@@ -335,7 +358,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem('aozoraflow:'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem('aozoraflow:'+k, JSON.stringify(v)); }catch(e){} }
 };
-const S = Object.assign({ n:10, t:1.2, phrase:true, font:'gothic', smart:true, prop:true, pause:true, vertical:false, fs:64, ruby:true, ctx:false }, store.get('settings', {}));
+const S = Object.assign({ n:10, t:1.2, phrase:true, font:'gothic', smart:true, prop:true, pause:true, vertical:false, fs:64, ruby:true, ctx:false, speak:false, rate:1, voice:'', speakRuby:true }, store.get('settings', {}));
 const $ = id => document.getElementById(id);
 const nf = new Intl.NumberFormat('ja-JP');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -497,9 +520,14 @@ function factor(c){
   if (S.pause) f += c.stop === 2 ? 0.6 : c.stop === 1 ? 0.25 : 0;
   return f;
 }
+let charSuffix = [];
 function computeFactors(){
   factorSuffix = new Float64Array(chunks.length + 1);
-  for (let i = chunks.length - 1; i >= 0; i--) factorSuffix[i] = factorSuffix[i + 1] + factor(chunks[i]);
+  charSuffix = new Float64Array(chunks.length + 1);
+  for (let i = chunks.length - 1; i >= 0; i--) {
+    factorSuffix[i] = factorSuffix[i + 1] + factor(chunks[i]);
+    charSuffix[i] = charSuffix[i + 1] + chunks[i].chars;
+  }
 }
 const dur = i => S.t * factor(chunks[i]) * 1000;
 
@@ -525,7 +553,7 @@ function render(animate){
   $('seek').value = idx;
   const pct = chunks.length ? Math.floor((idx + 1) / chunks.length * 100) : 0;
   $('posLabel').textContent = `${nf.format(idx + 1)} / ${nf.format(chunks.length)}（${pct}%）`;
-  $('remainLabel').textContent = chunks.length ? 'のこり ' + fmtTime(S.t * factorSuffix[idx]) : '';
+  $('remainLabel').textContent = chunks.length ? 'のこり ' + fmtTime(useVoice() ? charSuffix[idx] / voiceCps() : S.t * factorSuffix[idx]) : '';
   $('paraLabel').textContent = c ? `第${nf.format(c.p + 1)}段落` : '';
   $('hint').hidden = playing || !isMobile();
   if (c) savePos(c.off, pct);
@@ -549,20 +577,316 @@ function runTick(){
     else pause();
   }, d);
 }
+function barFor(ms){
+  const bar = $('tick');
+  bar.style.transition = 'none'; bar.style.width = '0';
+  void bar.offsetWidth;
+  bar.style.transition = `width ${Math.max(0, ms)}ms linear`; bar.style.width = '100%';
+}
 function play(){
   if (!chunks.length) return;
   if (idx >= chunks.length - 1) idx = 0;
-  playing = true; render(true); runTick(); setPlayIcon();
+  playing = true; render(true); setPlayIcon();
+  if (useVoice()) {
+    speakFrom(idx);
+    if (IOS && !muteHint) { muteHint = true; showToast('音が出ないときは、消音モード（マナーモード）を解除してください。', 3500); }
+  } else runTick();
   try { navigator.wakeLock?.request('screen').then(l => wakeLock = l).catch(() => {}); } catch (e) {}
 }
 function pause(){
-  playing = false; clearTimeout(timer);
+  playing = false; clearTimeout(timer); stopVoice();
   const bar = $('tick'); bar.style.transition = 'none'; bar.style.width = '0';
   setPlayIcon(); $('hint').hidden = !isMobile() || !work;
   try { wakeLock?.release(); } catch (e) {} wakeLock = null;
 }
 const toggle = () => playing ? pause() : play();
-function restartIfPlaying(){ if (playing) { clearTimeout(timer); runTick(); } }
+function restartIfPlaying(){
+  if (!playing) return;
+  clearTimeout(timer);
+  if (useVoice()) speakFrom(idx); else { stopVoice(); runTick(); }
+}
+
+/* ---------- 音声読み上げ（ブラウザ内蔵の Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+const UA = navigator.userAgent;
+const IOS = /iP(hone|ad|od)/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
+const ANDROID = /Android/i.test(UA);
+const APPLE_WEBKIT = IOS || (/Safari\//.test(UA) && !/Chrome|Chromium|CriOS|Edg|OPR|Android/.test(UA));
+const RATE_MAX = APPLE_WEBKIT ? 2 : 3;   // Safari は 2 倍より速くならない
+S.rate = Math.min(RATE_MAX, Math.max(0.5, +S.rate || 1));
+let voiceBroken = false;          // この端末で音声が出せないと分かったら、表示だけで続ける
+const useVoice = () => TTS && S.speak && !voiceBroken;
+let vgen = 0, vtimers = [], vutt = null, voiceList = [];
+let cutAt = -1e9, restartT = 0, noStart = 0, extStops = 0, voiceErrors = 0, muteHint = false;
+const vt = (fn, ms) => { const h = setTimeout(fn, ms); vtimers.push(h); return h; };
+function clearVoiceTimers(){ vtimers.forEach(clearTimeout); vtimers = []; clearTimeout(restartT); }
+// 取り消しは自分の読み上げがあるときだけ（Chrome の cancel() は他のタブの読み上げも止めてしまう）
+function cutSpeech(){
+  if (!TTS) return;
+  try { if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); cutAt = performance.now(); } } catch (e) {}
+}
+const afterCut = () => Math.max(0, 250 - (performance.now() - cutAt));   // 取り消し直後の発声は無視される端末があるので間を置く
+function stopVoice(){ vgen++; clearVoiceTimers(); cutSpeech(); }
+// 1秒あたりに読む文字数（速さ1倍の値）。実際に読み終わった時間から少しずつ補正する
+let cpsBase = 7, cpsSamples = 0;
+function voiceKey(){ return 'cps:' + (S.voice || 'auto'); }
+function loadCps(){ const v = store.get(voiceKey(), null); cpsBase = (typeof v === 'number' && v >= 3 && v <= 20) ? v : 7; cpsSamples = 0; }
+function voiceCps(){ return cpsBase * (S.rate || 1); }
+function calibrate(len, ms){
+  if (len < 6 || ms < 400) return;
+  const m = len / (ms / 1000) / (S.rate || 1);
+  if (!(m >= 3 && m <= 20)) return;
+  const a = cpsSamples++ < 3 ? 0.5 : 0.3;   // 最初の数回は大きく寄せる
+  cpsBase = cpsBase * (1 - a) + m * a;
+  store.set(voiceKey(), Math.round(cpsBase * 100) / 100);
+}
+function showToast(msg, ms){
+  const el = $('toast'); el.textContent = msg; el.hidden = false;
+  clearTimeout(showToast.h); showToast.h = setTimeout(() => { el.hidden = true; }, ms || 3500);
+}
+
+// 読み上げ用の文字列にする：くの字点・踊り字を展開し、読めない記号を除く
+const voiced = ch => { const v = (ch + '゙').normalize('NFC'); return v.length === 1 ? v : ch; };
+// 旧仮名の作品では「らくやう」「けふ」のような歴史的かなづかいのルビは読まず、漢字のまま読ませる
+const OLD_RUBY = /[ゐゑヰヱ]|[くぐ]わ|[かがさざただなはばぱまやらわ]う|[きぎしじちぢにひびぴみり]う|[けげせぜてでねへべぺめれ][うふ]|.[はひふへほ]/;
+function isOldKana(){
+  if (work.oldKana === undefined) {
+    let n = 0;
+    for (const us of work.paras) { for (const u of us) if (!u.r && (u.t === 'ゐ' || u.t === 'ゑ')) n++; if (n >= 5) break; }
+    work.oldKana = n >= 5;
+  }
+  return work.oldKana;
+}
+function speechUnit(u){
+  if (!u.r || !S.speakRuby || !/[ぁ-ゖァ-ヺ]/.test(u.r)) return u.t;  // かなを含まないルビ（｜とうと《貴》など）は読まない
+  if (isOldKana() && OLD_RUBY.test(u.r)) return u.t;
+  return u.r;
+}
+function isRemote(v){ return !!v && v.localService === false; }
+function buildGroup(from){
+  // 1文ごと（長い文は途中の「、」で）にまとめて読む
+  const p = chunks[from].p, v = pickVoice();
+  // ネット経由の声（Google 日本語など）は長く話すと途中で止まることがあるので、話す長さでも区切る
+  const maxSp = isRemote(v) ? Math.max(20, Math.floor(voiceCps() * 9)) : Infinity;
+  let to = from, len = 0, sp = 0;
+  while (to < chunks.length && chunks[to].p === p) {
+    const c = chunks[to];
+    let csp = 0; for (const u of work.paras[p].slice(c.s, c.e)) csp += speechUnit(u).length;
+    if (to > from && sp + csp > maxSp) break;
+    sp += csp; len += c.chars; to++;
+    if (c.stop === 2) break;
+    if ((len >= 45 || sp >= maxSp * 0.6) && c.stop === 1) break;
+    if (len >= 80) break;
+  }
+  // 文字の並びを作り、どの区切り（とどの言葉）から来た文字かを覚えておく
+  const src = [];
+  for (let j = from; j < to; j++) {
+    const c = chunks[j];
+    for (const u of work.paras[p].slice(c.s, c.e)) {
+      const s = Array.from(speechUnit(u));
+      s.forEach((ch, q) => src.push([ch, j, q === s.length - 1 ? u : null]));
+    }
+  }
+  // くの字点・踊り字が区切りの先頭に来たとき用に、ひとつ前の区切りの文字も参照する
+  const pc = from > 0 && chunks[from - 1].p === p ? chunks[from - 1] : null;
+  const before = pc ? work.paras[p].slice(pc.s, pc.e).map(speechUnit).join('') : '';
+  let inAcc = /〔[^〕]*$/.test(work.paras[p].slice(0, chunks[from].s).map(u => u.t).join(''));   // 〔…〕の中（欧文のアクセント記号）
+  let out = '';
+  const starts = new Array(to - from).fill(-1);
+  const mark = j => { if (starts[j - from] < 0) starts[j - from] = out.length; };
+  let prevDash = false;
+  for (let k = 0; k < src.length; k++) {
+    const [ch, j] = src[k];
+    mark(j);
+    const last = Array.from(before + out);
+    let add = '';
+    if (ch === '／' && src[k + 1] && (src[k + 1][0] === '＼' || (src[k + 1][0] === '″' && src[k + 2] && src[k + 2][0] === '＼'))) {
+      // くの字点：直前の言葉（ルビの読みなら読み全体、「ところ」などは3文字）をくり返す
+      const dak = src[k + 1][0] === '″';
+      const pu = k ? src[k - 1][2] : null, pr = pu && pu.r ? Array.from(speechUnit(pu)) : null;
+      const word = pr && pr.length >= 2 && pr.join('') !== pu.t ? pr : null;
+      const n = /(ところ|かはる|かわる|かへす|かえす|いつも)$/.test(last.slice(-3).join('')) ? 3 : 2;
+      const a = word || last.slice(-n);
+      add = a.length >= 2 ? (dak ? voiced(a[0]) : a[0]) + a.slice(1).join('') : '';
+      k += dak ? 2 : 1;
+    } else if (ch === 'ゝ' || ch === 'ヽ') add = last.slice(-1).join('');
+    else if (ch === 'ゞ' || ch === 'ヾ') add = last.length ? voiced(last[last.length - 1]) : '';
+    else if (ch === '〔' || ch === '〕') { inAcc = ch === '〔'; add = ''; }
+    else if (inAcc && /[`'^:~&_]/.test(ch) && k > 0 && /[A-Za-z]/.test(src[k - 1][0])) add = '';
+    else if (ch === '〓' || ch === '※' || ch === '＼' || ch === '／' || ch === '″') add = '';
+    else if (ch === '―' || ch === '…' || ch === '‥') { add = prevDash ? '' : '、'; prevDash = true; out += add; continue; }
+    else add = ch === 'ゐ' ? 'い' : ch === 'ゑ' ? 'え' : ch;
+    prevDash = false;
+    out += add;
+  }
+  for (let j = 0; j < starts.length; j++) if (starts[j] < 0) starts[j] = j ? starts[j - 1] : 0;
+  return { from, to, text: out, starts, chars: len };
+}
+function chunkEstimateMs(j, g){
+  const s = g.starts[j - g.from], e = j + 1 < g.to ? g.starts[j + 1 - g.from] : g.text.length;
+  return Math.max(250, (e - s) / voiceCps() * 1000);
+}
+function pickVoice(){
+  if (!voiceList.length) return null;
+  return voiceList.find(v => v.voiceURI === S.voice) || voiceList[0];
+}
+const voiceLabel = v => v.name.replace(/^Microsoft /, '').replace(/ - Japanese \(Japan\)$/, '');
+function speakFrom(i){
+  const my = ++vgen; clearVoiceTimers();
+  cutSpeech();
+  const wait = afterCut();
+  if (wait > 0) vt(() => { if (my === vgen && playing) speakGroup(i, my); }, wait);
+  else speakGroup(i, my);   // 再生ボタンからの最初の発声は、タップの処理の中で行う（iPhone の条件）
+}
+// シークバーのドラッグなど続けざまの操作は、まとめて1回だけ読み直す
+function restartSoon(){
+  if (!playing) return;
+  if (!useVoice()) return restartIfPlaying();
+  vgen++; clearVoiceTimers(); cutSpeech();
+  restartT = setTimeout(() => { if (playing && useVoice()) speakFrom(idx); }, 300);
+}
+function speakGroup(i, my){
+  if (i >= chunks.length) { pause(); return; }
+  const g = buildGroup(i);
+  if (idx !== i) { idx = i; render(true); }
+  let t0 = 0, gotBoundary = false, ended = false, stallT = 0;
+  // 端末やほかのタブが読み上げを止めたとき：今の区切りのまま待つ（先へは進めない）
+  const hold = () => { ended = true; vgen++; clearVoiceTimers(); };
+  const next = () => {
+    if (my !== vgen || !playing) return;
+    // 見積もりが遅れて表示しきれなかった区切りがあれば、短く見せてから次へ進む（読み飛ばし防止）
+    if (idx < g.to - 1 && !document.hidden) { idx++; render(true); barFor(350); vt(next, 350); return; }
+    if (g.to >= chunks.length) { if (idx !== chunks.length - 1) { idx = chunks.length - 1; render(false); } pause(); return; }
+    const endC = chunks[g.to - 1];
+    const gap = S.pause ? (endC.e === work.paras[endC.p].length ? 350 : endC.stop === 2 ? 150 : 0) : 0;
+    idx = g.to; render(true);
+    // 裏に回したタブではタイマーが大きく遅れる（Chrome は最大1分）ので、読み終わりの合図からすぐ次を読む
+    if (document.hidden && afterCut() === 0) { speakGroup(g.to, my); return; }
+    vt(() => { if (my === vgen && playing) speakGroup(g.to, my); }, Math.max(gap, afterCut()));
+  };
+  if (!/[\p{L}\p{N}]/u.test(g.text)) {
+    // 読む文字がない（「＊」「×　×　×」などの区切り記号だけ）ときは、表示だけ少し見せて先へ
+    if (document.hidden) { next(); return; }
+    barFor(600); vt(next, 600); return;
+  }
+  const u = new SpeechSynthesisUtterance(g.text);
+  u.lang = 'ja-JP';
+  const v = pickVoice(); if (v) u.voice = v;
+  u.rate = Math.min(RATE_MAX, Math.max(0.5, S.rate || 1));
+  vutt = u; // 途中で消されて onend が来なくなる不具合への対策（参照を持っておく）
+  const estimates = () => {
+    // 声の位置が分からない端末では、読み終わるまでの時間を見積もって表示を進める
+    for (let j = g.from + 1; j < g.to; j++) {
+      const at = g.starts[j - g.from] / voiceCps() * 1000, jj = j;
+      vt(() => { if (my === vgen && playing && !gotBoundary && idx < jj) { idx = jj; render(true); barFor(chunkEstimateMs(jj, g)); } }, at);
+    }
+  };
+  const started = () => {
+    if (t0) return;
+    t0 = performance.now(); voiceErrors = 0; noStart = 0; extStops = 0;
+    barFor(chunkEstimateMs(g.from, g));
+    estimates();
+    const total = g.text.length / voiceCps() * 1000;
+    // 終わりの合図が来ないまま止まった場合の保険
+    vt(() => {
+      if (my !== vgen || !playing || ended) return;
+      if (document.hidden) { hold(); return; }
+      ended = true; cutSpeech(); next();
+    }, total * 3 + 6000);
+  };
+  u.onstart = () => { if (my === vgen) started(); };
+  u.onboundary = e => {
+    if (my !== vgen || !playing || ended) return;
+    if (!t0) started();
+    if (!(e.charIndex > 0)) return;
+    gotBoundary = true;
+    // 声の位置が届く端末で、話の途中で合図が途絶えたら（Siri・通知などで止まった）今の区切りから読み直す
+    clearTimeout(stallT);
+    stallT = vt(() => { if (my === vgen && playing && !ended && !document.hidden) { ended = true; speakFrom(idx); } }, 6000);
+    let j = g.from;
+    while (j + 1 < g.to && g.starts[j + 1 - g.from] <= e.charIndex) j++;
+    if (j > idx) { idx = j; render(true); barFor(chunkEstimateMs(j, g)); }
+  };
+  u.onend = () => {
+    if (my !== vgen || ended) return;
+    ended = true;
+    if (t0) calibrate(g.text.length, performance.now() - t0);
+    next();
+  };
+  u.onerror = e => {
+    if (my !== vgen || ended) return;
+    // ここに来る 'interrupted' / 'canceled' はこのページ以外（画面オフ・アプリ切替・ほかのタブ）が止めたもの
+    if (e.error === 'interrupted' || e.error === 'canceled' || document.hidden) {
+      hold();
+      if (!document.hidden) {
+        if (++extStops >= 3) { pause(); showToast('読み上げが止められました。再生ボタンで続きから読みます。', 4000); return; }
+        vt(() => { if (playing && useVoice() && !document.hidden) speakFrom(idx); }, 400);
+      }
+      return;   // 画面が隠れているときは、戻ったとき（visibilitychange）に今の区切りから読み直す
+    }
+    ended = true;
+    if (e.error === 'not-allowed') { pause(); showToast('音声を出すには、もう一度 再生ボタンを押してください。'); return; }
+    if (++voiceErrors >= 2) { fallbackToVisual('読み上げができませんでした。表示だけで続けます。'); return; }
+    next();
+  };
+  try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (e) {}
+  speechSynthesis.speak(u);
+  // しばらく待っても話し始めないとき：ネット経由の声なら端末の声に替えて、そうでなければ1回だけ読み直してから、表示だけに切り替える
+  vt(() => {
+    if (my !== vgen || !playing || t0 || ended) return;
+    if (document.hidden) { hold(); return; }
+    const alt = isRemote(v) && voiceList.find(x => !isRemote(x));
+    if (alt) {
+      S.voice = alt.voiceURI; loadCps(); loadVoices();
+      showToast(`ネット経由の声が使えないため「${voiceLabel(alt)}」で読みます。`, 4000);
+      speakFrom(idx); return;
+    }
+    if (++noStart < 2) { speakFrom(idx); return; }
+    fallbackToVisual('この端末では読み上げを始められませんでした。表示だけで続けます。');
+  }, 5000);
+}
+function fallbackToVisual(msg){
+  voiceBroken = true; stopVoice();
+  showToast(msg, 5000); updateVoiceUI();
+  if (playing) runTick();
+}
+function loadVoices(){
+  if (!TTS) return;
+  let all = [];
+  try { all = speechSynthesis.getVoices() || []; } catch (e) {}
+  // 端末に入っている声を優先（声の位置が分かり、途中で止まりにくい）。Edge の Natural 音声は高品質なので先頭
+  const rank = v => /natural|neural/i.test(v.name) ? 0 : /kyoko|o-ren|otoya|hattori|haruka|ayumi|ichiro|sayaka|nanami|keita/i.test(v.name) && !isRemote(v) ? 1 : !isRemote(v) ? 2 : /online/i.test(v.name) ? 3 : 4;
+  voiceList = all.filter(v => /^ja([-_]|$)/i.test(v.lang)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  const sel = $('voiceSel');
+  sel.innerHTML = voiceList.length
+    ? voiceList.map(v => `<option value="${esc(v.voiceURI)}">${esc(voiceLabel(v))}${isRemote(v) ? '（ネット）' : ''}</option>`).join('')
+    : '<option value="">この端末の標準の声</option>';
+  const cur = pickVoice(); sel.value = cur ? cur.voiceURI : '';
+  updateVoiceUI();
+}
+function updateVoiceUI(){
+  const on = useVoice();
+  $('speak').checked = on;
+  $('voiceBtn').setAttribute('aria-pressed', on);
+  $('tRange').disabled = $('tNum').disabled = on;
+  $('tField').classList.toggle('off', on);
+  const note = $('voiceNote');
+  note.classList.remove('warn');
+  if (!TTS) { note.textContent = 'このブラウザは読み上げに対応していません。Safari・Chrome・Edge の新しい版でお試しください。'; note.classList.add('warn'); }
+  else if (S.speak && voiceBroken) { note.textContent = 'この端末では読み上げが始められませんでした。「声に出して読む」をもう一度オンにすると、もう一度試せます。'; note.classList.add('warn'); }
+  else if (on && IOS) note.textContent = 'iPhone・iPadは、消音モード（マナーモード）のときは声が出ません。消音を解除して、音量を上げてください。';
+  else if (on && (ANDROID || !voiceList.length)) note.textContent = '声が出ない・英語のように聞こえるときは、端末の「設定 → テキスト読み上げ」で日本語の音声データを追加してください。';
+  else note.textContent = on ? '声の種類と質は、お使いの端末やブラウザによって変わります。' : '';
+  saveSettings();
+}
+function setSpeak(on){
+  S.speak = !!on;
+  if (on) { voiceBroken = false; voiceErrors = 0; noStart = 0; extStops = 0; }
+  loadCps(); updateVoiceUI();
+  if (on && TTS && !voiceList.length) loadVoices();
+  if (playing) { stopVoice(); restartIfPlaying(); }
+  render(false);
+}
 function setPlayIcon(){
   $('playIcon').innerHTML = playing ? '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>' : '<path d="M7 4v16l13-8z"/>';
   $('playBtn').setAttribute('aria-label', playing ? '一時停止' : '再生');
@@ -570,11 +894,20 @@ function setPlayIcon(){
 function step(d){
   if (!chunks.length) return;
   idx = Math.min(Math.max(0, idx + d), chunks.length - 1);
-  render(true); restartIfPlaying();
+  render(true); restartSoon();
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && playing) navigator.wakeLock?.request('screen').then(l => wakeLock = l).catch(() => {});
+  if (document.visibilityState === 'hidden') {
+    // スマホは画面を消したりアプリを切り替えると、ページに知らせずに読み上げを止める。自分で止めて、今の区切りで待つ
+    if ((IOS || ANDROID) && playing && useVoice()) stopVoice();
+    return;
+  }
+  if (!playing) return;
+  navigator.wakeLock?.request('screen').then(l => wakeLock = l).catch(() => {});
+  // 戻ってきたら、今の区切りから読み直す（読み上げが続いていれば何もしない）
+  if (useVoice()) setTimeout(() => { if (playing && useVoice() && !document.hidden && !speechSynthesis.speaking && !speechSynthesis.pending) speakFrom(idx); }, 800);
 });
+window.addEventListener('pagehide', () => { if (TTS) stopVoice(); });
 
 /* ---------- 作品の読み込み ---------- */
 function showWork(w){
@@ -658,7 +991,7 @@ function bindPair(rangeId, numId, key, onChange){
   const set = v => {
     v = parseFloat(v); if (!isFinite(v)) return;
     v = Math.min(parseFloat(n.max), Math.max(parseFloat(n.min), v));
-    S[key] = key === 't' ? Math.round(v * 100) / 100 : Math.round(v);
+    S[key] = (key === 't' || key === 'rate') ? Math.round(v * 100) / 100 : Math.round(v);
     r.value = S[key]; n.value = S[key]; saveSettings(); onChange();
   };
   r.value = S[key]; n.value = S[key];
@@ -666,17 +999,40 @@ function bindPair(rangeId, numId, key, onChange){
   n.addEventListener('change', () => set(n.value));
   return set;
 }
-function saveSettings(){ store.set('settings', S); $('cpm').textContent = nf.format(Math.round(S.n / S.t * 60)); }
+function saveSettings(){
+  store.set('settings', S);
+  const v = typeof useVoice === 'function' && useVoice();
+  $('cpm').textContent = nf.format(Math.round(v ? voiceCps() * 60 : S.n / S.t * 60));
+  $('cpmNote').textContent = v ? '（読み上げの速さの目安）' : '（区切りの調整を除く目安）';
+}
 function rechunk(){
   if (!work) return;
   const off = chunks[idx]?.off ?? 0;
-  buildChunks(); idx = findByOffset(off); render(false); restartIfPlaying();
+  buildChunks(); idx = findByOffset(off); render(false); restartSoon();
 }
 bindPair('nRange', 'nNum', 'n', rechunk);
 const setT = bindPair('tRange', 'tNum', 't', () => { render(false); restartIfPlaying(); if (!$('lib').hidden) renderLib(); });
 bindPair('fsRange', 'fsNum', 'fs', applyLook);
 [['phrase', rechunk], ['smart', rechunk], ['prop', () => { computeFactors(); render(false); }], ['pause', () => { computeFactors(); render(false); }], ['ruby', () => render(false)], ['ctx', () => render(false)]]
   .forEach(([k, fn]) => { const el = $(k); el.checked = !!S[k]; el.addEventListener('change', () => { S[k] = el.checked; saveSettings(); if (work) fn(); }); });
+
+// 音声の設定
+$('rateNum').max = RATE_MAX;
+const setRate = bindPair('rateRange', 'rateNum', 'rate', () => { updateVoiceUI(); render(false); if (useVoice()) restartSoon(); if (!$('lib').hidden) renderLib(); });
+$('speak').addEventListener('change', e => setSpeak(e.target.checked));
+$('voiceBtn').onclick = () => {
+  setSpeak(!useVoice());
+  showToast(useVoice() ? (IOS ? '声に出して読みます（消音モードだと音が出ません）' : '声に出して読みます') : '読み上げを止めました', IOS && useVoice() ? 3500 : 1600);
+};
+$('speakRuby').checked = !!S.speakRuby;
+$('speakRuby').addEventListener('change', e => { S.speakRuby = e.target.checked; saveSettings(); if (useVoice()) restartIfPlaying(); });
+$('voiceSel').addEventListener('change', e => { S.voice = e.target.value; voiceBroken = false; noStart = 0; loadCps(); updateVoiceUI(); render(false); if (useVoice()) restartIfPlaying(); });
+if (TTS) {
+  try { speechSynthesis.addEventListener('voiceschanged', loadVoices); } catch (e) { speechSynthesis.onvoiceschanged = loadVoices; }
+} else {
+  $('voiceBtn').hidden = true;
+  $('speak').disabled = true;
+}
 function applyLook(){
   document.documentElement.style.setProperty('--fs', S.fs + 'px');
   document.documentElement.style.setProperty('--read', S.font === 'mincho' ? 'var(--mincho)' : 'var(--udgothic)');
@@ -701,7 +1057,7 @@ $('scrim').onclick = closeSheet;
 $('playBtn').onclick = toggle;
 $('prevBtn').onclick = () => step(-1);
 $('nextBtn').onclick = () => step(1);
-$('seek').addEventListener('input', e => { idx = +e.target.value; render(false); restartIfPlaying(); });
+$('seek').addEventListener('input', e => { idx = +e.target.value; render(false); restartSoon(); });
 function toggleFS(){
   try { document.fullscreenElement ? document.exitFullscreen() : $('stagewrap').requestFullscreen?.().catch(() => {}); } catch (e) {}
 }
@@ -726,9 +1082,11 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ') { e.preventDefault(); toggle(); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); setT(S.t - 0.1); }
-  else if (e.key === 'ArrowDown') { e.preventDefault(); setT(S.t + 0.1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); useVoice() ? setRate(S.rate + 0.1) : setT(S.t - 0.1); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); useVoice() ? setRate(S.rate - 0.1) : setT(S.t + 0.1); }
+  else if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
   else if (e.key === 'f' || e.key === 'F') toggleFS();
+  else if ((e.key === 'v' || e.key === 'V') && TTS) $('voiceBtn').click();
   else if (e.key === 'Escape') closeSheet();
 });
 
@@ -742,7 +1100,7 @@ const LEN = { s: c => c < 10000, m: c => c >= 10000 && c < 60000, l: c => c >= 6
 
 function fmtChars(c){ return c < 10000 ? `約${nf.format(Math.round(c / 100) * 100)}字` : `約${(c / 10000).toFixed(c < 100000 ? 1 : 0)}万字`; }
 function fmtRead(c){
-  const min = c / (S.n / S.t * 60) * (S.pause ? 1.35 : 1);
+  const min = useVoice() ? c / (voiceCps() * 60) * 1.1 : c / (S.n / S.t * 60) * (S.pause ? 1.35 : 1);
   return min < 60 ? `${Math.max(1, Math.round(min))}分` : `${Math.floor(min / 60)}時間${Math.round(min % 60)}分`;
 }
 function itemHTML(e){
@@ -814,7 +1172,7 @@ $('pasteBtn').onclick = () => {
 };
 
 /* ---------- 起動 ---------- */
-applyLook(); saveSettings(); setPlayIcon(); renderChips();
+applyLook(); loadCps(); loadVoices(); updateVoiceUI(); saveSettings(); setPlayIcon(); renderChips();
 (function boot(){
   const cur = store.get('current', null);
   if (cur && cur.src === 'file' && cur.raw) {
