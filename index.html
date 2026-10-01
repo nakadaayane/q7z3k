@@ -67,6 +67,7 @@ button{touch-action:manipulation}
 
 /* ===== ふわふわ・きらきら（WP UPs の動きを参考に） ===== */
 @keyframes fuwa{0%,100%{transform:translateY(0)}50%{transform:translateY(.55rem)}}
+@keyframes fuwaM{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(.9rem) rotate(1.5deg)}}
 @keyframes fuwa2{0%,100%{transform:translate(0,0) rotate(-2deg)}50%{transform:translate(.4rem,-.45rem) rotate(2deg)}}
 @keyframes kira{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
 @keyframes nagare{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -285,6 +286,23 @@ kbd{font-family:var(--round);font-size:11px;border:1.5px solid var(--edge);borde
 .sortsel{min-height:44px;padding:4px 14px;border:2.5px solid var(--edge);border-radius:999px;background:var(--paper);font-weight:700;font-size:14px;box-shadow:3px 3px 0 var(--edge)}
 .active-filter{display:flex;align-items:center;gap:10px;margin:0 0 14px;flex-wrap:wrap}
 .fchip{display:inline-flex;align-items:center;gap:8px;padding:4px 6px 4px 4px;border:2.5px solid var(--edge);border-radius:999px;background:var(--paper);font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--edge)}
+.likebtn{position:relative;display:inline-grid;place-items:center;width:46px;height:46px;flex:none;border-radius:50%;border:2.5px solid var(--edge);background:var(--paper);color:var(--ink);cursor:pointer;box-shadow:3px 3px 0 var(--edge);transition:transform .15s var(--spring),box-shadow .15s ease}
+.likebtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}
+.likebtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round}
+.likebtn[aria-pressed=true] svg{fill:var(--shu);stroke:#1B1A17}
+.likebtn.pop svg{animation:heartpop .55s var(--spring)}
+@keyframes heartpop{0%{transform:scale(1)}30%{transform:scale(1.45)}60%{transform:scale(.88)}100%{transform:scale(1)}}
+.likebtn .burst{position:absolute;inset:0;pointer-events:none}
+.likebtn .burst i{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px;background:var(--shu);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 21s-7.6-4.6-9.7-9.3C.9 8.3 3.1 4.3 6.9 4.3c2.2 0 3.7 1.1 5.1 2.9 1.4-1.8 2.9-2.9 5.1-2.9 3.8 0 6 4 4.6 7.4C19.6 16.4 12 21 12 21z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 21s-7.6-4.6-9.7-9.3C.9 8.3 3.1 4.3 6.9 4.3c2.2 0 3.7 1.1 5.1 2.9 1.4-1.8 2.9-2.9 5.1-2.9 3.8 0 6 4 4.6 7.4C19.6 16.4 12 21 12 21z'/%3E%3C/svg%3E") center/contain no-repeat;opacity:0;animation:burst .75s ease-out forwards}
+@keyframes burst{0%{opacity:1;transform:rotate(var(--a)) translateY(-8px) scale(.4)}100%{opacity:0;transform:rotate(var(--a)) translateY(-34px) scale(1)}}
+.cover .heart{top:42%;right:15%;display:grid;place-items:center;width:28cqw;height:28cqw;border-radius:50%;background:#fff;border:2px solid #1B1A17}
+.cover .heart svg{width:66%;height:66%;fill:var(--shu)}
+.like-empty{display:flex;align-items:center;gap:12px;padding:14px 18px;border:2.5px dashed var(--edge);border-radius:20px;color:var(--muted);font-weight:700;font-size:14px}
+.like-empty svg{flex:none;width:26px;height:26px;fill:none;stroke:var(--shu);stroke-width:2.2}
+.ws-row{display:flex;gap:12px;align-items:center}
+.ws-row .btn{flex:1}
+.ws-row .likebtn{width:54px;height:54px}
+header.top .likebtn{width:42px;height:42px}
 .fchip .x{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:14px;line-height:1}
 
 /* 作品の本（表紙は和本：右に綴じ糸、左上に題簽） */
@@ -398,7 +416,17 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
   .hero .sky{grid-template-columns:1fr;min-height:0;padding:14px 18px 110px}
   .hero-art{position:absolute;right:-6px;bottom:48px;width:62%;height:250px}
   .hero-art .cat{right:12%;bottom:30px;width:min(56%,150px)}
-  .hero .trail{display:none}
+  .hero .trail{display:block}
+  .hero .trail i{width:19px;height:19px;--r:150deg!important}
+  .hero .trail i:nth-child(1){left:41%!important;top:31%!important}
+  .hero .trail i:nth-child(2){left:47%!important;top:35%!important}
+  .hero .trail i:nth-child(3){left:45%!important;top:43%!important}
+  .hero .trail i:nth-child(4){left:51%!important;top:47%!important}
+  .hero .trail i:nth-child(5){left:49%!important;top:55%!important}
+  .hero .trail i:nth-child(6){left:55%!important;top:59%!important}
+  .hero .trail i:nth-child(7){left:53%!important;top:67%!important}
+  .hero-art .cat.float{animation-name:fuwaM;animation-duration:6s}
+  .ribbon-track{animation-duration:48s}
   .hero-art .seat{width:min(100%,250px);right:-8%}
   .hero-copy{max-width:64%}
   .hero h2{font-size:clamp(38px,11vw,56px)}
@@ -417,13 +445,17 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
   .today .cat{right:14px;bottom:calc(100% - 8px);width:108px}
   .today h4{font-size:19px}
 }
+/* 動き：端末が「動きを減らす」設定なら止める（サイトの設定で「いつも動かす」にすると動く）／「止める」なら止める */
 @media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  .rv-on .rv:not(.in){opacity:1;translate:none}
-  .ribbon{overflow-x:auto}
-  .hero-art .moji{display:none}
-  .trail i{opacity:1;scale:1}
+  :root:not(.motion-on) *,:root:not(.motion-on) *::before,:root:not(.motion-on) *::after{animation:none!important;transition:none!important}
+  :root:not(.motion-on) .ribbon{overflow-x:auto}
+  :root:not(.motion-on) .hero-art .moji{display:none}
+  :root:not(.motion-on) .trail i{opacity:1;scale:1}
 }
+.motion-off *,.motion-off *::before,.motion-off *::after{animation:none!important;transition:none!important}
+.motion-off .ribbon{overflow-x:auto}
+.motion-off .hero-art .moji{display:none}
+.motion-off .trail i{opacity:1;scale:1}
 </style>
 
 </head>
@@ -432,6 +464,7 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
   <header class="top">
     <div class="brand"><span class="name"><small>青空文庫</small>ながし読み</span></div>
     <div class="work"><b id="wTitle">—</b><span id="wAuthor"></span></div>
+    <button class="likebtn" id="likeBtn" type="button" aria-pressed="false" aria-label="この作品にいいね" title="いいね" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-7.6-4.6-9.7-9.3C.9 8.3 3.1 4.3 6.9 4.3c2.2 0 3.7 1.1 5.1 2.9 1.4-1.8 2.9-2.9 5.1-2.9 3.8 0 6 4 4.6 7.4C19.6 16.4 12 21 12 21z"/></svg><span class="burst"></span></button>
     <button class="btn" id="openBtn" type="button"><svg viewBox="0 0 24 24"><path d="M4 4h4v16H4zm5 0h4v16H9zm5.2.6 3.9-1 4 15.5-3.9 1z"/></svg>本棚</button>
   </header>
 
@@ -512,6 +545,7 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
         <label for="rateRange">読む速さ</label>
         <div class="row"><input type="range" id="rateRange" min="0.5" max="2" step="0.05"><input class="num" type="number" inputmode="decimal" id="rateNum" min="0.5" max="3" step="0.05"><span class="unit">倍</span></div>
       </div>
+      <label class="check"><input type="checkbox" id="talkVoice"><span>会話は声を少し高くする<small>「」の中のせりふを、地の文と少し変えて読みます。</small></span></label>
       <label class="check"><input type="checkbox" id="speakRuby"><span>ルビの読み方で読む<small>「邪智暴虐《じゃちぼうぎゃく》」のようにルビが付いた言葉は、ルビの読みで読み上げます。</small></span></label>
       <p class="note" id="voiceNote"></p>
     </div>
@@ -533,6 +567,11 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
       <div class="field">
         <label>書字方向</label>
         <div class="seg" role="group" aria-label="書字方向"><button type="button" id="dirH" aria-pressed="true">横書き</button><button type="button" id="dirV" aria-pressed="false">縦書き</button></div>
+      </div>
+      <div class="field">
+        <label>動き（アニメーション）</label>
+        <div class="seg" role="group" aria-label="動き"><button type="button" data-motion="auto" aria-pressed="true">端末に合わせる</button><button type="button" data-motion="on" aria-pressed="false">いつも動かす</button><button type="button" data-motion="off" aria-pressed="false">止める</button></div>
+        <p class="note" id="motionNote"></p>
       </div>
       <div class="field">
         <label for="fsRange">文字の大きさ</label>
@@ -614,6 +653,12 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
     <section id="recentSec" hidden>
       <h3 class="sec"><span class="sq">続きから読む</span></h3>
       <div class="shelf" id="recentList"></div>
+    </section>
+
+    <section id="likeSec">
+      <h3 class="sec"><span class="sq">いいねした作品</span><small id="likeCount"></small></h3>
+      <div class="shelf" id="likeList"></div>
+      <p class="like-empty" id="likeEmpty" hidden><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-7.6-4.6-9.7-9.3C.9 8.3 3.1 4.3 6.9 4.3c2.2 0 3.7 1.1 5.1 2.9 1.4-1.8 2.9-2.9 5.1-2.9 3.8 0 6 4 4.6 7.4C19.6 16.4 12 21 12 21z"/></svg>気に入った作品で ♡ を押すと、ここに並びます。</p>
     </section>
 
     <section id="authorSec">
@@ -719,7 +764,7 @@ textarea{width:100%;min-height:110px;padding:12px;border:2px solid var(--edge);b
     <div class="ws-block"><h4>書き出し</h4><blockquote id="wsOpen"></blockquote></div>
     <div class="ws-meta" id="wsMeta"></div>
     <div class="ws-acts">
-      <button class="btn primary big" type="button" id="wsRead">この作品を読む</button>
+      <div class="ws-row"><button class="btn primary big" type="button" id="wsRead">この作品を読む</button><button class="likebtn" type="button" id="wsLike" aria-pressed="false" aria-label="いいね"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-7.6-4.6-9.7-9.3C.9 8.3 3.1 4.3 6.9 4.3c2.2 0 3.7 1.1 5.1 2.9 1.4-1.8 2.9-2.9 5.1-2.9 3.8 0 6 4 4.6 7.4C19.6 16.4 12 21 12 21z"/></svg><span class="burst"></span></button></div>
       <a id="wsCard" href="https://www.aozora.gr.jp/" target="_blank" rel="noopener">青空文庫の図書カードを見る</a>
     </div>
   </div>
@@ -741,7 +786,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem('aozoraflow:'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem('aozoraflow:'+k, JSON.stringify(v)); }catch(e){} }
 };
-const S = Object.assign({ n:10, t:1.2, phrase:true, font:'gothic', smart:true, prop:true, pause:true, vertical:false, fs:64, ruby:true, ctx:false, speak:false, rate:1, voice:'', speakRuby:true }, store.get('settings', {}));
+const S = Object.assign({ n:10, t:1.2, phrase:true, font:'gothic', smart:true, prop:true, pause:true, vertical:false, fs:64, ruby:true, ctx:false, speak:false, rate:1, voice:'', speakRuby:true, talkVoice:true, motion:'auto' }, store.get('settings', {}));
 const $ = id => document.getElementById(id);
 const nf = new Intl.NumberFormat('ja-JP');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -1058,15 +1103,21 @@ function buildGroup(from){
   const p = chunks[from].p, v = pickVoice();
   // ネット経由の声（Google 日本語など）は長く話すと途中で止まることがあるので、話す長さでも区切る
   const maxSp = isRemote(v) ? Math.max(20, Math.floor(voiceCps() * 9)) : Infinity;
-  let to = from, len = 0, sp = 0;
+  // 端末の声は2文まで続けて読む（文と文のつながりが自然になる）。ネット経由の声は1文ずつ
+  const maxSent = isRemote(v) ? 1 : 2;
+  let to = from, len = 0, sp = 0, sents = 0;
   while (to < chunks.length && chunks[to].p === p) {
     const c = chunks[to];
+    // 会話（「」）は地の文と分けて読む（声の高さを変えるため）
+    if (to > from && /^[「『]/.test(work.paras[p][c.s]?.t || '')) break;
     let csp = 0; for (const u of work.paras[p].slice(c.s, c.e)) csp += speechUnit(u).length;
     if (to > from && sp + csp > maxSp) break;
     sp += csp; len += c.chars; to++;
-    if (c.stop === 2) break;
-    if ((len >= 45 || sp >= maxSp * 0.6) && c.stop === 1) break;
-    if (len >= 80) break;
+    if (/[」』]$/.test(work.paras[p][c.e - 1]?.t || '')) break;
+    if (c.stop === 2 && (++sents >= maxSent || len >= 60)) break;
+    if ((len >= 45 || sp >= maxSp * 0.6) && c.stop === 1 && maxSent === 1) break;
+    if (len >= 80 && c.stop === 1) break;
+    if (len >= 100) break;
   }
   // 文字の並びを作り、どの区切り（とどの言葉）から来た文字かを覚えておく
   const src = [];
@@ -1110,7 +1161,10 @@ function buildGroup(from){
     out += add;
   }
   for (let j = 0; j < starts.length; j++) if (starts[j] < 0) starts[j] = j ? starts[j - 1] : 0;
-  return { from, to, text: out, starts, chars: len };
+  // この区切りが「」の中（せりふの続き）から始まるか
+  const pre = work.paras[p].slice(0, chunks[from].s).map(u => u.t).join('');
+  const inQuote = (pre.match(/[「『]/g) || []).length > (pre.match(/[」』]/g) || []).length;
+  return { from, to, text: out, starts, chars: len, inQuote };
 }
 function chunkEstimateMs(j, g){
   const s = g.starts[j - g.from], e = j + 1 < g.to ? g.starts[j + 1 - g.from] : g.text.length;
@@ -1156,7 +1210,9 @@ function speakGroup(i, my){
     if (idx < g.to - 1 && !document.hidden) { idx++; render(true); barFor(350); vt(next, 350); return; }
     if (g.to >= chunks.length) { if (idx !== chunks.length - 1) { idx = chunks.length - 1; render(false); } finished = true; pause(); return; }
     const endC = chunks[g.to - 1];
-    const gap = S.pause ? (endC.e === work.paras[endC.p].length ? 350 : endC.stop === 2 ? 150 : 0) : 0;
+    // 人が読むときのような間：段落の終わりは長く、会話のあと・文の終わりは少し、文の途中はひと息
+    const endT = work.paras[endC.p][endC.e - 1]?.t || '';
+    const gap = S.pause ? (endC.e === work.paras[endC.p].length ? 650 : /[」』]$/.test(endT) ? 380 : endC.stop === 2 ? 260 : 120) : 0;
     idx = g.to; render(true);
     // 裏に回したタブではタイマーが大きく遅れる（Chrome は最大1分）ので、読み終わりの合図からすぐ次を読む
     if (document.hidden && afterCut() === 0) { speakGroup(g.to, my); return; }
@@ -1169,8 +1225,14 @@ function speakGroup(i, my){
   }
   const u = new SpeechSynthesisUtterance(g.text);
   u.lang = 'ja-JP';
-  const v = pickVoice(); if (v) u.voice = v;
+  const v = pickVoice(); if (v) { try { u.voice = v; } catch (e) {} }
   u.rate = Math.min(RATE_MAX, Math.max(0.5, S.rate || 1));
+  // 会話（「」）は少し高めの声で、地の文はやや落ち着いた声で（読み聞かせのように）
+  // まるごとせりふ（「」で始まる、または長いせりふの続き）で、途中で地の文に戻らないときだけ会話の声にする
+  const gt = g.text.trim();
+  const talk = S.talkVoice !== false && (/^[「『]/.test(gt) || g.inQuote) && /^[「『]?[^」』]*[」』]?[。、！？!?]*$/.test(gt);
+  u.pitch = talk ? 1.14 : 0.98;
+  if (talk) u.rate = Math.min(RATE_MAX, u.rate * 1.04);
   vutt = u; // 途中で消されて onend が来なくなる不具合への対策（参照を持っておく）
   const estimates = () => {
     // 声の位置が分からない端末では、読み終わるまでの時間を見積もって表示を進める
@@ -1260,7 +1322,7 @@ function loadVoices(){
   let all = [];
   try { all = speechSynthesis.getVoices() || []; } catch (e) {}
   // 端末に入っている声を優先（声の位置が分かり、途中で止まりにくい）。Edge の Natural 音声は高品質なので先頭
-  const rank = v => /natural|neural/i.test(v.name) ? 0 : /kyoko|o-ren|otoya|hattori|haruka|ayumi|ichiro|sayaka|nanami|keita/i.test(v.name) && !isRemote(v) ? 1 : !isRemote(v) ? 2 : /online/i.test(v.name) ? 3 : 4;
+  const rank = v => /natural|neural|premium|enhanced|プレミアム|拡張|siri/i.test(v.name) ? 0 : /kyoko|o-ren|otoya|hattori|haruka|ayumi|ichiro|sayaka|nanami|keita/i.test(v.name) && !isRemote(v) ? 1 : !isRemote(v) ? 2 : /online/i.test(v.name) ? 3 : 4;
   voiceList = all.filter(v => /^ja([-_]|$)/i.test(v.lang)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
   const sel = $('voiceSel');
   sel.innerHTML = voiceList.length
@@ -1279,8 +1341,9 @@ function updateVoiceUI(){
   note.classList.remove('warn');
   if (!TTS) { note.textContent = 'このブラウザは読み上げに対応していません。Safari・Chrome・Edge の新しい版でお試しください。'; note.classList.add('warn'); }
   else if (S.speak && voiceBroken) { note.textContent = 'この端末では読み上げが始められませんでした。「声に出して読む」をもう一度オンにすると、もう一度試せます。'; note.classList.add('warn'); }
-  else if (on && IOS) note.textContent = 'iPhone・iPadは、消音モード（マナーモード）のときは声が出ません。消音を解除して、音量を上げてください。';
-  else if (on && (ANDROID || !voiceList.length)) note.textContent = '声が出ない・英語のように聞こえるときは、端末の「設定 → テキスト読み上げ」で日本語の音声データを追加してください。';
+  else if (on && IOS) note.textContent = '消音モード（マナーモード）だと声が出ません。もっと人に近い声にするには、iPhoneの「設定 → アクセシビリティ → 読み上げコンテンツ → 声 → 日本語」で「拡張」の付いた声を入れてから、上の「声」で選んでください。';
+  else if (on && (ANDROID || !voiceList.length)) note.textContent = '声が出ない・英語のように聞こえるときは、端末の「設定 → テキスト読み上げ」で日本語の音声データを追加してください。高音質の音声データを入れると、より人に近い声になります。';
+  else if (on && !voiceList.some(x => /natural|neural|premium|enhanced|拡張/i.test(x.name))) note.textContent = 'パソコンなら、Microsoft Edge で開くと人の声に近い「Nanami」「Keita」（Natural）が選べます。';
   else note.textContent = on ? '声の種類と質は、お使いの端末やブラウザによって変わります。' : '';
   saveSettings();
 }
@@ -1327,6 +1390,7 @@ function showWork(w){
   idx = findByOffset(saved?.off ?? 0);
   finished = chunks.length > 1 && idx === chunks.length - 1;   // 読了した作品は、再生で最初から
   render(false);
+  syncReaderLike();
 }
 function findByOffset(off){
   let lo = 0, hi = chunks.length - 1;
@@ -1586,6 +1650,7 @@ const MOTIFS = {
 return MOTIFS;
 })();
 const CAT_HUH = "<svg viewBox=\"6 2 138 116\" aria-hidden=\"true\" focusable=\"false\">\n  <g transform=\"translate(0 0) rotate(-10 60 66) scale(1)\">\n  <path d=\"M27 48 C 22 34, 20 22, 22 12 C 32 16, 42 23, 49 31 Z\" fill=\"#1B1A17\" stroke=\"#1B1A17\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M93 48 C 98 34, 100 22, 98 12 C 88 16, 78 23, 71 31 Z\" fill=\"#1B1A17\" stroke=\"#1B1A17\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M28.5 38 C 26.5 31, 26 25, 27 20.5 C 32.5 23, 37 27, 40 31 Z\" fill=\"#F4A8C4\"/>\n  <path d=\"M91.5 38 C 93.5 31, 94 25, 93 20.5 C 87.5 23, 83 27, 80 31 Z\" fill=\"#F4A8C4\"/>\n  <clipPath id=\"hC\"><path d=\"M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z\"/></clipPath>\n  <path d=\"M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z\" fill=\"#fff\"/>\n  <g clip-path=\"url(#hC)\" fill=\"#1B1A17\">\n    <path d=\"M8 16 H 58.4 C 57 30, 52.5 42, 43 49.5 C 34 56, 20 56.5, 8 52 Z\"/>\n    <path d=\"M112 16 H 61.6 C 63 30, 67.5 42, 77 49.5 C 86 56, 100 56.5, 112 52 Z\"/>\n  </g>\n  <path d=\"M16 66 C 14 44, 34 28, 60 28 C 86 28, 106 44, 104 66 C 103 88, 84 102, 60 102 C 36 102, 17 88, 16 66 Z\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <circle cx=\"46\" cy=\"64\" r=\"4.2\" fill=\"#1B1A17\"/><circle cx=\"74\" cy=\"64\" r=\"4.2\" fill=\"#1B1A17\"/><circle cx=\"47.3\" cy=\"62.6\" r=\"1.3\" fill=\"#fff\"/><circle cx=\"75.3\" cy=\"62.6\" r=\"1.3\" fill=\"#fff\"/>\n  <ellipse cx=\"35.5\" cy=\"75\" rx=\"5.8\" ry=\"3.2\" fill=\"#F7B7A3\" opacity=\".75\"/><ellipse cx=\"84.5\" cy=\"75\" rx=\"5.8\" ry=\"3.2\" fill=\"#F7B7A3\" opacity=\".75\"/>\n  <path d=\"M57.8 71.5 L 62.2 71.5 L 60 74.2 Z\" fill=\"#F4A8C4\" stroke=\"#1B1A17\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M60 74.2 Q 60 77.8 56.4 77.8 M60 74.2 Q 60 77.8 63.6 77.8\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n  <path d=\"M28 70 L 16 68 M28 75 L 17 77 M92 70 L 104 68 M92 75 L 103 77\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"1.8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></g>\n  <path d=\"M114 28 C 114 18, 132 18, 132 29 C 132 37, 122 37, 122 45 M122 52 v1.5\" fill=\"none\" stroke=\"#1B1A17\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/>\n</svg>";
+const HEART = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 21s-7.6-4.6-9.7-9.3C.9 8.3 3.1 4.3 6.9 4.3c2.2 0 3.7 1.1 5.1 2.9 1.4-1.8 2.9-2.9 5.1-2.9 3.8 0 6 4 4.6 7.4C19.6 16.4 12 21 12 21z\"/></svg>";
 const PAW = "<svg viewBox=\"0 0 32 32\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z\"/><ellipse cx=\"6.6\" cy=\"13.6\" rx=\"3.3\" ry=\"4.2\" transform=\"rotate(-24 6.6 13.6)\"/><ellipse cx=\"12.4\" cy=\"8.6\" rx=\"3.4\" ry=\"4.4\" transform=\"rotate(-8 12.4 8.6)\"/><ellipse cx=\"19.6\" cy=\"8.6\" rx=\"3.4\" ry=\"4.4\" transform=\"rotate(8 19.6 8.6)\"/><ellipse cx=\"25.4\" cy=\"13.6\" rx=\"3.3\" ry=\"4.2\" transform=\"rotate(24 25.4 13.6)\"/></svg>";
 const AUTH = new Map(AUTHORS.map(a => [a[0], a]));
 const L = { q: '', author: '', len: 'all', sort: 'rank', limit: 90 };
@@ -1628,6 +1693,7 @@ function coverHTML(e, extra){
   if (p && p.pct >= 100) badges += `<span class="badge done" title="読了">${PAW}</span>`;
   else if (p && p.pct > 0) badges += `<span class="badge pct">${p.pct}%</span>`;
   if (e[8]) badges += '<span class="badge new">新着</span>';
+  if (likes.includes(e[0])) badges += `<span class="badge heart" title="いいね">${HEART}</span>`;
   return `<span class="cover p${e[0] % PATTERNS.length}" style="--c:${colorOf(e[3])}" aria-hidden="true"><span class="daisen ${size}">${esc(e[1])}</span><span class="bind"></span>${extra === false ? '' : badges}</span>`;
 }
 function stampHTML(name, cls){
@@ -1646,11 +1712,23 @@ function cardHTML(e, still){
 
 // スクロールで下からふわっと出す（動きを減らす設定のときは出さない）
 // 画面に入ったものから順に表示する。見えている範囲は位置で判断するので、どの環境でも必ず表示される
-const RV = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (RV) document.documentElement.classList.add('rv-on');
+// 動き：端末の設定に合わせる（auto）／いつも動かす（on）／止める（off）
+const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+const motionOn = () => S.motion === 'on' || (S.motion !== 'off' && !reduceMQ.matches);
+function applyMotion(){
+  const root = document.documentElement;
+  root.classList.toggle('motion-on', S.motion === 'on');
+  root.classList.toggle('motion-off', S.motion === 'off');
+  root.classList.toggle('rv-on', motionOn());
+  document.querySelectorAll('[data-motion]').forEach(b => b.setAttribute('aria-pressed', b.dataset.motion === (S.motion || 'auto')));
+  const note = $('motionNote');
+  if (note) note.textContent = S.motion === 'auto' && reduceMQ.matches ? 'この端末は「動きを減らす」設定になっているので、いまは動きを止めています。動かしたいときは「いつも動かす」を選んでください。' : '';
+  reveal();
+}
+try { reduceMQ.addEventListener('change', applyMotion); } catch (e) {}
 let rvT = 0;
 function reveal(){
-  if (!RV || rvT) return;
+  if (!motionOn() || rvT) return;
   // 画面の書き換えを待たずにタイマーで調べる（裏に回ったタブでも止まらない）
   rvT = setTimeout(() => {
     rvT = 0;
@@ -1721,6 +1799,7 @@ function renderLib(still){
   // 続きから読む
   const recent = store.get('recent', []).map(id => byId.get(id)).filter(Boolean);
   $('recentSec').hidden = !recent.length || !!q || !!L.author || L.len !== 'all';
+  renderLikes(!!q || !!L.author || L.len !== 'all');
   $('recentList').innerHTML = recent.map(e => {
     const p = store.get('pos:lib:' + e[0], null);
     return `<button class="wcard" type="button" data-id="${e[0]}">${coverHTML(e, false)}<span class="wt">${esc(e[1])}</span>${p && p.pct > 0 ? `<span class="bar" aria-label="${p.pct}%まで読みました"><i style="width:${Math.min(100, p.pct)}%"></i></span>` : ''}</button>`;
@@ -1729,6 +1808,49 @@ function renderLib(still){
   document.querySelectorAll('#lenSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.len === L.len));
   placePill($('lenSeg'));
   reveal();
+}
+
+// いいね（この端末に保存。新しい順）
+let likes = (store.get('likes', []) || []).filter(id => byId.has(id));
+function setLikeBtn(btn, on, animate){
+  if (!btn) return;
+  btn.setAttribute('aria-pressed', on);
+  btn.setAttribute('aria-label', on ? 'いいねを外す' : 'いいね');
+  if (animate && on && motionOn()) {
+    btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
+    const b = btn.querySelector('.burst');
+    if (b) { b.innerHTML = [0, 72, 144, 216, 288].map(a => `<i style="--a:${a}deg"></i>`).join(''); setTimeout(() => { b.innerHTML = ''; }, 800); }
+  }
+}
+function toggleLike(id, btn){
+  const on = !likes.includes(id);
+  likes = on ? [id, ...likes] : likes.filter(x => x !== id);
+  store.set('likes', likes);
+  setLikeBtn(btn, on, true);
+  if (btn !== $('wsLike') && wsId === id) setLikeBtn($('wsLike'), on);
+  syncReaderLike();
+  if (!$('lib').hidden) renderLib(true);
+  return on;
+}
+function readerWorkId(){ return work && /^lib:\d+$/.test(work.key) ? +work.key.slice(4) : 0; }
+function syncReaderLike(){
+  const id = readerWorkId(), btn = $('likeBtn');
+  btn.hidden = !id;
+  if (id) setLikeBtn(btn, likes.includes(id));
+}
+$('likeBtn').onclick = () => {
+  const id = readerWorkId(); if (!id) return;
+  const on = toggleLike(id, $('likeBtn'));
+  showToast(on ? 'いいねしました。本棚の「いいねした作品」に入ります。' : 'いいねを外しました。', 2200);
+};
+$('wsLike').onclick = () => { if (wsId) toggleLike(wsId, $('wsLike')); };
+function renderLikes(hide){
+  const list = likes.map(id => byId.get(id)).filter(Boolean);
+  $('likeSec').hidden = hide;
+  $('likeCount').textContent = list.length ? `${list.length}作品` : '';
+  $('likeEmpty').hidden = list.length > 0;
+  $('likeList').hidden = !list.length;
+  $('likeList').innerHTML = list.map(e => `<button class="wcard" type="button" data-id="${e[0]}">${coverHTML(e)}<span class="wt">${esc(e[1])}</span><span class="wa">${esc(dispName(e[3]))}</span></button>`).join('');
 }
 
 // きょうの一冊（日付で決まる。あらすじのある作品から選ぶ）
@@ -1767,6 +1889,7 @@ async function openWorkSheet(id){
     (RANK.get(id) ? `<span class="tag">人気 ${RANK.get(id)}位</span>` : '') + (p && p.pct >= 100 ? '<span class="tag shu">読了</span>' : p && p.pct > 0 ? `<span class="tag">${p.pct}%まで読んだ</span>` : '');
   $('wsMeta').innerHTML = `<span>文字数 <b>${fmtChars(e[6])}</b></span><span>読み終わる目安 <b>${fmtRead(e[6])}</b></span>`;
   $('wsRead').textContent = p && p.pct > 0 && p.pct < 100 ? '続きから読む' : 'この作品を読む';
+  setLikeBtn($('wsLike'), likes.includes(id));
   $('wsSynBlock').hidden = false;
   $('wsSyn').innerHTML = '<span class="skel" style="width:90%"></span><span class="skel" style="width:70%;margin-top:8px"></span>';
   $('wsOpen').innerHTML = '<span class="skel" style="width:80%"></span>';
@@ -1814,7 +1937,7 @@ $('allAuthorsBtn').onclick = openAuthorSheet;
 
 function pickAuthor(name){
   L.author = name; resetLimit(); renderAuthors(); renderLib();
-  $('worksSec').scrollIntoView({ behavior: RV ? 'smooth' : 'auto', block: 'start' });
+  $('worksSec').scrollIntoView({ behavior: motionOn() ? 'smooth' : 'auto', block: 'start' });
 }
 
 function openLib(){
@@ -1842,7 +1965,7 @@ $('authorStrip').addEventListener('click', e => {
 });
 $('lenSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { L.len = b.dataset.len; resetLimit(); renderLib(); } });
 $('sort').addEventListener('change', e => { L.sort = e.target.value; resetLimit(); renderLib(); });
-['libList', 'recentList'].forEach(id => $(id).addEventListener('click', e => { const it = e.target.closest('.wcard'); if (it) openWorkSheet(+it.dataset.id); }));
+['libList', 'recentList', 'likeList'].forEach(id => $(id).addEventListener('click', e => { const it = e.target.closest('.wcard'); if (it) openWorkSheet(+it.dataset.id); }));
 $('ribbonTrack').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (b) openWorkSheet(+b.dataset.id); });
 addEventListener('resize', () => { placePill($('lenSeg')); if (!$('authorSheet').hidden) placePill($('kanaTabs')); });
 document.addEventListener('keydown', e => {
@@ -1850,6 +1973,12 @@ document.addEventListener('keydown', e => {
   if (!$('workSheet').hidden) { closeWorkSheet(); e.stopImmediatePropagation(); }
   else if (!$('authorSheet').hidden) { closeAuthorSheet(); e.stopImmediatePropagation(); }
 }, true);
+
+// 設定：動き・会話の声
+document.querySelectorAll('[data-motion]').forEach(b => b.onclick = () => { S.motion = b.dataset.motion; saveSettings(); applyMotion(); });
+$('talkVoice').checked = S.talkVoice !== false;
+$('talkVoice').addEventListener('change', e => { S.talkVoice = e.target.checked; saveSettings(); if (useVoice()) restartIfPlaying(); });
+applyMotion();
 
 $('file').addEventListener('change', e => { const f = e.target.files[0]; if (f) handleFile(f); e.target.value = ''; });
 const drop = $('drop');
