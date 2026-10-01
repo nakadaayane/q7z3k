@@ -874,6 +874,27 @@ header.top{max-width:928px}
 .arow .nm{display:flex;flex-direction:column;line-height:1.3}
 .arow .nm small{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em}
 
+/* ===== 10巡目（仕上げ） ===== */
+.hero .trail i:nth-child(n+6){display:none}
+/* 綴じしろを広げ、題簽はその中（綴じ穴より上）に */
+.bookbind{width:44px}
+.bookbind::after{inset:32% 0 5% 0}
+.bb-daisen{right:9px;top:16px;max-height:28%;font-size:13px;padding:8px 3px}
+.stage{padding-right:76px}
+.tick{margin-right:58px}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .bookbind{filter:none;background-color:color-mix(in srgb,var(--c) 78%,#0E1437)}
+  :root:not([data-theme="light"]) .bb-daisen{filter:brightness(.85)}
+}
+:root[data-theme="dark"] .bookbind{filter:none;background-color:color-mix(in srgb,var(--c) 78%,#0E1437)}
+:root[data-theme="dark"] .bb-daisen{filter:brightness(.85)}
+/* 棚板は1px単位にそろえる（列によって段差が出ないように） */
+#libList .wcard::before{top:round(calc(133.333cqw + 12.5px),1px)}
+/* 案内の文字を濃く・図書カードのリンクを配色にそろえる */
+.hint{color:color-mix(in srgb,var(--ink) 72%,transparent);opacity:1}
+.ws-acts a{color:var(--ink);text-decoration:none;border-bottom:2.5px solid var(--sun);padding-bottom:1px}
+.ws-acts a:hover{background:color-mix(in srgb,var(--sun) 40%,transparent)}
+
 @media (min-width: 700px){
   .grid{grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:26px 20px}
   .astrip{flex-wrap:wrap;overflow:visible}
@@ -975,10 +996,10 @@ header.top{max-width:928px}
   .dstamp{display:grid;left:auto;right:10px;top:auto;bottom:10px;z-index:4;transform:rotate(-14deg) scale(.7);transform-origin:100% 100%}
   .today .label{left:66px}
   .daysky .sun{box-shadow:0 0 0 8px color-mix(in srgb,var(--sun-c,#FFE98A) 38%,#fff),0 0 0 15px color-mix(in srgb,var(--sun-c,#FFE98A) 16%,#fff)}
-  .bookbind{width:22px;border-radius:0 20px 20px 0}
-  .bb-daisen{right:9px;top:16px;font-size:11.5px}
-  .stage{padding-right:42px;padding-left:20px}
-  .tick{margin-right:36px}
+  .bookbind{width:30px;border-radius:0 20px 20px 0}
+  .bb-daisen{right:5px;top:14px;font-size:11px;padding:7px 2px}
+  .stage{padding-right:50px;padding-left:20px}
+  .tick{margin-right:42px}
   .hero .trail{display:none}
   .demo{width:calc(100% - 140px);left:0}
   .bubble{font-size:16px}
@@ -1200,7 +1221,7 @@ header.top{max-width:928px}
     <svg class="cloud c2 float slow" viewBox="0 0 120 64" aria-hidden="true"><path d="M20 58 Q6 58 6 46 Q6 34 20 34 Q22 16 42 16 Q54 4 72 12 Q92 6 98 26 Q114 26 114 42 Q114 58 98 58 Z" fill="currentColor"/></svg>
     <svg class="cloud c3 float drift" viewBox="0 0 120 64" aria-hidden="true"><path d="M20 58 Q6 58 6 46 Q6 34 20 34 Q22 16 42 16 Q54 4 72 12 Q92 6 98 26 Q114 26 114 42 Q114 58 98 58 Z" fill="currentColor"/></svg>
     <div class="sky">
-      <div class="trail" aria-hidden="true"><i style="left:66.0%;top:63.5%;--r:258deg;--i:0"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:64.3%;top:60.5%;--r:282deg;--i:1"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:62.6%;top:63.5%;--r:258deg;--i:2"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:60.9%;top:60.5%;--r:282deg;--i:3"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:59.2%;top:63.5%;--r:258deg;--i:4"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:57.5%;top:60.5%;--r:282deg;--i:5"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:55.8%;top:63.5%;--r:258deg;--i:6"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i></div>
+      <div class="trail" aria-hidden="true"><i style="left:66.0%;top:63.5%;--r:258deg;--i:0"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:63.2%;top:60.0%;--r:282deg;--i:1"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:60.4%;top:63.5%;--r:258deg;--i:2"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:57.6%;top:60.0%;--r:282deg;--i:3"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:54.8%;top:63.5%;--r:258deg;--i:4"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:57.5%;top:60.5%;--r:282deg;--i:5"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i><i style="left:55.8%;top:63.5%;--r:258deg;--i:6"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 30.5 C 8.5 30.5, 5.5 25.5, 8.3 21.3 C 10.3 18.3, 13 17, 16 17 C 19 17, 21.7 18.3, 23.7 21.3 C 26.5 25.5, 23.5 30.5, 16 30.5 Z"/><ellipse cx="6.6" cy="13.6" rx="3.3" ry="4.2" transform="rotate(-24 6.6 13.6)"/><ellipse cx="12.4" cy="8.6" rx="3.4" ry="4.4" transform="rotate(-8 12.4 8.6)"/><ellipse cx="19.6" cy="8.6" rx="3.4" ry="4.4" transform="rotate(8 19.6 8.6)"/><ellipse cx="25.4" cy="13.6" rx="3.3" ry="4.2" transform="rotate(24 25.4 13.6)"/></svg></i></div>
       <div class="hero-copy">
         <p class="kicker">名作を、ひとまとまりずつ</p>
         <h2 id="libTitle">青空の<br><span class="s">本棚</span></h2>
@@ -1582,7 +1603,8 @@ function chunkHTML(c, kin){
   const us = work.paras[c.p], b = brk(c.p);
   let h = '';
   for (let k = c.s; k < c.e; k++) {
-    if (k > c.s && b[k] && !(/[」』）)]$/.test(us[k - 1].t) && /^[ぁ-ゖ]/.test(us[k].t))) h += '<wbr>';
+    const glue = k > c.s && /[」』）)]$/.test(us[k - 1].t) && /^[ぁ-ゖ]/.test(us[k].t);
+    if (glue) h += '\u2060'; else if (k > c.s && b[k]) h += '<wbr>';
     h += kin ? `<span class="k" style="--i:${k - c.s}">${unitHTML(us[k])}</span>` : unitHTML(us[k]);
   }
   return h;
@@ -1617,7 +1639,8 @@ function render(animate){
   $('seek').value = idx;
   $('seek').style.setProperty('--pos', (chunks.length > 1 ? idx / (chunks.length - 1) * 100 : 0) + '%');
   const pct = chunks.length ? Math.floor((idx + 1) / chunks.length * 100) : 0;
-  $('posLabel').textContent = `${pct}%・${nf.format(idx + 1)} / ${nf.format(chunks.length)}`;
+  $('posLabel').textContent = `${pct}%`;
+  $('posLabel').title = `${nf.format(idx + 1)}／${nf.format(chunks.length)}`;
   $('remainLabel').textContent = chunks.length ? 'のこり ' + fmtTime(useVoice() ? charSuffix[idx] / voiceCps() : S.t * factorSuffix[idx]) : '';
   $('paraLabel').textContent = c ? `第${nf.format(c.p + 1)}段落／全${nf.format(work.paras.length)}段落` : '';
   $('hint').hidden = playing || !!store.get('hinted', false);
@@ -2344,7 +2367,7 @@ function toneOf(c, id){ const k = TONE[id % 3]; return k > 0 ? mix(c, '#ffffff',
 const cleanTitle = s => s.replace(/^〔(.+)〕$/, '$1');
 const workColor = id => PAL[hashStr('w' + id) % PAL.length];
 // 文節の切れ目に <wbr> を入れた HTML（語の途中で改行しない）
-const phraseHTML = t => { const u = Array.from(String(t || '')).map(c => ({ t: c, len: 1 })); if (!u.length) return ''; const b = phraseBreaks(u); return u.map((x, k) => (k && b[k] && !(/[」』）)]/.test(u[k - 1].t) && /[ぁ-ゖ]/.test(x.t)) ? '<wbr>' : '') + esc(x.t)).join(''); };
+const phraseHTML = t => { const u = Array.from(String(t || '')).map(c => ({ t: c, len: 1 })); if (!u.length) return ''; const b = phraseBreaks(u); return u.map((x, k) => { const glue = k && /[」』）)]/.test(u[k - 1].t) && /[ぁ-ゖ]/.test(x.t); return (glue ? '\u2060' : k && b[k] ? '<wbr>' : '') + esc(x.t); }).join(''); };
 function coverHTML(e, extra){
   const tt = cleanTitle(e[1]);
   const n = Array.from(tt).length;
@@ -2437,7 +2460,7 @@ addEventListener('resize', () => { fitCard(); });
 function fitCard(){
   const wrap = $('stagewrap'), now = $('now'); if (!wrap || !now) return;
   if (S.vertical) { wrap.style.setProperty('--need', '9999px'); $('stage').style.setProperty('--fk', 1); layoutArc(); return; }
-  const fs = Math.min(S.fs, innerWidth * 0.12), W = Math.max(120, wrap.clientWidth - (isMobile() ? 62 : 86));
+  const fs = Math.min(S.fs, innerWidth * 0.12), W = Math.max(120, wrap.clientWidth - (isMobile() ? 72 : 106));
   const needAt = k => {
     const f = fs * k, lines = Math.ceil(S.n * f * 1.1 / W);
     let h = lines * f * (S.ruby ? 1.95 : 1.6) + 120;
@@ -2682,7 +2705,7 @@ function heroDemo(text, e){
   const N = Math.max(4, S.n | 0), parts = makeParts(text, N, 10);
   if (!parts.length) { box.hidden = true; return; }
   box.hidden = false;
-  $('heroCap').innerHTML = `<span class="cap-a">${phraseHTML(`『${e ? cleanTitle(e[1]) : ''}』の書き出しが、このとおり流れます`)}</span><span class="cap-chip">1回${S.n}字・${S.t}秒</span>`;
+  $('heroCap').innerHTML = `<span class="cap-a">${phraseHTML(`『${e ? cleanTitle(e[1]) : ''}』の書き出しが流れます`)}</span><span class="cap-chip">1回${S.n}字・${S.t}秒</span>`;
   let j = 0;
   const show = () => {
     const s = parts[j % parts.length], anim = motionOn();
